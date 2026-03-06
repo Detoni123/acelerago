@@ -1,0 +1,39 @@
+# robots.txt — AceleraGO
+# https://www.acelerago.com.br/
+
+User-agent: *
+Allow: /
+
+# Bloquear acesso a recursos internos desnecessários para indexação
+Disallow: /admin/
+Disallow: /wp-admin/
+Disallow: /cgi-bin/
+Disallow: /*.json$
+Disallow: /api/
+
+# Permitir rastreamento de recursos estáticos (CSS, JS, imagens)
+Allow: /styles.css
+Allow: /index.html
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Sitemap
+Sitemap: https://www.acelerago.com.br/sitemap.xml
+
+# Crawl-delay para bots secundários
+User-agent: Bingbot
+Crawl-delay: 10
+
+User-agent: AhrefsBot
+Crawl-delay: 20
+
+User-agent: SemrushBot
+Crawl-delay: 20
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
