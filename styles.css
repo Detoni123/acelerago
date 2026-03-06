@@ -943,7 +943,7 @@ section { padding: 5rem 0; }
   padding: 1.5rem;
 }
 .wa-modal-overlay.open {
-  display: flex;
+  display: flex !important;
 }
 
 .wa-modal-box {

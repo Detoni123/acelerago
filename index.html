@@ -909,39 +909,52 @@
     var GF_ENTRY_ESPECIALIDADE  = 'entry.96820167';
     var GF_ENTRY_TELEFONE       = 'entry.622784348';
 
-    var waModal    = document.getElementById('wa-modal');
-    var waForm     = document.getElementById('wa-modal-form');
-    var waCloseBtn = document.getElementById('wa-modal-close');
-
     function openWAModal(e) {
       if (e) e.preventDefault();
-      waModal.classList.add('open');
+      var modal = document.getElementById('wa-modal');
+      if (!modal) return;
+      modal.classList.add('open');
+      modal.style.display = 'flex'; // fallback caso o CSS não aplique
       document.body.style.overflow = 'hidden';
-      setTimeout(function() { document.getElementById('wa-nome').focus(); }, 50);
+      setTimeout(function() {
+        var f = document.getElementById('wa-nome');
+        if (f) f.focus();
+      }, 50);
     }
 
     function closeWAModal() {
-      waModal.classList.remove('open');
+      var modal = document.getElementById('wa-modal');
+      if (!modal) return;
+      modal.classList.remove('open');
+      modal.style.display = '';
       document.body.style.overflow = '';
     }
 
-    // Delegação de eventos — captura cliques em qualquer .wa-trigger
+    // Delegação robusta — percorre parents manualmente (funciona em SVG e todos os browsers)
     document.addEventListener('click', function(e) {
-      var trigger = e.target.closest('.wa-trigger');
-      if (trigger) {
-        e.preventDefault();
-        openWAModal(null);
+      var el = e.target;
+      while (el && el !== document.body) {
+        if (el.classList && el.classList.contains('wa-trigger')) {
+          e.preventDefault();
+          openWAModal(null);
+          return;
+        }
+        el = el.parentElement;
       }
     });
 
-    waCloseBtn.addEventListener('click', closeWAModal);
+    var waCloseBtn = document.getElementById('wa-modal-close');
+    if (waCloseBtn) waCloseBtn.addEventListener('click', closeWAModal);
 
-    waModal.addEventListener('click', function (e) {
-      if (e.target === waModal) closeWAModal();
-    });
+    var waOverlay = document.getElementById('wa-modal');
+    if (waOverlay) {
+      waOverlay.addEventListener('click', function(e) {
+        if (e.target === waOverlay) closeWAModal();
+      });
+    }
 
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && waModal.classList.contains('open')) closeWAModal();
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeWAModal();
     });
 
     waForm.addEventListener('submit', function (e) {
