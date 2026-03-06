@@ -887,45 +887,52 @@
       document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
     }
 
-    // Smooth scroll
+    // Smooth scroll — ignora href="#" (reservado para o modal WA)
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        const target = document.querySelector(this.getAttribute('href'));
+        var href = this.getAttribute('href');
+        if (!href || href === '#') return; // deixa o modal tratar
+        var target = document.querySelector(href);
         if (target) {
           e.preventDefault();
-          const headerH = document.getElementById('header').offsetHeight;
-          const top = target.getBoundingClientRect().top + window.pageYOffset - headerH;
-          window.scrollTo({ top, behavior: 'smooth' });
+          var headerH = document.getElementById('header').offsetHeight;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - headerH;
+          window.scrollTo({ top: top, behavior: 'smooth' });
           closeMobileMenu();
         }
       });
     });
 
     // ─── Modal WhatsApp ──────────────────────────────────────
-    //
-    // GOOGLE FORMS — substitua os valores abaixo pelos seus IDs reais.
-    // Veja o comentário completo no final deste bloco para o passo a passo.
-    //
-    const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
-    const GF_ENTRY_NOME         = 'entry.1690417802'; // ID do campo "Nome da médica"
-    const GF_ENTRY_ESPECIALIDADE= 'entry.96820167';   // ID do campo "Especialidade"
-    const GF_ENTRY_TELEFONE     = 'entry.622784348';  // ID do campo "Telefone"
+    var GOOGLE_FORM_ACTION      = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
+    var GF_ENTRY_NOME           = 'entry.1690417802';
+    var GF_ENTRY_ESPECIALIDADE  = 'entry.96820167';
+    var GF_ENTRY_TELEFONE       = 'entry.622784348';
 
-    const waModal  = document.getElementById('wa-modal');
-    const waForm   = document.getElementById('wa-modal-form');
-    const waCloseBtn = document.getElementById('wa-modal-close');
+    var waModal    = document.getElementById('wa-modal');
+    var waForm     = document.getElementById('wa-modal-form');
+    var waCloseBtn = document.getElementById('wa-modal-close');
 
     function openWAModal(e) {
       if (e) e.preventDefault();
       waModal.classList.add('open');
       document.body.style.overflow = 'hidden';
-      setTimeout(() => document.getElementById('wa-nome').focus(), 50);
+      setTimeout(function() { document.getElementById('wa-nome').focus(); }, 50);
     }
 
     function closeWAModal() {
       waModal.classList.remove('open');
       document.body.style.overflow = '';
     }
+
+    // Delegação de eventos — captura cliques em qualquer .wa-trigger
+    document.addEventListener('click', function(e) {
+      var trigger = e.target.closest('.wa-trigger');
+      if (trigger) {
+        e.preventDefault();
+        openWAModal(null);
+      }
+    });
 
     waCloseBtn.addEventListener('click', closeWAModal);
 
