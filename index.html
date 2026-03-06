@@ -965,10 +965,10 @@
       const especialidade = document.getElementById('wa-especialidade').value;
       const telefone      = document.getElementById('wa-telefone').value.trim();
 
-      if (!nome || !especialidade || !telefone) {
-        alert('Por favor, preencha todos os campos obrigatórios.');
-        return;
-      }
+      if (!nome.trim() || !especialidade || !telefone.trim()) {
+    alert('Por favor, preencha todos os campos corretamente.');
+    return;
+}
 
       // Envia para o Google Forms via iframe oculto (evita bloqueio de CORS)
       var gfIframe = document.getElementById('gf-iframe');
