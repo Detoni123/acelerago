@@ -239,7 +239,7 @@ section { padding: 5rem 0; }
       rgba(13,25,40,.94)   0%,
       rgba(13,25,40,.86)  60%,
       rgba(0,181,169,.22) 100%),
-    url("IMG_5159.JPG") center/cover no-repeat;
+    url("ginecologista-obstetra-reproducaohumana.webp") center/cover no-repeat;
   display: flex;
   align-items: center;
   padding: 10rem 0 6rem;
@@ -915,4 +915,139 @@ section { padding: 5rem 0; }
 @media print {
   #header, .wa-float, .scroll-cue { display: none; }
   body { background: white; color: black; }
+}
+
+/* ── Modal WhatsApp ───────────────────────────────────────── */
+.wa-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(13,25,40,.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.wa-modal-overlay.open {
+  display: flex;
+}
+
+.wa-modal-box {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem 2rem;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.wa-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  line-height: 1;
+}
+.wa-modal-close:hover {
+  background: var(--cream-dark);
+  color: var(--text-dark);
+}
+
+.wa-modal-logo {
+  height: 34px;
+  width: auto;
+  margin: 0 auto 1.5rem;
+  display: block;
+}
+
+.wa-modal-box h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: .5rem;
+  letter-spacing: -.02em;
+  line-height: 1.35;
+}
+
+.wa-modal-sub {
+  font-size: .87rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.75rem;
+  line-height: 1.55;
+}
+
+.wa-field {
+  margin-bottom: 1rem;
+}
+.wa-field label {
+  display: block;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: .35rem;
+  letter-spacing: .01em;
+}
+.wa-field label span { color: var(--orange); }
+
+.wa-field input,
+.wa-field select {
+  width: 100%;
+  padding: .72rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: .93rem;
+  color: var(--text-dark);
+  background: var(--cream);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+.wa-field input::placeholder { color: var(--text-muted); }
+.wa-field input:focus,
+.wa-field select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0,181,169,.13);
+  background: var(--white);
+}
+.wa-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a8d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.wa-modal-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: .75rem;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 500px) {
+  .wa-modal-box {
+    padding: 2rem 1.25rem 1.5rem;
+    border-radius: var(--radius-md);
+  }
 }
