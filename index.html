@@ -906,7 +906,7 @@
     // ─── Modal WhatsApp ──────────────────────────────────────
     var GOOGLE_FORM_ACTION      = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
     var GF_ENTRY_NOME           = 'entry.1690417802';
-    var GF_ENTRY_ESPECIALIDADE  = 'entry.96820167';
+    var GF_ENTRY_ESPECIALIDADE  = 'entry.968200167';
     var GF_ENTRY_TELEFONE       = 'entry.622784348';
 
     function openWAModal(e) {
@@ -961,14 +961,15 @@
     waForm.addEventListener('submit', function (e) {
       e.preventDefault();
 
-// 1. Pega os valores dos campos
 const nome = document.getElementById('wa-nome').value.trim();
-const telefone = document.getElementById('wa-telefone').value.trim();
-
-// 2. Pega o ELEMENTO do select e o TEXTO da especialidade escolhida
 const selectElement = document.getElementById('wa-especialidade');
 const especialidade = selectElement.options[selectElement.selectedIndex].text;
+const telefone = document.getElementById('wa-telefone').value.trim();
 
+if (!nome || selectElement.selectedIndex === 0 || !telefone) {
+    alert('Por favor, preencha todos os campos corretamente.');
+    return;
+}
 // 3. Validação atualizada (verifica se o usuário selecionou uma opção válida)
 if (!nome || selectElement.selectedIndex === 0 || !telefone) {
     alert('Por favor, preencha seu nome, telefone e selecione uma especialidade.');
