@@ -961,9 +961,19 @@
     waForm.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      const nome          = document.getElementById('wa-nome').value.trim();
-      const especialidade = document.getElementById('wa-especialidade').value;
-      const telefone      = document.getElementById('wa-telefone').value.trim();
+// 1. Pega os valores dos campos
+const nome = document.getElementById('wa-nome').value.trim();
+const telefone = document.getElementById('wa-telefone').value.trim();
+
+// 2. Pega o ELEMENTO do select e o TEXTO da especialidade escolhida
+const selectElement = document.getElementById('wa-especialidade');
+const especialidade = selectElement.options[selectElement.selectedIndex].text;
+
+// 3. Validação atualizada (verifica se o usuário selecionou uma opção válida)
+if (!nome || selectElement.selectedIndex === 0 || !telefone) {
+    alert('Por favor, preencha seu nome, telefone e selecione uma especialidade.');
+    return;
+}
 
       if (!nome.trim() || !especialidade || !telefone.trim()) {
     alert('Por favor, preencha todos os campos corretamente.');
