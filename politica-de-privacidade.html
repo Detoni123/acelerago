@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Política de Privacidade | AceleraGO</title>
+  <meta name="description" content="Política de Privacidade da AceleraGO — como coletamos, usamos e protegemos seus dados pessoais, em conformidade com a LGPD." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" type="image/png" href="logo-favicon.png?v=4">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .legal-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      padding: 9rem 0 4rem;
+      text-align: center;
+      color: var(--white);
+    }
+    .legal-hero .label { color: var(--teal-light); }
+    .legal-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--white); margin-bottom: .75rem; }
+    .legal-hero p { color: rgba(255,255,255,.6); font-size: .95rem; margin: 0; }
+
+    .legal-body { background: var(--white); padding: 5rem 0; }
+    .legal-content { max-width: 780px; margin: 0 auto; }
+
+    .legal-content h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 2.5rem 0 .75rem;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid var(--teal-pale);
+    }
+    .legal-content h2:first-child { margin-top: 0; }
+    .legal-content p { font-size: .97rem; color: var(--text-mid); margin-bottom: 1rem; line-height: 1.8; }
+    .legal-content ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .legal-content ul li { font-size: .97rem; color: var(--text-mid); line-height: 1.8; margin-bottom: .35rem; }
+    .legal-content strong { color: var(--text-dark); font-weight: 600; }
+    .legal-content a { color: var(--teal); text-decoration: underline; }
+    .legal-content a:hover { color: var(--orange); }
+
+    .legal-highlight {
+      background: var(--teal-pale);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .legal-highlight p { margin: 0; font-size: .93rem; }
+
+    .legal-updated {
+      display: inline-block;
+      background: var(--cream-dark);
+      border-radius: var(--radius-sm);
+      padding: .4rem .9rem;
+      font-size: .8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header id="header" role="banner">
+    <div class="container">
+      <nav class="nav-inner" role="navigation" aria-label="Menu principal">
+        <a href="index.html" class="logo" aria-label="AceleraGO — Página inicial">
+          <img src="acelerafundotransp.png" alt="AceleraGO" class="logo-img" width="160" height="42" />
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="index.html#ronaldo">Sobre</a></li>
+          <li><a href="index.html#servicos">Serviços</a></li>
+          <li><a href="index.html#resultados">Resultados</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+          <li>
+            <a href="#" class="btn btn-primary nav-cta wa-trigger" onclick="openWAModal(event)">
+              &#128172; Falar pelo WhatsApp
+            </a>
+          </li>
+        </ul>
+        <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobile" role="navigation">
+      <a href="index.html#ronaldo" onclick="closeMobileMenu()">Sobre</a>
+      <a href="index.html#servicos" onclick="closeMobileMenu()">Serviços</a>
+      <a href="index.html#resultados" onclick="closeMobileMenu()">Resultados</a>
+      <a href="index.html#faq" onclick="closeMobileMenu()">FAQ</a>
+      <a href="#" class="btn btn-primary wa-trigger" onclick="openWAModal(event)">
+        &#128172; Falar pelo WhatsApp
+      </a>
+    </nav>
+  </header>
+
+
+  <!-- HERO -->
+  <section class="legal-hero" aria-labelledby="legal-title">
+    <div class="container">
+      <span class="label">Transparência e proteção de dados</span>
+      <h1 id="legal-title">Política de Privacidade</h1>
+      <p>Última atualização: março de 2026</p>
+    </div>
+  </section>
+
+
+  <!-- CONTEÚDO -->
+  <section class="legal-body">
+    <div class="container">
+      <div class="legal-content">
+
+        <span class="legal-updated">Vigência: março de 2026</span>
+
+        <div class="legal-highlight">
+          <p>Esta Política de Privacidade foi elaborada em conformidade com a <strong>Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD)</strong> e descreve como a AceleraGO coleta, utiliza, armazena e protege os dados pessoais dos usuários que interagem com nossos serviços e canais digitais.</p>
+        </div>
+
+        <h2>1. Quem somos</h2>
+        <p><strong>AceleraGO</strong> é uma estrutura estratégica especializada em marketing digital para clínicas e especialistas em saúde da mulher — ginecologia, obstetrícia e reprodução humana. Atuamos como <strong>controladora dos dados pessoais</strong> coletados por meio deste site e demais canais de comunicação.</p>
+        <p><strong>Contato do responsável:</strong> contato@acelerago.com.br</p>
+
+        <h2>2. Dados pessoais que coletamos</h2>
+        <p>Podemos coletar as seguintes categorias de dados:</p>
+        <ul>
+          <li><strong>Dados de identificação:</strong> nome completo, especialidade médica, nome da clínica ou consultório.</li>
+          <li><strong>Dados de contato:</strong> e-mail, telefone e número de WhatsApp.</li>
+          <li><strong>Dados de navegação:</strong> endereço IP, tipo de dispositivo, navegador, páginas acessadas, tempo de permanência e origem do acesso (via cookies e ferramentas de análise como o Google Analytics).</li>
+          <li><strong>Dados fornecidos voluntariamente:</strong> informações inseridas em formulários de contato, formulários de captura de leads ou mensagens enviadas pelo WhatsApp.</li>
+        </ul>
+
+        <h2>3. Como coletamos seus dados</h2>
+        <ul>
+          <li>Preenchimento de formulários no site ou em páginas de destino (landing pages).</li>
+          <li>Envio de mensagens pelo WhatsApp ou e-mail.</li>
+          <li>Navegação pelo site, por meio de cookies e tecnologias similares.</li>
+          <li>Interações com anúncios veiculados no Google Ads ou Meta Ads.</li>
+        </ul>
+
+        <h2>4. Finalidade do tratamento dos dados</h2>
+        <p>Os dados coletados são utilizados exclusivamente para as seguintes finalidades:</p>
+        <ul>
+          <li>Responder a solicitações de contato e orçamentos.</li>
+          <li>Apresentar propostas comerciais e estratégias personalizadas.</li>
+          <li>Enviar comunicações relevantes sobre nossos serviços (somente com consentimento).</li>
+          <li>Melhorar a experiência de navegação no site.</li>
+          <li>Cumprir obrigações legais e regulatórias.</li>
+          <li>Exercer direitos em processos administrativos ou judiciais, se necessário.</li>
+        </ul>
+
+        <h2>5. Base legal para o tratamento</h2>
+        <p>Tratamos seus dados pessoais com fundamento nas seguintes bases legais previstas na LGPD (art. 7º):</p>
+        <ul>
+          <li><strong>Consentimento</strong> — para envio de comunicações de marketing.</li>
+          <li><strong>Execução de contrato</strong> — para prestação dos serviços contratados.</li>
+          <li><strong>Legítimo interesse</strong> — para responder contatos espontâneos e melhorar nossos serviços.</li>
+          <li><strong>Cumprimento de obrigação legal</strong> — quando exigido por lei.</li>
+        </ul>
+
+        <h2>6. Compartilhamento de dados</h2>
+        <p>A AceleraGO <strong>não vende, aluga ou cede dados pessoais a terceiros</strong>. Podemos compartilhar dados apenas nas seguintes situações:</p>
+        <ul>
+          <li>Com plataformas de tecnologia utilizadas na prestação dos serviços (ex.: Google Workspace, Google Ads, Meta, CRM), sempre com cláusulas de proteção de dados.</li>
+          <li>Com autoridades públicas, quando exigido por determinação legal ou judicial.</li>
+          <li>Com parceiros estratégicos, apenas com consentimento expresso do titular.</li>
+        </ul>
+
+        <h2>7. Armazenamento e segurança</h2>
+        <p>Os dados são armazenados em ambientes seguros, com controle de acesso e criptografia. Adotamos medidas técnicas e organizacionais adequadas para proteger suas informações contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+        <p>Os dados serão mantidos pelo período necessário para atender às finalidades descritas nesta política ou pelo prazo exigido pela legislação aplicável. Após esse período, os dados serão eliminados de forma segura.</p>
+
+        <h2>8. Cookies</h2>
+        <p>Utilizamos cookies para melhorar a experiência de navegação e coletar dados analíticos. Os cookies podem ser:</p>
+        <ul>
+          <li><strong>Essenciais:</strong> necessários para o funcionamento do site.</li>
+          <li><strong>Analíticos:</strong> para entender como os usuários interagem com o site (ex.: Google Analytics).</li>
+          <li><strong>De marketing:</strong> para mensurar a eficácia de campanhas de anúncios.</li>
+        </ul>
+        <p>Você pode desativar os cookies nas configurações do seu navegador, mas isso pode afetar a funcionalidade do site.</p>
+
+        <h2>9. Direitos do titular dos dados</h2>
+        <p>Nos termos da LGPD, você tem os seguintes direitos em relação aos seus dados pessoais:</p>
+        <ul>
+          <li><strong>Acesso:</strong> solicitar confirmação de que tratamos seus dados e obter uma cópia deles.</li>
+          <li><strong>Correção:</strong> solicitar a atualização ou correção de dados incompletos, inexatos ou desatualizados.</li>
+          <li><strong>Anonimização, bloqueio ou eliminação:</strong> solicitar que dados desnecessários ou tratados em desconformidade sejam eliminados.</li>
+          <li><strong>Portabilidade:</strong> solicitar a transferência dos seus dados a outro fornecedor de serviço.</li>
+          <li><strong>Revogação do consentimento:</strong> retirar seu consentimento a qualquer momento, sem prejuízo do tratamento realizado anteriormente.</li>
+          <li><strong>Oposição:</strong> opor-se a tratamentos realizados com base em legítimo interesse.</li>
+          <li><strong>Informação sobre compartilhamento:</strong> saber com quais entidades seus dados foram compartilhados.</li>
+        </ul>
+        <p>Para exercer qualquer desses direitos, entre em contato pelo e-mail <a href="mailto:contato@acelerago.com.br">contato@acelerago.com.br</a>. Responderemos em até 15 dias úteis.</p>
+
+        <h2>10. Transferência internacional de dados</h2>
+        <p>Algumas ferramentas utilizadas (como Google Analytics, Google Ads e Meta) podem realizar transferência de dados para servidores localizados fora do Brasil. Essas transferências ocorrem com base em cláusulas contratuais adequadas e em conformidade com a LGPD.</p>
+
+        <h2>11. Menores de idade</h2>
+        <p>Nossos serviços são destinados exclusivamente a profissionais de saúde e gestores de clínicas médicas. Não coletamos intencionalmente dados de menores de 18 anos.</p>
+
+        <h2>12. Alterações nesta política</h2>
+        <p>Esta Política de Privacidade pode ser atualizada periodicamente. Em caso de alterações relevantes, publicaremos a nova versão nesta página com a data de atualização. Recomendamos que você a consulte regularmente.</p>
+
+        <h2>13. Contato e Encarregado de Dados (DPO)</h2>
+        <p>Para dúvidas, solicitações ou reclamações relacionadas ao tratamento dos seus dados pessoais, entre em contato:</p>
+        <ul>
+          <li><strong>E-mail:</strong> <a href="mailto:contato@acelerago.com.br">contato@acelerago.com.br</a></li>
+          <li><strong>Empresa:</strong> AceleraGO — Estrutura Estratégica em Marketing Digital</li>
+          <li><strong>Site:</strong> <a href="https://www.acelerago.com.br">www.acelerago.com.br</a></li>
+        </ul>
+        <p>Você também pode apresentar reclamação à <strong>Autoridade Nacional de Proteção de Dados (ANPD)</strong> por meio do site <a href="https://www.gov.br/anpd" target="_blank" rel="noopener noreferrer">www.gov.br/anpd</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer id="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-inner">
+
+        <div class="footer-brand">
+          <a href="index.html" aria-label="AceleraGO — Início">
+            <img src="acelerafundotransp.png" alt="AceleraGO" class="footer-brand-logo" width="140" height="36" />
+          </a>
+          <p>Estrutura estratégica criada exclusivamente para clínicas e especialistas em saúde da mulher. Ginecologia, obstetrícia e reprodução humana.</p>
+          <div class="footer-social" aria-label="Redes sociais da AceleraGO">
+            <a href="https://www.instagram.com/acelerago.oficial" class="footer-social-btn" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Serviços</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#servicos">Posicionamento estratégico</a></li>
+            <li><a href="index.html#servicos">Google Ads</a></li>
+            <li><a href="index.html#servicos">Conteúdo estratégico</a></li>
+            <li><a href="index.html#servicos">Produção de vídeo</a></li>
+            <li><a href="index.html#servicos">Landing pages</a></li>
+            <li><a href="index.html#servicos">CRM e atendimento</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#ronaldo">Sobre o Ronaldo</a></li>
+            <li><a href="index.html#resultados">Resultados</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+            <li><a href="index.html#cta-final">Contato</a></li>
+            <li><a href="politica-de-privacidade.html">Política de Privacidade</a></li>
+            <li><a href="termos-de-uso.html">Termos de Uso</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 AceleraGO. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- MODAL WHATSAPP -->
+  <div id="wa-modal" class="wa-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="wa-modal-title">
+    <div class="wa-modal-box">
+      <button class="wa-modal-close" id="wa-modal-close" aria-label="Fechar modal">&#10005;</button>
+      <img src="acelerafundotransp.png" alt="AceleraGO" class="wa-modal-logo" />
+      <h3 id="wa-modal-title">Antes de continuar, nos conte um pouco sobre você</h3>
+      <p class="wa-modal-sub">Preencha os dados abaixo e já entre em contato direto com nossa equipe</p>
+      <form id="wa-modal-form" novalidate>
+        <div class="wa-field">
+          <label for="wa-nome">Nome da médica <span aria-hidden="true">*</span></label>
+          <input type="text" id="wa-nome" name="nome" placeholder="Nome Sobrenome" required autocomplete="name" />
+        </div>
+        <div class="wa-field">
+          <label for="wa-especialidade">Especialidade <span aria-hidden="true">*</span></label>
+          <select id="wa-especialidade" name="especialidade" required>
+            <option value="" disabled selected>Selecione sua especialidade</option>
+            <option value="Ginecologia">Ginecologia</option>
+            <option value="Obstetrícia">Obstetrícia</option>
+            <option value="Reprodução Humana">Reprodução Humana</option>
+            <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
+            <option value="Outra">Outra</option>
+          </select>
+        </div>
+        <div class="wa-field">
+          <label for="wa-telefone">Telefone para contato <span aria-hidden="true">*</span></label>
+          <input type="tel" id="wa-telefone" name="telefone" placeholder="(11) 99999-9999" required autocomplete="tel" />
+        </div>
+        <button type="submit" class="btn btn-primary wa-modal-submit">
+          &#128172; Quero ser atendida agora
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- WHATSAPP FLOAT -->
+  <a href="#" class="wa-float wa-trigger" aria-label="Fale conosco pelo WhatsApp" onclick="openWAModal(event)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+    </svg>
+  </a>
+
+
+  <script>
+    // Sticky header
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
+
+    // Mobile menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', String(isOpen));
+    });
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    // Modal WhatsApp
+    const GOOGLE_FORM_ACTION  = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
+    const GF_ENTRY_NOME          = 'entry.1690417802';
+    const GF_ENTRY_ESPECIALIDADE = 'entry.96820167';
+    const GF_ENTRY_TELEFONE      = 'entry.622784348';
+
+    const waModal    = document.getElementById('wa-modal');
+    const waForm     = document.getElementById('wa-modal-form');
+    const waCloseBtn = document.getElementById('wa-modal-close');
+
+    function openWAModal(e) {
+      if (e) e.preventDefault();
+      waModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('wa-nome').focus(), 50);
+    }
+    function closeWAModal() {
+      waModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    waCloseBtn.addEventListener('click', closeWAModal);
+    waModal.addEventListener('click', function (e) { if (e.target === waModal) closeWAModal(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && waModal.classList.contains('open')) closeWAModal();
+    });
+
+    waForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const nome          = document.getElementById('wa-nome').value.trim();
+      const especialidade = document.getElementById('wa-especialidade').value;
+      const telefone      = document.getElementById('wa-telefone').value.trim();
+      if (!nome || !especialidade || !telefone) { alert('Por favor, preencha todos os campos obrigatórios.'); return; }
+
+      var gfIframe = document.getElementById('gf-iframe');
+      if (!gfIframe) {
+        gfIframe = document.createElement('iframe');
+        gfIframe.id = 'gf-iframe'; gfIframe.name = 'gf-iframe'; gfIframe.style.display = 'none';
+        document.body.appendChild(gfIframe);
+      }
+      var gfForm = document.createElement('form');
+      gfForm.method = 'POST'; gfForm.action = GOOGLE_FORM_ACTION; gfForm.target = 'gf-iframe'; gfForm.style.display = 'none';
+      var fields = {};
+      fields[GF_ENTRY_NOME] = nome; fields[GF_ENTRY_ESPECIALIDADE] = especialidade; fields[GF_ENTRY_TELEFONE] = telefone;
+      Object.keys(fields).forEach(function(key) {
+        var input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = fields[key];
+        gfForm.appendChild(input);
+      });
+      document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
+
+      const msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou especialista em ' + especialidade + '. Meu telefone é ' + telefone + '. Quero saber mais sobre a AceleraGO.');
+      window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
+      closeWAModal(); waForm.reset();
+    });
+  </script>
+
+</body>
+</html>

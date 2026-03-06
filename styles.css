@@ -281,7 +281,21 @@ section { padding: 5rem 0; }
   line-height: 1.72;
 }
 
-.hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+@media (max-width: 639px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
 
 .scroll-cue {
   position: absolute;
@@ -865,13 +879,11 @@ section { padding: 5rem 0; }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1rem;
   font-size: .8rem;
+  text-align: center;
 }
-.footer-bottom-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
-.footer-bottom-links a { color: rgba(255,255,255,.35); transition: color var(--transition); }
-.footer-bottom-links a:hover { color: var(--orange-light); }
 
 /* ── WhatsApp Float ───────────────────────────────────────── */
 .wa-float {
