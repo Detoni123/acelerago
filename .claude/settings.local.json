@@ -3,7 +3,10 @@
     "allow": [
       "Bash(open:*)",
       "Bash(npx vercel:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(git add index.html)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }
