@@ -745,7 +745,10 @@ section { padding: 5rem 0; }
   letter-spacing: .04em;
   margin-top: .15rem;
 }
-.caso-body p { font-size: .88rem; color: #444444 !important; margin: 0; }
+.caso-body p { font-size: .88rem; color: #2d2d2d !important; line-height: 1.6; margin: 0; }
+section {
+    padding: 100px 0 !important; 
+}
 
 /* ── Depoimento ───────────────────────────────────────────── */
 #depoimento { background: var(--cream); }
