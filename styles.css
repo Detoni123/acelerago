@@ -648,13 +648,27 @@ section { padding: 5rem 0; }
 
 .numeros-grid-novo {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* No mobile fica 1 coluna, no desktop expande */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
     gap: 30px;
-    max-width: 1200px; /* Isso impede que os cards encostem nas bordas laterais */
-    margin: 50px auto 0; /* Centraliza o bloco na tela */
-    padding: 0 20px; /* Margem de segurança para o celular */
+    max-width: 1200px;
+    margin: 50px auto 0 auto; /* O 'auto' nas laterais centraliza o bloco */
+    padding: 0 25px; /* Margem interna para não colar no celular */
+    width: 100%;
+    justify-content: center; /* Centraliza os itens no grid */
 }
-
+@media (max-width: 768px) {
+    .numeros-grid-novo {
+        grid-template-columns: 1fr; /* Força uma coluna única no celular */
+        max-width: 90%; /* Garante que o bloco não ocupe 100% da largura */
+    }
+    
+    .numero-item-novo {
+        margin: 0 auto; /* Centraliza cada card individualmente */
+        width: 100%;
+        max-width: 320px; /* Impede que o card fique largo demais no celular */
+    }
+}
 .numero-item-novo:hover {
     transform: translateY(-5px);
     border-color: var(--orange);
