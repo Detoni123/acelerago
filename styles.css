@@ -616,17 +616,34 @@ section { padding: 5rem 0; }
 
 /* --- Resultados (Versão Light para Contraste) --- */
 .resultados-light {
-    background-color: #fdfdfd !important; /* Fundo claro para quebrar o preto */
+    background-color: #fdfdfd !important;
     padding: 100px 0;
+    color: #0a1118 !important; /* Força o texto base a ser escuro */
 }
 
-.numeros-grid-novo {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 20px;
+/* Isso vai fazer o título "Clínicas que decidiram..." aparecer em preto */
+.resultados-light .section-header h2, 
+.resultados-light h2 {
+    color: #0a1118 !important;
+}
+
+/* Isso vai fazer o texto descritivo aparecer em cinza escuro */
+.resultados-light .section-header p,
+.resultados-light p {
+    color: #444444 !important;
+}
+/* Reforço para as letras aparecerem no index.html */
+#resultados-title, 
+.resultados-light h2 {
+    color: #0a1118 !important;
+}
+
+.resultados-light p {
+    color: #444444 !important;
+}
+
+.resultados-light .label {
+    color: var(--orange) !important;
 }
 
 .numero-item-novo {
