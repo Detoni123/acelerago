@@ -7,12 +7,81 @@
   <title>Inteligência em CRM para Clínicas Médicas | AceleraGO</title>
   <meta name="description" content="Automação e organização do fluxo de atendimento para garantir taxa zero de perda de leads. CRM especializado para ginecologia, obstetrícia e reprodução humana." />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://www.acelerago.com.br/servico-crm.html" />
+  <link rel="canonical" href="https://acelerago.com.br/servico-crm.html" />
   <link rel="icon" type="image/png" href="logo-favicon.png?v=4" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="AceleraGO" />
+  <meta property="og:url" content="https://acelerago.com.br/servico-crm.html" />
+  <meta property="og:title" content="Inteligência em CRM para Clínicas Médicas | AceleraGO" />
+  <meta property="og:description" content="Automação e organização do fluxo de atendimento para garantir taxa zero de perda de leads. CRM especializado para ginecologia, obstetrícia e reprodução humana." />
+  <meta property="og:image" content="https://acelerago.com.br/og-image.jpg" />
+  <meta property="og:locale" content="pt_BR" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Inteligência em CRM para Clínicas Médicas | AceleraGO" />
+  <meta name="twitter:description" content="Taxa zero de perda de leads. CRM especializado para clínicas de ginecologia e saúde da mulher." />
+  <meta name="twitter:image" content="https://acelerago.com.br/og-image.jpg" />
+
+  <!-- Schema JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        "name": "Inteligência em CRM para Clínicas de Ginecologia",
+        "description": "Estrutura de CRM e automação de atendimento ao lead exclusiva para clínicas de ginecologia, obstetrícia e reprodução humana. Inclui configuração de fluxos de resposta, scripts de atendimento, integração com WhatsApp e gestão do pipeline de pacientes.",
+        "provider": {
+          "@type": "Organization",
+          "name": "AceleraGO",
+          "url": "https://acelerago.com.br/"
+        },
+        "serviceType": "CRM / Automação de Atendimento",
+        "areaServed": { "@type": "Country", "name": "Brasil" },
+        "url": "https://acelerago.com.br/servico-crm.html",
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Ginecologistas, Obstetras e Especialistas em Reprodução Humana"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Qual plataforma de CRM a AceleraGO utiliza para clínicas médicas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A AceleraGO trabalha com as principais plataformas de CRM do mercado, selecionando a mais adequada ao perfil e ao volume de atendimento de cada clínica. O foco é sempre na facilidade de uso para a equipe da clínica e na capacidade de integração com WhatsApp e outros canais de comunicação."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "O CRM para clínicas funciona com WhatsApp?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. O WhatsApp é o principal canal de atendimento das clínicas médicas no Brasil, e toda a estrutura de CRM da AceleraGO é configurada com integração ao WhatsApp. Isso inclui respostas automatizadas iniciais, organização das conversas por estágio do funil e alertas para a equipe de atendimento."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Por que responder rápido ao lead é tão importante para clínicas médicas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Leads respondidos em até 5 minutos têm taxas de conversão até 9 vezes maiores do que os respondidos após uma hora. No mercado médico, a paciente que não recebe resposta rápida simplesmente liga para a próxima clínica da lista. O CRM garante que nenhum contato fique sem resposta no tempo certo."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -28,6 +97,7 @@
           <li><a href="index.html#servicos">Serviços</a></li>
           <li><a href="index.html#resultados">Resultados</a></li>
           <li><a href="index.html#faq">FAQ</a></li>
+          <li><a href="blog.html">Blog</a></li>
           <li><a href="#" class="btn btn-primary nav-cta wa-trigger" onclick="openWAModal(event)">&#128172; Falar pelo WhatsApp</a></li>
         </ul>
         <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -40,6 +110,7 @@
       <a href="index.html#servicos" onclick="closeMobileMenu()">Serviços</a>
       <a href="index.html#resultados" onclick="closeMobileMenu()">Resultados</a>
       <a href="index.html#faq" onclick="closeMobileMenu()">FAQ</a>
+      <a href="blog.html" onclick="closeMobileMenu()">Blog</a>
       <a href="#" class="btn btn-primary wa-trigger" onclick="openWAModal(event)">&#128172; Falar pelo WhatsApp</a>
     </nav>
   </header>
@@ -189,6 +260,7 @@
           <ul class="footer-links">
             <li><a href="index.html#ronaldo">Sobre o Ronaldo</a></li>
             <li><a href="index.html#resultados">Resultados</a></li>
+            <li><a href="blog.html">Blog</a></li>
             <li><a href="index.html#faq">FAQ</a></li>
             <li><a href="index.html#cta-final">Contato</a></li>
             <li><a href="politica-de-privacidade.html">Política de Privacidade</a></li>

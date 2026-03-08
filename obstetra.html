@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- SEO -->
+  <title>Marketing Digital para Obstetras | AceleraGO</title>
+  <meta name="description" content="Estrutura de marketing digital criada exclusivamente para obstetras. Mais pacientes de pré-natal, agenda previsível e autoridade digital. Análise gratuita." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://acelerago.com.br/obstetra" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo-favicon.png?v=4">
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    .lp-header { background: var(--navy); padding: 1.25rem 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .lp-hero { background: linear-gradient(135deg, var(--navy) 0%, #0d2341 100%); padding: 4rem 0 5rem; text-align: center; }
+    .lp-hero .lp-badge { display: inline-flex; align-items: center; gap: .4rem; background: rgba(0,188,180,.12); color: var(--teal); border: 1px solid rgba(0,188,180,.25); border-radius: 50px; padding: .35rem 1rem; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .lp-hero h1 { color: var(--white); font-size: clamp(2rem, 4.5vw, 3.2rem); letter-spacing: -.04em; line-height: 1.15; margin-bottom: 1.25rem; max-width: 760px; margin-left: auto; margin-right: auto; }
+    .lp-hero h1 span { color: var(--teal); }
+    .lp-hero p { color: rgba(255,255,255,.72); font-size: 1.1rem; line-height: 1.7; max-width: 580px; margin: 0 auto 2.5rem; }
+    .lp-form-card { background: var(--white); border-radius: 16px; padding: 2.5rem; max-width: 480px; margin: 0 auto; box-shadow: 0 24px 64px rgba(0,0,0,.28); }
+    .lp-form-card h3 { color: var(--navy); font-size: 1.25rem; margin-bottom: .4rem; letter-spacing: -.02em; }
+    .lp-form-card p { color: var(--text-muted); font-size: .9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .lp-field { margin-bottom: 1rem; }
+    .lp-field label { display: block; font-size: .82rem; font-weight: 600; color: var(--navy); margin-bottom: .4rem; }
+    .lp-field input { width: 100%; padding: .85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: .95rem; color: var(--text-dark); transition: border-color .2s; box-sizing: border-box; font-family: inherit; }
+    .lp-field input:focus { outline: none; border-color: var(--teal); }
+    .lp-submit { width: 100%; padding: 1rem; font-size: 1rem; margin-top: .5rem; }
+    .lp-privacy { text-align: center; font-size: .75rem; color: var(--text-muted); margin-top: .75rem; }
+    .lp-benefits { background: var(--cream); padding: 4.5rem 0; }
+    .lp-benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.75rem; margin-top: 2.5rem; }
+    .lp-benefit-card { background: var(--white); border-radius: 12px; padding: 1.75rem; border: 1px solid #e9eef5; }
+    .lp-benefit-card i { font-size: 2rem; color: var(--teal); display: block; margin-bottom: 1rem; }
+    .lp-benefit-card h4 { color: var(--navy); font-size: 1.05rem; margin-bottom: .5rem; }
+    .lp-benefit-card p { color: var(--text-muted); font-size: .9rem; line-height: 1.6; }
+    .lp-proof { background: var(--white); padding: 4.5rem 0; }
+    .lp-proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; text-align: center; }
+    .lp-proof-item strong { display: block; font-size: 2.4rem; font-weight: 800; color: var(--navy); letter-spacing: -.04em; }
+    .lp-proof-item span { color: var(--text-muted); font-size: .88rem; }
+    .lp-cta-bottom { background: linear-gradient(135deg, var(--navy) 0%, #0d2341 100%); padding: 5rem 0; text-align: center; }
+    .lp-footer { background: #070f1c; padding: 1.5rem 0; text-align: center; }
+    .lp-footer p { color: rgba(255,255,255,.35); font-size: .8rem; }
+    .lp-footer a { color: rgba(255,255,255,.45); text-decoration: none; }
+    .lp-footer a:hover { color: var(--white); }
+    @media (max-width: 600px) { .lp-form-card { padding: 1.75rem 1.25rem; } .lp-hero { padding: 3rem 0 4rem; } }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER MINIMAL -->
+  <div class="lp-header">
+    <a href="index.html" aria-label="AceleraGO — Página inicial">
+      <img src="acelerafundotransp.png" alt="AceleraGO" width="140" height="37" />
+    </a>
+  </div>
+
+  <!-- HERO + FORM -->
+  <div class="lp-hero">
+    <div class="container">
+      <div class="lp-badge"><i class="ph ph-baby"></i> Marketing para Obstetras</div>
+      <h1>Mais pacientes de pré-natal para a sua clínica de <span>obstetrícia</span></h1>
+      <p>A AceleraGO cria a estrutura completa de marketing digital para obstetras que querem atrair gestantes, construir autoridade e crescer com previsibilidade.</p>
+
+      <!-- FORM CARD -->
+      <div class="lp-form-card">
+        <h3>Análise gratuita da sua clínica</h3>
+        <p>Preencha abaixo e nossa equipe entra em contato para entender o seu momento e mostrar o que é possível.</p>
+        <form id="lp-form" novalidate>
+          <div class="lp-field">
+            <label for="lp-nome">Seu nome</label>
+            <input type="text" id="lp-nome" name="nome" placeholder="Dra. Nome Sobrenome" required autocomplete="name" />
+          </div>
+          <div class="lp-field">
+            <label for="lp-telefone">WhatsApp</label>
+            <input type="tel" id="lp-telefone" name="telefone" placeholder="(11) 99999-9999" required autocomplete="tel" />
+          </div>
+          <button type="submit" class="btn btn-primary lp-submit">&#128172; Quero minha análise gratuita</button>
+        </form>
+        <p class="lp-privacy"><i class="ph ph-lock-simple"></i> Seus dados estão seguros. Sem spam, sem compromisso.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENEFÍCIOS -->
+  <div class="lp-benefits">
+    <div class="container">
+      <div class="section-header" style="text-align:center;">
+        <p class="section-tag">O que entregamos</p>
+        <h2 style="color: var(--navy);">Uma estrutura feita para a realidade da obstetrícia</h2>
+      </div>
+      <div class="lp-benefits-grid">
+        <div class="lp-benefit-card">
+          <i class="ph ph-magnifying-glass-plus"></i>
+          <h4>Google Ads para pré-natal</h4>
+          <p>Campanhas que capturam gestantes no momento em que estão buscando acompanhamento obstétrico, com segmentação precisa por localização.</p>
+        </div>
+        <div class="lp-benefit-card">
+          <i class="ph ph-star"></i>
+          <h4>Autoridade como obstetra</h4>
+          <p>Posicionamento como referência em obstetrícia na sua região, com conteúdo que gera confiança antes mesmo da primeira consulta.</p>
+        </div>
+        <div class="lp-benefit-card">
+          <i class="ph ph-browser"></i>
+          <h4>Landing pages para pré-natal</h4>
+          <p>Páginas focadas em conversão que falam diretamente com gestantes e futuras mamães, com linguagem humanizada e CTA claro.</p>
+        </div>
+        <div class="lp-benefit-card">
+          <i class="ph ph-chat-circle-dots"></i>
+          <h4>Atendimento e fidelização</h4>
+          <p>Protocolos para converter leads em consultas e manter o relacionamento durante toda a gestação e no pós-parto.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NÚMEROS -->
+  <div class="lp-proof">
+    <div class="container">
+      <div class="section-header" style="text-align:center;">
+        <p class="section-tag">Resultados</p>
+        <h2 style="color: var(--navy);">O que uma estrutura bem montada gera</h2>
+      </div>
+      <div class="lp-proof-grid">
+        <div class="lp-proof-item">
+          <strong>3x</strong>
+          <span>mais conversões com landing pages específicas vs. sites genéricos</span>
+        </div>
+        <div class="lp-proof-item">
+          <strong>R$4–8</strong>
+          <span>de retorno para cada R$1 investido em Google Ads bem gerenciado</span>
+        </div>
+        <div class="lp-proof-item">
+          <strong>9x</strong>
+          <span>mais conversão quando o lead é respondido em até 5 minutos</span>
+        </div>
+        <div class="lp-proof-item">
+          <strong>100%</strong>
+          <span>focado em ginecologia, obstetrícia e saúde da mulher</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA FINAL -->
+  <div class="lp-cta-bottom">
+    <div class="container" style="max-width: 640px;">
+      <p style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:1rem;">Próximo passo</p>
+      <h2 style="color:var(--white);font-size:clamp(1.6rem,3vw,2.4rem);margin-bottom:1.25rem;letter-spacing:-.03em;">Agende uma análise gratuita da sua clínica</h2>
+      <p style="color:rgba(255,255,255,.68);font-size:1.05rem;line-height:1.7;margin-bottom:2rem;">Sem compromisso. Em 30 minutos você entende o que está travando o crescimento da sua clínica e quais são os próximos passos.</p>
+      <a href="#" class="btn btn-primary" onclick="document.getElementById('lp-nome').focus();window.scrollTo({top:0,behavior:'smooth'});return false;" style="font-size:1.05rem;padding:1rem 2.25rem;">&#128172; Quero minha análise gratuita</a>
+    </div>
+  </div>
+
+  <!-- FOOTER MINIMAL -->
+  <div class="lp-footer">
+    <div class="container">
+      <p>&copy; 2026 AceleraGO. <a href="politica-de-privacidade.html">Política de Privacidade</a> · <a href="termos-de-uso.html">Termos de Uso</a></p>
+    </div>
+  </div>
+
+  <script>
+    var GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
+    var GF_ENTRY_NOME = 'entry.1690417802';
+    var GF_ENTRY_ESPECIALIDADE = 'entry.968200167';
+    var GF_ENTRY_TELEFONE = 'entry.622784348';
+    var LP_ESPECIALIDADE = 'Obstetrícia';
+
+    document.getElementById('lp-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var nome = document.getElementById('lp-nome').value.trim();
+      var telefone = document.getElementById('lp-telefone').value.trim();
+      if (!nome || !telefone) { alert('Por favor, preencha seu nome e telefone.'); return; }
+
+      var gfIframe = document.getElementById('gf-iframe');
+      if (!gfIframe) { gfIframe = document.createElement('iframe'); gfIframe.id = 'gf-iframe'; gfIframe.name = 'gf-iframe'; gfIframe.style.display = 'none'; document.body.appendChild(gfIframe); }
+      var gfForm = document.createElement('form'); gfForm.method = 'POST'; gfForm.action = GOOGLE_FORM_ACTION; gfForm.target = 'gf-iframe'; gfForm.style.display = 'none';
+      var fields = {}; fields[GF_ENTRY_NOME] = nome; fields[GF_ENTRY_ESPECIALIDADE] = LP_ESPECIALIDADE; fields[GF_ENTRY_TELEFONE] = telefone;
+      Object.keys(fields).forEach(function(key) { var input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = fields[key]; gfForm.appendChild(input); });
+      document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
+
+      var msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou obstetra. Meu telefone é ' + telefone + '. Quero agendar uma consultoria de análise gratuita.');
+      window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
+      this.reset();
+    });
+  </script>
+
+</body>
+</html>

@@ -6,7 +6,16 @@
       "Bash(vercel:*)",
       "Bash(git add index.html)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git add index.html styles.css servico-posicionamento.html servico-google-ads.html servico-gestao-autoridade.html servico-producao-audiovisual.html servico-landing-pages.html servico-crm.html)",
+      "Bash(grep -rn \"—\" /Users/ronaldodetoni/Desktop/aceleraGO-site/*.html)",
+      "Bash(grep -n \"—\" /Users/ronaldodetoni/Desktop/aceleraGO-site/index.html /Users/ronaldodetoni/Desktop/aceleraGO-site/servico-*.html)",
+      "Bash(git add index.html servico-posicionamento.html servico-google-ads.html servico-gestao-autoridade.html servico-producao-audiovisual.html servico-landing-pages.html servico-crm.html politica-de-privacidade.html termos-de-uso.html)",
+      "WebFetch(domain:share.google)",
+      "WebFetch(domain:www.google.com)",
+      "Bash(LC_ALL=C sed -i '' 's|https://www\\\\.acelerago\\\\.com\\\\.br|https://acelera-go-site.vercel.app|g' termos-de-uso.html blog.html index.html servico-gestao-autoridade.html servico-posicionamento.html servico-crm.html blog-mais-pacientes-ginecologia.html politica-de-privacidade.html blog-posicionamento-reproducao-humana.html servico-landing-pages.html sitemap.xml blog-google-ads-ginecologistas.html blog-instagram-ginecologistas.html servico-producao-audiovisual.html servico-google-ads.html)",
+      "WebFetch(domain:acelera-go-site.vercel.app)",
+      "Bash(xargs sed -i '' 's|https://acelera-go-site.vercel.app|https://acelerago.com.br|g')"
     ]
   }
 }
