@@ -15,7 +15,15 @@
       "WebFetch(domain:www.google.com)",
       "Bash(LC_ALL=C sed -i '' 's|https://www\\\\.acelerago\\\\.com\\\\.br|https://acelera-go-site.vercel.app|g' termos-de-uso.html blog.html index.html servico-gestao-autoridade.html servico-posicionamento.html servico-crm.html blog-mais-pacientes-ginecologia.html politica-de-privacidade.html blog-posicionamento-reproducao-humana.html servico-landing-pages.html sitemap.xml blog-google-ads-ginecologistas.html blog-instagram-ginecologistas.html servico-producao-audiovisual.html servico-google-ads.html)",
       "WebFetch(domain:acelera-go-site.vercel.app)",
-      "Bash(xargs sed -i '' 's|https://acelera-go-site.vercel.app|https://acelerago.com.br|g')"
+      "Bash(xargs sed -i '' 's|https://acelera-go-site.vercel.app|https://acelerago.com.br|g')",
+      "Bash(for f in *.html)",
+      "Bash(do sed -i '' 's/—/ - /g' \"$f\")",
+      "Bash(done)",
+      "Bash(ls /Users/ronaldodetoni/Desktop/aceleraGO-site/*.png /Users/ronaldodetoni/Desktop/aceleraGO-site/*.jpg)",
+      "Bash(sips -s format webp medica-ginecologista-obstetra.jpeg --out medica-ginecologista-obstetra.webp)",
+      "Bash(python3 -c \"from PIL import Image; print\\(''pillow ok''\\)\")",
+      "Bash(brew list)",
+      "Bash(python3 -c \":*)"
     ]
   }
 }

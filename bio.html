@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>AceleraGO | Marketing para Saúde da Mulher</title>
+  <meta name="description" content="Mais pacientes qualificadas, agenda cheia e crescimento previsível. Marketing exclusivo para ginecologia, obstetrícia e saúde da mulher." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://acelerago.com.br/bio" />
+  <link rel="icon" type="image/png" href="logo-favicon.png?v=4" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Variáveis ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:         #0d1928;
+      --navy-mid:     #152640;
+      --navy-light:   #1e3a5f;
+      --teal:         #00b5a9;
+      --teal-light:   #33c8be;
+      --teal-pale:    #e0f7f6;
+      --orange:       #f47530;
+      --orange-light: #f7965a;
+      --orange-dark:  #d45f1a;
+      --cream:        #f8f7f5;
+      --white:        #ffffff;
+      --text-mid:     #2d3d4e;
+      --text-muted:   #6b7a8d;
+      --border:       rgba(255,255,255,.15);
+      --radius-sm:    8px;
+      --radius-md:    16px;
+      --transition:   .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    img { max-width: 100%; display: block; }
+    a   { text-decoration: none; color: inherit; }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    .page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1.25rem 2.5rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Logo ──────────────────────────────────────────────── */
+    .logo-wrap {
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-wrap img {
+      width: 140px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    /* ── Hero tag ──────────────────────────────────────────── */
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--teal-light);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* ── Headline ──────────────────────────────────────────── */
+    .headline {
+      font-size: clamp(1.35rem, 5vw, 1.75rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -.03em;
+      text-align: center;
+      color: var(--white);
+      margin-bottom: .75rem;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--orange);
+    }
+
+    /* ── Subtítulo ─────────────────────────────────────────── */
+    .subline {
+      font-size: .9rem;
+      color: rgba(255,255,255,.65);
+      text-align: center;
+      line-height: 1.65;
+      margin-bottom: 2rem;
+      max-width: 360px;
+    }
+
+    /* ── Divisor ───────────────────────────────────────────── */
+    .divider {
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), var(--orange));
+      border-radius: 99px;
+      margin: 0 auto 2rem;
+    }
+
+    /* ── Botões ────────────────────────────────────────────── */
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      width: 100%;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: .95rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all var(--transition);
+      line-height: 1;
+    }
+
+    /* Primário — laranja */
+    .btn-primary {
+      background: var(--orange);
+      color: var(--white);
+      border-color: var(--orange);
+      padding: 1.1rem 1.5rem;
+      font-size: 1rem;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:active {
+      background: var(--orange-light);
+      border-color: var(--orange-light);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(244,117,48,.4);
+    }
+
+    /* Secundário — borda branca */
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border-color: rgba(255,255,255,.3);
+      font-size: .85rem;
+    }
+
+    .btn-outline:hover,
+    .btn-outline:active {
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.6);
+      transform: translateY(-1px);
+    }
+
+    /* ── Ícone WhatsApp SVG ─────────────────────────────────── */
+    .icon-wa {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Ícones outline (menores) */
+    .icon-sm {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: .8;
+    }
+
+    /* ── Seção de prova social ─────────────────────────────── */
+    .social-proof {
+      margin-top: 2.5rem;
+      width: 100%;
+    }
+
+    .proof-label {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--teal-light);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .testimonial {
+      background: var(--navy-mid);
+      border-left: 3px solid var(--teal);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+    }
+
+    .testimonial blockquote {
+      font-size: .95rem;
+      font-style: italic;
+      color: rgba(255,255,255,.88);
+      line-height: 1.65;
+      margin-bottom: .75rem;
+    }
+
+    .testimonial blockquote::before {
+      content: '\201C';
+      font-size: 1.5rem;
+      color: var(--teal);
+      line-height: 0;
+      vertical-align: -.4rem;
+      margin-right: .2rem;
+    }
+
+    .testimonial blockquote::after {
+      content: '\201D';
+      font-size: 1.5rem;
+      color: var(--teal);
+      line-height: 0;
+      vertical-align: -.4rem;
+      margin-left: .2rem;
+    }
+
+    .testimonial cite {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-style: normal;
+    }
+
+    .cite-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--navy-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+
+    .cite-info {
+      display: flex;
+      flex-direction: column;
+      gap: .1rem;
+    }
+
+    .cite-name {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .cite-role {
+      font-size: .72rem;
+      color: rgba(255,255,255,.5);
+    }
+
+    /* ── Rodapé ────────────────────────────────────────────── */
+    footer {
+      margin-top: auto;
+      padding-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    footer img {
+      width: 90px;
+      height: auto;
+      opacity: .5;
+      margin: 0 auto;
+    }
+
+    footer a {
+      font-size: .72rem;
+      color: rgba(255,255,255,.35);
+      letter-spacing: .03em;
+      transition: color var(--transition);
+    }
+
+    footer a:hover {
+      color: rgba(255,255,255,.7);
+    }
+
+    footer p {
+      font-size: .68rem;
+      color: rgba(255,255,255,.2);
+      text-align: center;
+    }
+
+    /* ── Utilitários ───────────────────────────────────────── */
+    .spacer { height: 1.5rem; }
+    .spacer-sm { height: .75rem; }
+
+  </style>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <a href="https://acelerago.com.br" aria-label="AceleraGO — Página inicial">
+        <img
+          src="acelerafundotransp.png"
+          alt="AceleraGO"
+          width="140"
+          height="37"
+        />
+      </a>
+    </div>
+
+    <!-- Hero tag -->
+    <div class="hero-tag">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
+        <polygon points="5,0 6.1,3.5 9.8,3.5 6.8,5.7 7.9,9.2 5,7 2.1,9.2 3.2,5.7 0.2,3.5 3.9,3.5"/>
+      </svg>
+      Especialistas em Saúde da Mulher
+    </div>
+
+    <!-- Headline -->
+    <h1 class="headline">
+      Marketing criado para<br>
+      quem cuida da saúde<br>
+      <em>da mulher.</em>
+    </h1>
+
+    <!-- Subtítulo -->
+    <p class="subline">
+      Mais pacientes qualificadas, agenda cheia e crescimento previsível. Estrutura exclusiva para ginecologia, obstetrícia e reprodução humana.
+    </p>
+
+    <!-- Divisor -->
+    <div class="divider" aria-hidden="true"></div>
+
+    <!-- Botões -->
+    <div class="btn-stack">
+
+      <!-- CTA Principal -->
+      <a
+        href="https://wa.me/5511934619564?text=Ol%C3%A1%2C+vim+pelo+Instagram+e+quero+entender+como+a+AceleraGO+funciona+para+a+minha+cl%C3%ADnica"
+        class="btn btn-primary"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Agendar conversa gratuita pelo WhatsApp"
+      >
+        <!-- WhatsApp SVG oficial -->
+        <svg class="icon-wa" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Agendar uma conversa gratuita
+      </a>
+
+      <!-- Botão: Acessar o site -->
+      <a
+        href="https://acelerago.com.br"
+        class="btn btn-outline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <!-- Globe icon -->
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        Acessar o site
+      </a>
+
+      <!-- Botão: Cases de resultado -->
+      <a
+        href="https://acelerago.com.br/#resultados"
+        class="btn btn-outline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <!-- Chart icon -->
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+          <line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+        Ver cases de resultado
+      </a>
+
+      <!-- Botão: Instagram -->
+      <a
+        href="https://instagram.com/acelerago.oficial"
+        class="btn btn-outline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <!-- Instagram icon -->
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+        </svg>
+        Seguir no Instagram
+      </a>
+
+    </div>
+
+    <!-- Prova Social -->
+    <div class="social-proof" aria-label="Depoimento de cliente">
+      <p class="proof-label">&#128172; O que dizem nossos clientes</p>
+      <div class="testimonial">
+        <blockquote>
+          80% dos nossos pacientes agora vêm do Google.
+        </blockquote>
+        <cite>
+          <div class="cite-avatar" aria-hidden="true">RV</div>
+          <div class="cite-info">
+            <span class="cite-name">Dra. Raquel Vieira</span>
+            <span class="cite-role">Ginecologista e Obstetra &middot; São Paulo</span>
+          </div>
+        </cite>
+      </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+      <img
+        src="acelerafundotransp.png"
+        alt="AceleraGO"
+        width="90"
+        height="24"
+        loading="lazy"
+      />
+      <a href="https://acelerago.com.br" target="_blank" rel="noopener noreferrer">
+        acelerago.com.br
+      </a>
+      <p>Marketing exclusivo para saúde da mulher &copy; 2026</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

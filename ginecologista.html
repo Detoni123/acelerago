@@ -6,334 +6,464 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-  <!-- SEO -->
   <title>Marketing Digital para Ginecologistas | AceleraGO</title>
   <meta name="description" content="Estrutura de marketing digital criada exclusivamente para ginecologistas. Mais pacientes, agenda previsível e autoridade digital. Análise gratuita." />
   <meta name="robots" content="noindex, follow" />
   <link rel="canonical" href="https://acelerago.com.br/ginecologista" />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo-favicon.png?v=4">
-
-  <!-- Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-  <style>
-    /* LP — reset nav e estilos específicos */
-    .lp-header {
-      background: var(--navy);
-      padding: 1.25rem 0;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    .lp-hero {
-      background: linear-gradient(135deg, var(--navy) 0%, #0d2341 100%);
-      padding: 4rem 0 5rem;
-      text-align: center;
-    }
-    .lp-hero .lp-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      background: rgba(0,188,180,.12);
-      color: var(--teal);
-      border: 1px solid rgba(0,188,180,.25);
-      border-radius: 50px;
-      padding: .35rem 1rem;
-      font-size: .78rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-    .lp-hero h1 {
-      color: var(--white);
-      font-size: clamp(2rem, 4.5vw, 3.2rem);
-      letter-spacing: -.04em;
-      line-height: 1.15;
-      margin-bottom: 1.25rem;
-      max-width: 760px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .lp-hero h1 span { color: var(--teal); }
-    .lp-hero p {
-      color: rgba(255,255,255,.72);
-      font-size: 1.1rem;
-      line-height: 1.7;
-      max-width: 580px;
-      margin: 0 auto 2.5rem;
-    }
-    .lp-form-card {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 2.5rem;
-      max-width: 480px;
-      margin: 0 auto;
-      box-shadow: 0 24px 64px rgba(0,0,0,.28);
-    }
-    .lp-form-card h3 {
-      color: var(--navy);
-      font-size: 1.25rem;
-      margin-bottom: .4rem;
-      letter-spacing: -.02em;
-    }
-    .lp-form-card p {
-      color: var(--text-muted);
-      font-size: .9rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-    }
-    .lp-field { margin-bottom: 1rem; }
-    .lp-field label {
-      display: block;
-      font-size: .82rem;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: .4rem;
-    }
-    .lp-field input {
-      width: 100%;
-      padding: .85rem 1rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: .95rem;
-      color: var(--text-dark);
-      transition: border-color .2s;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .lp-field input:focus { outline: none; border-color: var(--teal); }
-    .lp-submit {
-      width: 100%;
-      padding: 1rem;
-      font-size: 1rem;
-      margin-top: .5rem;
-    }
-    .lp-privacy {
-      text-align: center;
-      font-size: .75rem;
-      color: var(--text-muted);
-      margin-top: .75rem;
-    }
-    .lp-benefits {
-      background: var(--cream);
-      padding: 4.5rem 0;
-    }
-    .lp-benefits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.75rem;
-      margin-top: 2.5rem;
-    }
-    .lp-benefit-card {
-      background: var(--white);
-      border-radius: 12px;
-      padding: 1.75rem;
-      border: 1px solid #e9eef5;
-    }
-    .lp-benefit-card i {
-      font-size: 2rem;
-      color: var(--teal);
-      display: block;
-      margin-bottom: 1rem;
-    }
-    .lp-benefit-card h4 {
-      color: var(--navy);
-      font-size: 1.05rem;
-      margin-bottom: .5rem;
-    }
-    .lp-benefit-card p {
-      color: var(--text-muted);
-      font-size: .9rem;
-      line-height: 1.6;
-    }
-    .lp-proof {
-      background: var(--white);
-      padding: 4.5rem 0;
-    }
-    .lp-proof-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2.5rem;
-      text-align: center;
-    }
-    .lp-proof-item strong {
-      display: block;
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -.04em;
-    }
-    .lp-proof-item span {
-      color: var(--text-muted);
-      font-size: .88rem;
-    }
-    .lp-cta-bottom {
-      background: linear-gradient(135deg, var(--navy) 0%, #0d2341 100%);
-      padding: 5rem 0;
-      text-align: center;
-    }
-    .lp-footer {
-      background: #070f1c;
-      padding: 1.5rem 0;
-      text-align: center;
-    }
-    .lp-footer p {
-      color: rgba(255,255,255,.35);
-      font-size: .8rem;
-    }
-    .lp-footer a { color: rgba(255,255,255,.45); text-decoration: none; }
-    .lp-footer a:hover { color: var(--white); }
-    @media (max-width: 600px) {
-      .lp-form-card { padding: 1.75rem 1.25rem; }
-      .lp-hero { padding: 3rem 0 4rem; }
-    }
-  </style>
 </head>
 
 <body>
 
-  <!-- HEADER MINIMAL -->
-  <div class="lp-header">
-    <a href="index.html" aria-label="AceleraGO — Página inicial">
-      <img src="acelerafundotransp.png" alt="AceleraGO" width="140" height="37" />
-    </a>
-  </div>
-
-  <!-- HERO + FORM -->
-  <div class="lp-hero">
+  <!-- HEADER -->
+  <header id="header" role="banner">
     <div class="container">
-      <div class="lp-badge"><i class="ph ph-stethoscope"></i> Marketing para Ginecologistas</div>
-      <h1>Mais pacientes para a sua clínica de <span>ginecologia</span></h1>
-      <p>A AceleraGO cria a estrutura completa de marketing digital para ginecologistas que querem agenda previsível, autoridade reconhecida e crescimento real.</p>
+      <nav class="nav-inner" role="navigation" aria-label="Menu principal">
+        <a href="index.html" class="logo" aria-label="AceleraGO  -  Página inicial">
+          <img src="acelerafundotransp.png" alt="AceleraGO" class="logo-img" width="160" height="42" />
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="#problema">O Problema</a></li>
+          <li><a href="#servicos">Serviços</a></li>
+          <li><a href="#resultados">Resultados</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li>
+            <a href="#" class="btn btn-primary nav-cta" onclick="openModal(event)">
+              &#128172; Análise gratuita
+            </a>
+          </li>
+        </ul>
+        <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobile" role="navigation">
+      <a href="#problema" onclick="closeMobileMenu()">O Problema</a>
+      <a href="#servicos" onclick="closeMobileMenu()">Serviços</a>
+      <a href="#resultados" onclick="closeMobileMenu()">Resultados</a>
+      <a href="#faq" onclick="closeMobileMenu()">FAQ</a>
+      <a href="#" class="btn btn-primary" onclick="openModal(event)">&#128172; Análise gratuita</a>
+    </nav>
+  </header>
 
-      <!-- FORM CARD -->
-      <div class="lp-form-card">
-        <h3>Análise gratuita da sua clínica</h3>
-        <p>Preencha abaixo e nossa equipe entra em contato para entender o seu momento e mostrar o que é possível.</p>
-        <form id="lp-form" novalidate>
-          <div class="lp-field">
-            <label for="lp-nome">Seu nome</label>
-            <input type="text" id="lp-nome" name="nome" placeholder="Dra. Nome Sobrenome" required autocomplete="name" />
-          </div>
-          <div class="lp-field">
-            <label for="lp-telefone">WhatsApp</label>
-            <input type="tel" id="lp-telefone" name="telefone" placeholder="(11) 99999-9999" required autocomplete="tel" />
-          </div>
-          <button type="submit" class="btn btn-primary lp-submit">&#128172; Quero minha análise gratuita</button>
-        </form>
-        <p class="lp-privacy"><i class="ph ph-lock-simple"></i> Seus dados estão seguros. Sem spam, sem compromisso.</p>
+  <!-- HERO -->
+  <section id="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-tag">✦ Marketing exclusivo para Ginecologistas</div>
+        <h1 class="hero-title" id="hero-title">
+          Sua clínica de ginecologia<br>
+          merece uma agenda<br>
+          <em>tão cheia quanto sua excelência.</em>
+        </h1>
+        <p class="hero-sub">
+          A AceleraGO cria a estrutura completa de marketing digital para ginecologistas que querem mais pacientes qualificadas, autoridade reconhecida e crescimento real  -  com estratégias que respeitam o CFM e entendem o universo da saúde da mulher.
+        </p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary btn-lg" onclick="openModal(event)">
+            &#128172; Quero minha análise gratuita
+          </a>
+          <a href="#resultados" class="btn btn-outline-light btn-lg">
+            Ver resultados
+          </a>
+        </div>
       </div>
     </div>
-  </div>
+    <div class="scroll-cue" aria-hidden="true">
+      <svg width="14" height="22" viewBox="0 0 14 22" fill="none">
+        <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+      </svg>
+      role para baixo
+    </div>
+  </section>
 
-  <!-- BENEFÍCIOS -->
-  <div class="lp-benefits">
+  <!-- O PROBLEMA -->
+  <section id="problema" aria-labelledby="problema-title">
     <div class="container">
-      <div class="section-header" style="text-align:center;">
-        <p class="section-tag">O que entregamos</p>
-        <h2 style="color: var(--navy);">Uma estrutura feita para a realidade da ginecologia</h2>
+      <div class="problema-inner">
+        <div class="problema-text fade-in">
+          <span class="label">O cenário atual</span>
+          <p class="big-quote" id="problema-title">
+            Sua clínica de ginecologia pode ser excelente. Mas se as pacientes certas não te encontram, isso não chega a fazer diferença.
+          </p>
+          <p>
+            A mulher que busca uma ginecologista pesquisa, compara, lê avaliações e verifica o perfil da médica antes de ligar. Se sua clínica não aparecer nesse processo, ela agenda com outra.
+          </p>
+          <p>
+            Agências generalistas não entendem esse comportamento. Aplicam as mesmas estratégias de e-commerce em consultórios médicos, sem conhecer as normas do CFM, sem entender a jornada emocional das suas pacientes e sem saber o que diferencia uma ginecologista de referência.
+          </p>
+          <p>
+            O resultado são campanhas sem retorno, posts que não convertem e a sensação de que "marketing não funciona para minha área". Funciona. O problema é quando é feito por quem não conhece o seu universo.
+          </p>
+        </div>
+        <div class="problema-visual fade-in delay-2">
+          <img src="medica-ginecologista-obstetra.webp" alt="Ginecologista" class="problema-img" loading="lazy" />
+          <div class="problema-accent" aria-hidden="true"></div>
+        </div>
       </div>
-      <div class="lp-benefits-grid">
-        <div class="lp-benefit-card">
+    </div>
+  </section>
+
+  <!-- A VIRADA -->
+  <section id="virada" aria-labelledby="virada-title">
+    <div class="container">
+      <div class="virada-inner fade-in">
+        <span class="label">Como a AceleraGO trabalha</span>
+        <h2 id="virada-title">Uma estrutura criada especificamente para ginecologistas.</h2>
+        <div class="virada-divider" aria-hidden="true"></div>
+        <p>
+          A AceleraGO não é uma agência generalista. É uma estrutura estratégica criada com foco exclusivo em saúde da mulher: ginecologia, obstetrícia e reprodução humana.
+        </p>
+        <p>
+          Isso significa que cada campanha, cada conteúdo e cada página que criamos para a sua clínica foram pensados para o comportamento específico das suas pacientes. Sabemos como ela pesquisa, o que a convence e o que a faz agendar.
+        </p>
+        <p>
+          E fazemos tudo respeitando as normas do CFM, porque marketing médico eficiente não abre mão da ética.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVIÇOS -->
+  <section id="servicos" class="servicos-container">
+    <div class="container">
+      <header class="section-header fade-in">
+        <span class="label">O que entregamos</span>
+        <h2>Estrutura completa para ginecologistas</h2>
+        <p>Cada frente foi pensada para o contexto específico da ginecologia e saúde da mulher.</p>
+      </header>
+      <div class="servicos-grid">
+        <div class="servico-card fade-in">
+          <i class="ph ph-compass"></i>
+          <h3>Posicionamento Estratégico</h3>
+          <p>Construímos sua autoridade como ginecologista de referência na sua cidade, para que as pacientes certas te encontrem antes da concorrência.</p>
+        </div>
+        <div class="servico-card fade-in delay-1">
           <i class="ph ph-magnifying-glass-plus"></i>
-          <h4>Google Ads especializado</h4>
-          <p>Campanhas segmentadas para capturar pacientes com intenção real de agendar, respeitando as normas do CFM.</p>
+          <h3>Google Ads Especializado</h3>
+          <p>Campanhas que capturam pacientes com intenção real de agendar consulta ginecológica, respeitando todas as normas do CFM.</p>
         </div>
-        <div class="lp-benefit-card">
-          <i class="ph ph-star"></i>
-          <h4>Autoridade digital</h4>
-          <p>Posicionamento como referência em ginecologia na sua região, com conteúdo estratégico e presença consistente.</p>
+        <div class="servico-card fade-in delay-2">
+          <i class="ph ph-article-ny-times"></i>
+          <h3>Gestão de Autoridade</h3>
+          <p>Conteúdo estratégico nas redes sociais que transforma seu conhecimento técnico em confiança e desejo de consulta.</p>
         </div>
-        <div class="lp-benefit-card">
+        <div class="servico-card fade-in delay-3">
           <i class="ph ph-browser"></i>
-          <h4>Landing pages que convertem</h4>
-          <p>Páginas focadas em conversão para cada serviço da clínica, sem distrações, com um único objetivo: o agendamento.</p>
+          <h3>Landing Pages Premium</h3>
+          <p>Páginas focadas em conversão para cada serviço da clínica, criadas para transmitir segurança e facilitar o agendamento.</p>
         </div>
-        <div class="lp-benefit-card">
-          <i class="ph ph-chat-circle-dots"></i>
-          <h4>CRM e atendimento ao lead</h4>
-          <p>Protocolo de resposta rápida para não perder nenhum contato gerado pelas campanhas.</p>
+        <div class="servico-card fade-in delay-4">
+          <i class="ph ph-video-camera"></i>
+          <h3>Produção Audiovisual</h3>
+          <p>Conteúdo em vídeo que gera conexão real com suas pacientes e reforça sua autoridade como especialista.</p>
+        </div>
+        <div class="servico-card fade-in delay-5">
+          <i class="ph ph-funnel"></i>
+          <h3>Inteligência em CRM</h3>
+          <p>Protocolo de atendimento ao lead para não perder nenhuma paciente que entrou em contato com a clínica.</p>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- NÚMEROS -->
-  <div class="lp-proof">
+  <!-- RESULTADOS -->
+  <section id="resultados" class="resultados-light">
     <div class="container">
-      <div class="section-header" style="text-align:center;">
-        <p class="section-tag">Resultados</p>
-        <h2 style="color: var(--navy);">O que uma estrutura bem montada gera</h2>
+      <header class="section-header fade-in">
+        <span class="label" style="color: var(--orange) !important;">Resultados</span>
+        <h2 id="resultados-title" style="color: #0a1118 !important;">Clínicas de ginecologia que decidiram ser encontradas</h2>
+        <p style="color: #1a1a1a !important; font-weight: 500;">Resultados reais de clínicas reais. Focados em autoridade e conversão.</p>
+      </header>
+      <div class="numeros-grid-novo">
+        <div class="numero-item-novo">
+          <span class="numero-valor">+120</span>
+          <span class="numero-label">Médicas Atendidas</span>
+        </div>
+        <div class="numero-item-novo">
+          <span class="numero-valor">3.2x</span>
+          <span class="numero-label">ROI Médio</span>
+        </div>
+        <div class="numero-item-novo">
+          <span class="numero-valor">60 dias</span>
+          <span class="numero-label">Para os primeiros resultados</span>
+        </div>
+        <div class="numero-item-novo">
+          <span class="numero-valor">4.9/5</span>
+          <span class="numero-label">Avaliação das Clientes</span>
+        </div>
       </div>
-      <div class="lp-proof-grid">
-        <div class="lp-proof-item">
-          <strong>3x</strong>
-          <span>mais conversões com landing pages específicas vs. sites genéricos</span>
-        </div>
-        <div class="lp-proof-item">
-          <strong>R$4–8</strong>
-          <span>de retorno para cada R$1 investido em Google Ads bem gerenciado</span>
-        </div>
-        <div class="lp-proof-item">
-          <strong>9x</strong>
-          <span>mais conversão quando o lead é respondido em até 5 minutos</span>
-        </div>
-        <div class="lp-proof-item">
-          <strong>100%</strong>
-          <span>focado em ginecologia, obstetrícia e saúde da mulher</span>
+      <div class="casos-grid">
+        <article class="caso-card fade-in">
+          <div class="caso-top">
+            <div class="caso-avatar">CG</div>
+            <div class="caso-meta">
+              <h4>Clínica de Ginecologia</h4>
+              <span>São Paulo, SP</span>
+            </div>
+          </div>
+          <div class="caso-body">
+            <div class="caso-metrics">
+              <div class="metric"><div class="metric-val">+213%</div><div class="metric-key">Leads/mês</div></div>
+              <div class="metric"><div class="metric-val">4 meses</div><div class="metric-key">Resultado</div></div>
+              <div class="metric"><div class="metric-val">R$3,4</div><div class="metric-key">ROI/R$1</div></div>
+            </div>
+            <p>Clínica com 3 ginecologistas que dependia exclusivamente de indicações. Com posicionamento estratégico e Google Ads, triplicou o volume de novas pacientes em 4 meses.</p>
+          </div>
+        </article>
+        <article class="caso-card fade-in delay-1">
+          <div class="caso-top">
+            <div class="caso-avatar">GE</div>
+            <div class="caso-meta">
+              <h4>Ginecologista Solo</h4>
+              <span>Campinas, SP</span>
+            </div>
+          </div>
+          <div class="caso-body">
+            <div class="caso-metrics">
+              <div class="metric"><div class="metric-val">+185%</div><div class="metric-key">Consultas</div></div>
+              <div class="metric"><div class="metric-val">45 dias</div><div class="metric-key">Resultado</div></div>
+              <div class="metric"><div class="metric-val">R$4,8</div><div class="metric-key">ROI/R$1</div></div>
+            </div>
+            <p>Médica solo que queria reduzir dependência de indicações. Landing page específica + Google Ads gerou agenda cheia em menos de 2 meses.</p>
+          </div>
+        </article>
+        <article class="caso-card fade-in delay-2">
+          <div class="caso-top">
+            <div class="caso-avatar">CS</div>
+            <div class="caso-meta">
+              <h4>Clínica de Saúde da Mulher</h4>
+              <span>Belo Horizonte, MG</span>
+            </div>
+          </div>
+          <div class="caso-body">
+            <div class="caso-metrics">
+              <div class="metric"><div class="metric-val">+310%</div><div class="metric-key">Leads/mês</div></div>
+              <div class="metric"><div class="metric-val">6 meses</div><div class="metric-key">Para 3x</div></div>
+              <div class="metric"><div class="metric-val">R$5,1</div><div class="metric-key">ROI/R$1</div></div>
+            </div>
+            <p>Clínica multidisciplinar com foco em saúde hormonal. Conteúdo de autoridade + tráfego pago triplicou o volume de novas pacientes e consolidou posicionamento regional.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTO -->
+  <section id="depoimento" aria-label="Depoimento">
+    <div class="container">
+      <div class="depoimento-wrap fade-in">
+        <div class="depoimento-stars" aria-label="5 estrelas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="depoimento-quote">
+          Eu tinha receio de investir em marketing sem saber se respeitava o CFM. A AceleraGO resolveu isso logo na primeira conversa. Em 4 meses, minha agenda saiu de 60% para praticamente 100% de ocupação, com pacientes que chegam sabendo quem eu sou e o que eu faço. É uma diferença enorme na qualidade do atendimento.
+        </blockquote>
+        <div class="depoimento-author">
+          <div class="depoimento-avatar">FL</div>
+          <div class="depoimento-info">
+            <h4>Dra. F.L.</h4>
+            <p>Ginecologista, Belo Horizonte, MG</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="faq-wrap">
+        <div class="faq-sidebar fade-in">
+          <span class="label">Dúvidas frequentes</span>
+          <h2 id="faq-title">Perguntas que toda ginecologista faz antes de começar</h2>
+          <p>Reunimos as principais dúvidas antes de tomar a decisão de estruturar o marketing da clínica.</p>
+          <a href="#" class="btn-ghost" onclick="openModal(event)">&#128172; Fazer outra pergunta</a>
+        </div>
+        <div class="faq-list" role="list">
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq1">
+              Vocês conhecem as normas do CFM para publicidade médica?
+              <span class="faq-icon" aria-hidden="true">&#8964;</span>
+            </button>
+            <div class="faq-answer" id="faq1" role="region" hidden>
+              <p>Sim. Toda campanha criada pela AceleraGO é revisada com base nas resoluções do CFM. Não usamos depoimentos de pacientes, não fazemos promessas de resultados e não comparamos profissionais. Fazemos marketing eficiente dentro dos limites éticos  -  e isso protege você.</p>
+            </div>
+          </div>
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq2">
+              Em quanto tempo verei os primeiros resultados?
+              <span class="faq-icon" aria-hidden="true">&#8964;</span>
+            </button>
+            <div class="faq-answer" id="faq2" role="region" hidden>
+              <p>Campanhas de Google Ads costumam gerar os primeiros agendamentos entre 15 e 30 dias. Conteúdo estratégico e posicionamento levam de 3 a 6 meses para consolidar. A maioria das clínicas vê retorno do investimento já no primeiro mês de campanhas ativas.</p>
+            </div>
+          </div>
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq3">
+              Preciso de um orçamento grande para começar?
+              <span class="faq-icon" aria-hidden="true">&#8964;</span>
+            </button>
+            <div class="faq-answer" id="faq3" role="region" hidden>
+              <p>Não. Existe uma estrutura adequada para cada momento da clínica. O que definimos juntos na análise gratuita é qual é o próximo passo mais inteligente para o seu contexto, sem desperdício de verba e sem promessas vazias.</p>
+            </div>
+          </div>
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq4">
+              Como acompanho os resultados?
+              <span class="faq-icon" aria-hidden="true">&#8964;</span>
+            </button>
+            <div class="faq-answer" id="faq4" role="region" hidden>
+              <p>Com transparência total. Você acompanha através de relatórios claros e reuniões periódicas de estratégia. Você vê o que importa: quantas pacientes chegaram, de qual canal e o que foi investido para isso.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- CTA FINAL -->
-  <div class="lp-cta-bottom">
-    <div class="container" style="max-width: 640px;">
+  <div style="background: linear-gradient(135deg, var(--navy) 0%, #0d2341 100%); padding: 5rem 0;">
+    <div class="container" style="text-align: center; max-width: 680px;">
       <p style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:1rem;">Próximo passo</p>
       <h2 style="color:var(--white);font-size:clamp(1.6rem,3vw,2.4rem);margin-bottom:1.25rem;letter-spacing:-.03em;">Agende uma análise gratuita da sua clínica</h2>
       <p style="color:rgba(255,255,255,.68);font-size:1.05rem;line-height:1.7;margin-bottom:2rem;">Sem compromisso. Em 30 minutos você entende o que está travando o crescimento da sua clínica e quais são os próximos passos.</p>
-      <a href="#" class="btn btn-primary" onclick="document.getElementById('lp-nome').focus();window.scrollTo({top:0,behavior:'smooth'});return false;" style="font-size:1.05rem;padding:1rem 2.25rem;">&#128172; Quero minha análise gratuita</a>
+      <a href="#" class="btn btn-primary" onclick="openModal(event)" style="font-size:1.05rem;padding:1rem 2.25rem;">&#128172; Quero minha análise gratuita</a>
     </div>
   </div>
 
-  <!-- FOOTER MINIMAL -->
-  <div class="lp-footer">
+  <!-- FOOTER -->
+  <footer role="contentinfo">
     <div class="container">
-      <p>&copy; 2026 AceleraGO. <a href="politica-de-privacidade.html">Política de Privacidade</a> · <a href="termos-de-uso.html">Termos de Uso</a></p>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="index.html" aria-label="AceleraGO  -  Página inicial">
+            <img src="acelerafundotransp.png" alt="AceleraGO" class="logo-img" width="140" height="37" />
+          </a>
+          <p>Estrutura estratégica criada exclusivamente para clínicas e especialistas em saúde da mulher.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/acelerago.oficial" class="footer-social-btn" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Serviços</h4>
+          <ul class="footer-links">
+            <li><a href="servico-posicionamento.html">Posicionamento estratégico</a></li>
+            <li><a href="servico-google-ads.html">Google Ads</a></li>
+            <li><a href="servico-gestao-autoridade.html">Gestão de autoridade</a></li>
+            <li><a href="servico-producao-audiovisual.html">Produção audiovisual</a></li>
+            <li><a href="servico-landing-pages.html">Landing pages</a></li>
+            <li><a href="servico-crm.html">CRM e atendimento</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Página principal</a></li>
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="politica-de-privacidade.html">Política de Privacidade</a></li>
+            <li><a href="termos-de-uso.html">Termos de Uso</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 AceleraGO. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL -->
+  <div id="lp-modal" class="wa-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lp-modal-title">
+    <div class="wa-modal-box">
+      <button class="wa-modal-close" id="lp-modal-close" aria-label="Fechar modal">&#10005;</button>
+      <img src="acelerafundotransp.png" alt="AceleraGO" class="wa-modal-logo" />
+      <h3 id="lp-modal-title">Análise gratuita da sua clínica</h3>
+      <p class="wa-modal-sub">Preencha abaixo e nossa equipe entra em contato para mostrar o que é possível para a sua clínica de ginecologia.</p>
+      <form id="lp-form" novalidate>
+        <div class="wa-field">
+          <label for="lp-nome">Seu nome</label>
+          <input type="text" id="lp-nome" name="nome" placeholder="Dra. Nome Sobrenome" required autocomplete="name" />
+        </div>
+        <div class="wa-field">
+          <label for="lp-telefone">WhatsApp</label>
+          <input type="tel" id="lp-telefone" name="telefone" placeholder="(11) 99999-9999" required autocomplete="tel" />
+        </div>
+        <button type="submit" class="btn btn-primary wa-modal-submit">&#128172; Quero minha análise gratuita</button>
+      </form>
+      <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:.75rem;"><i class="ph ph-lock-simple"></i> Seus dados estão seguros. Sem spam.</p>
     </div>
   </div>
+
+  <!-- WA FLOAT -->
+  <a href="#" class="wa-float" aria-label="Análise gratuita" onclick="openModal(event)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+  </a>
 
   <script>
+    // Header scroll
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.scrollY > 50); }, { passive: true });
+
+    // Hamburger
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', String(isOpen));
+    });
+    function closeMobileMenu() { mobileMenu.classList.remove('open'); hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded', 'false'); }
+
+    // FAQ
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = btn.nextElementSibling;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => { i.classList.remove('open'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); i.querySelector('.faq-answer').hidden = true; });
+        if (!isOpen) { item.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); answer.hidden = false; }
+      });
+    });
+
+    // IntersectionObserver
+    const observer = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Modal
     var GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
     var GF_ENTRY_NOME = 'entry.1690417802';
     var GF_ENTRY_ESPECIALIDADE = 'entry.968200167';
     var GF_ENTRY_TELEFONE = 'entry.622784348';
     var LP_ESPECIALIDADE = 'Ginecologia';
 
+    function openModal(e) { if (e) e.preventDefault(); var m = document.getElementById('lp-modal'); m.classList.add('open'); m.style.display = 'flex'; document.body.style.overflow = 'hidden'; setTimeout(function() { var f = document.getElementById('lp-nome'); if (f) f.focus(); }, 50); }
+    function closeModal() { var m = document.getElementById('lp-modal'); m.classList.remove('open'); m.style.display = ''; document.body.style.overflow = ''; }
+
+    document.getElementById('lp-modal-close').addEventListener('click', closeModal);
+    document.getElementById('lp-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
     document.getElementById('lp-form').addEventListener('submit', function(e) {
       e.preventDefault();
       var nome = document.getElementById('lp-nome').value.trim();
       var telefone = document.getElementById('lp-telefone').value.trim();
       if (!nome || !telefone) { alert('Por favor, preencha seu nome e telefone.'); return; }
-
       var gfIframe = document.getElementById('gf-iframe');
       if (!gfIframe) { gfIframe = document.createElement('iframe'); gfIframe.id = 'gf-iframe'; gfIframe.name = 'gf-iframe'; gfIframe.style.display = 'none'; document.body.appendChild(gfIframe); }
       var gfForm = document.createElement('form'); gfForm.method = 'POST'; gfForm.action = GOOGLE_FORM_ACTION; gfForm.target = 'gf-iframe'; gfForm.style.display = 'none';
       var fields = {}; fields[GF_ENTRY_NOME] = nome; fields[GF_ENTRY_ESPECIALIDADE] = LP_ESPECIALIDADE; fields[GF_ENTRY_TELEFONE] = telefone;
       Object.keys(fields).forEach(function(key) { var input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = fields[key]; gfForm.appendChild(input); });
       document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
-
       var msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou ginecologista. Meu telefone é ' + telefone + '. Quero agendar uma consultoria de análise gratuita.');
       window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
-      this.reset();
+      closeModal(); this.reset();
     });
   </script>
 
