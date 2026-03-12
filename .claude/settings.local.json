@@ -23,7 +23,9 @@
       "Bash(sips -s format webp medica-ginecologista-obstetra.jpeg --out medica-ginecologista-obstetra.webp)",
       "Bash(python3 -c \"from PIL import Image; print\\(''pillow ok''\\)\")",
       "Bash(brew list)",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ]
   }
 }
