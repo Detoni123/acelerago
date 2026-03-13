@@ -20,7 +20,7 @@ Allow: /*.svg$
 Allow: /*.webp$
 
 # Sitemap
-Sitemap: https://www.acelerago.com.br/sitemap.xml
+Sitemap: https://acelerago.com.br/sitemap.xml
 
 # Crawl-delay para bots secundários
 User-agent: Bingbot
