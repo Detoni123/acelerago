@@ -18,116 +18,137 @@
 
   <!-- Páginas de Serviço -->
   <url>
-    <loc>https://acelerago.com.br/servico-posicionamento.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-posicionamento</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/servico-google-ads.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-google-ads</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/servico-gestao-autoridade.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-gestao-autoridade</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/servico-producao-audiovisual.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-producao-audiovisual</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/servico-landing-pages.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-landing-pages</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/servico-crm.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/servico-crm</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Blog — Listagem -->
   <url>
-    <loc>https://acelerago.com.br/blog.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Blog — Artigos -->
   <url>
-    <loc>https://acelerago.com.br/blog-quanto-investir-marketing-clinica-medica.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-quanto-investir-marketing-clinica-medica</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-erros-marketing-ginecologistas-redes-sociais.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-erros-marketing-ginecologistas-redes-sociais</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-mais-pacientes-ginecologia.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-mais-pacientes-ginecologia</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-google-ads-ginecologistas.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-google-ads-ginecologistas</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-marketing-digital-medicas.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-marketing-digital-medicas</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-instagram-ginecologistas.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-instagram-ginecologistas</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/blog-posicionamento-reproducao-humana.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/blog-posicionamento-reproducao-humana</loc>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://acelerago.com.br/blog-seo-local-ginecologistas</loc>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://acelerago.com.br/blog-reputacao-online-ginecologistas</loc>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://acelerago.com.br/blog-autoridade-digital-medicas</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Páginas Institucionais -->
   <url>
-    <loc>https://acelerago.com.br/politica-de-privacidade.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/politica-de-privacidade</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://acelerago.com.br/termos-de-uso.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <loc>https://acelerago.com.br/termos-de-uso</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
