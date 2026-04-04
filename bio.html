@@ -57,69 +57,37 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 2rem 1.25rem 2.5rem;
+      padding: 0 1.25rem 2.5rem;
       max-width: 480px;
       margin: 0 auto;
     }
 
-    /* ── Logo ──────────────────────────────────────────────── */
-    .logo-wrap {
-      margin-bottom: 1.5rem;
-    }
-
-    .logo-wrap img {
-      width: 140px;
-      height: auto;
-      margin: 0 auto;
-    }
-
-    /* ── Hero tag ──────────────────────────────────────────── */
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      font-size: .7rem;
-      font-weight: 700;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: var(--teal-light);
+    /* ── Hero + Banner colados ─────────────────────────────── */
+    .hero-pair {
+      display: flex;
+      flex-direction: column;
+      width: calc(100% + 2.5rem);
+      margin-left: -1.25rem;
+      margin-right: -1.25rem;
       margin-bottom: 1rem;
-      text-align: center;
     }
 
-    /* ── Headline ──────────────────────────────────────────── */
-    .headline {
-      font-size: clamp(1.65rem, 6vw, 2.1rem);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -.03em;
-      text-align: center;
-      color: var(--white);
-      margin-bottom: .75rem;
+    .hero-pair img {
+      width: 100%;
+      display: block;
+      line-height: 0;
     }
 
-    .headline em {
-      font-style: italic;
-      color: var(--orange);
+    /* ── Banners individuais ────────────────────────────────── */
+    .banner-item {
+      width: 100%;
+      margin-bottom: 1rem;
     }
 
-    /* ── Subtítulo ─────────────────────────────────────────── */
-    .subline {
-      font-size: .9rem;
-      color: rgba(255,255,255,.65);
-      text-align: center;
-      line-height: 1.65;
-      margin-bottom: 2rem;
-      max-width: 360px;
-    }
-
-    /* ── Divisor ───────────────────────────────────────────── */
-    .divider {
-      width: 40px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--teal), var(--orange));
-      border-radius: 99px;
-      margin: 0 auto 2rem;
+    .banner-item img {
+      width: 100%;
+      display: block;
+      border-radius: var(--radius-sm);
     }
 
     /* ── Botões ────────────────────────────────────────────── */
@@ -333,40 +301,21 @@
 
   <div class="page">
 
-    <!-- Logo -->
-    <div class="logo-wrap">
-      <a href="https://acelerago.com.br" aria-label="AceleraGO — Página inicial">
-        <img
-          src="acelerafundotransp.png"
-          alt="AceleraGO"
-          width="140"
-          height="37"
-        />
-      </a>
+    <!-- Hero + Banner AceleraGO colados (sem espaço entre eles) -->
+    <div class="hero-pair">
+      <img src="hero-detoni.webp" alt="Ronaldo Detoni" />
+      <img src="banner-acelerago.webp" alt="AceleraGO" />
     </div>
 
-    <!-- Hero tag -->
-    <div class="hero-tag">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
-        <polygon points="5,0 6.1,3.5 9.8,3.5 6.8,5.7 7.9,9.2 5,7 2.1,9.2 3.2,5.7 0.2,3.5 3.9,3.5"/>
-      </svg>
-      Especialistas em Saúde da Mulher
+    <!-- Banner Detoni -->
+    <div class="banner-item">
+      <img src="banner-detoni.webp" alt="Detoni" />
     </div>
 
-    <!-- Headline -->
-    <h1 class="headline">
-      Marketing criado para<br>
-      quem cuida da saúde<br>
-      <em>da mulher.</em>
-    </h1>
-
-    <!-- Subtítulo -->
-    <p class="subline">
-      Mais pacientes qualificadas, agenda cheia e crescimento previsível. Estrutura exclusiva para ginecologia, obstetrícia e reprodução humana.
-    </p>
-
-    <!-- Divisor -->
-    <div class="divider" aria-hidden="true"></div>
+    <!-- Banner WhatsApp -->
+    <div class="banner-item">
+      <img src="banner-whatsapp.webp" alt="Fale pelo WhatsApp" />
+    </div>
 
     <!-- Botões -->
     <div class="btn-stack">
