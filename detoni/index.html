@@ -9,70 +9,80 @@
   <meta name="robots" content="noindex, follow" />
   <link rel="canonical" href="https://acelerago.com.br/detoni" />
   <link rel="icon" type="image/png" href="../logo-favicon.png?v=4" />
-
-  <!-- OG -->
   <meta property="og:title" content="Ronaldo Detoni — Marketing Médico" />
   <meta property="og:description" content="Marketing médico do jeito que deveria ter sido feito desde sempre." />
   <meta property="og:image" content="https://acelerago.com.br/foto-perfil.jpg" />
   <meta property="og:url" content="https://acelerago.com.br/detoni" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet" />
 
   <style>
-    /* ── Reset & Variáveis ─────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:         #0d1928;
-      --navy-mid:     #152640;
-      --navy-light:   #1e3a5f;
-      --teal:         #00b5a9;
-      --teal-light:   #33c8be;
-      --orange:       #f47530;
-      --orange-light: #f7965a;
-      --green-wa:     #25d366;
-      --green-wa-dk:  #1aab4e;
-      --white:        #ffffff;
-      --text-muted:   rgba(255,255,255,.6);
-      --border:       rgba(255,255,255,.08);
-      --radius-sm:    8px;
-      --radius-md:    14px;
-      --radius-lg:    20px;
-      --transition:   .25s cubic-bezier(.4,0,.2,1);
+      --navy:      #0d1928;
+      --navy-mid:  #12223a;
+      --teal:      #00b5a9;
+      --teal-lt:   #33c8be;
+      --orange:    #f47530;
+      --orange-lt: #f7965a;
+      --green:     #25d366;
+      --green-dk:  #1aab4e;
+      --white:     #ffffff;
+      --t40:       rgba(255,255,255,.40);
+      --t20:       rgba(255,255,255,.20);
+      --t08:       rgba(255,255,255,.08);
+      --t04:       rgba(255,255,255,.04);
+      --ease:      .28s cubic-bezier(.4,0,.2,1);
+      --r:         16px;
     }
 
-    html { font-size: 16px; scroll-behavior: smooth; }
+    html { font-size: 16px; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--navy);
       color: var(--white);
       min-height: 100dvh;
-      line-height: 1.6;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    img { max-width: 100%; display: block; }
+    img { display: block; max-width: 100%; }
     a   { text-decoration: none; color: inherit; }
 
-    /* ── Background glow ────────────────────────────────────── */
-    body::before {
+    /* ── Noise texture overlay ──────────────────────────── */
+    body::after {
       content: '';
       position: fixed;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 700px;
-      height: 700px;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: .4;
+    }
+
+    /* ── Ambient glows ──────────────────────────────────── */
+    .glow-teal, .glow-orange {
+      position: fixed;
       border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(0,181,169,.07) 0%, transparent 65%);
       pointer-events: none;
       z-index: 0;
     }
+    .glow-teal {
+      top: -180px; left: 50%;
+      transform: translateX(-50%);
+      width: 640px; height: 640px;
+      background: radial-gradient(ellipse, rgba(0,181,169,.09) 0%, transparent 65%);
+    }
+    .glow-orange {
+      bottom: -150px; right: -100px;
+      width: 480px; height: 480px;
+      background: radial-gradient(ellipse, rgba(244,117,48,.06) 0%, transparent 65%);
+    }
 
-    /* ── Layout ─────────────────────────────────────────────── */
+    /* ── Page wrapper ───────────────────────────────────── */
     .page {
       position: relative;
       z-index: 1;
@@ -80,48 +90,46 @@
       flex-direction: column;
       align-items: center;
       min-height: 100dvh;
-      padding: 2.5rem 1.25rem 2rem;
-      max-width: 480px;
+      max-width: 440px;
       margin: 0 auto;
-      gap: 2rem;
+      padding: 48px 20px 36px;
+      gap: 28px;
     }
 
-    /* ── HERO ───────────────────────────────────────────────── */
+    /* ── HERO ───────────────────────────────────────────── */
     .hero {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.25rem;
+      gap: 18px;
       text-align: center;
+      width: 100%;
     }
 
-    /* Foto circular com anel gradiente animado */
+    /* Animated gradient ring */
     .avatar-ring {
-      width: 116px;
-      height: 116px;
+      width: 104px;
+      height: 104px;
       border-radius: 50%;
-      padding: 3px;
-      background: linear-gradient(135deg, var(--orange), var(--teal), var(--orange));
+      padding: 2.5px;
+      background: linear-gradient(135deg, var(--orange), var(--teal), var(--orange-lt), var(--teal-lt));
       background-size: 300% 300%;
-      animation: ringAnim 4s linear infinite;
+      animation: spin 5s linear infinite;
       flex-shrink: 0;
     }
-
-    @keyframes ringAnim {
+    @keyframes spin {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-
     .avatar-inner {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       overflow: hidden;
-      border: 2px solid var(--navy);
       background: var(--navy-mid);
+      border: 2px solid var(--navy);
     }
-
     .avatar-inner img {
       width: 100%;
       height: 100%;
@@ -130,350 +138,276 @@
     }
 
     .hero-name {
-      font-size: clamp(1.75rem, 7vw, 2.2rem);
+      font-size: clamp(1.7rem, 6.5vw, 2.1rem);
       font-weight: 800;
-      letter-spacing: -.04em;
+      letter-spacing: -.045em;
       line-height: 1;
       color: var(--white);
     }
-
-    .hero-tagline {
-      font-size: clamp(.85rem, 3.5vw, .95rem);
-      color: var(--text-muted);
-      line-height: 1.6;
-      max-width: 300px;
+    .hero-sub {
+      font-size: clamp(.82rem, 3.2vw, .9rem);
+      color: var(--t40);
+      line-height: 1.65;
+      max-width: 290px;
       letter-spacing: -.01em;
     }
 
-    /* ── Botão WhatsApp ──────────────────────────────────────── */
-    .btn-whatsapp {
+    /* thin gradient divider */
+    .divider {
+      width: 36px;
+      height: 2px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--teal), var(--orange));
+      margin: 0 auto;
+    }
+
+    /* ── WhatsApp CTA ───────────────────────────────────── */
+    .btn-wa {
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: .6rem;
-      width: 100%;
-      padding: 1.05rem 1.5rem;
-      border-radius: var(--radius-md);
-      background: linear-gradient(135deg, var(--green-wa) 0%, var(--green-wa-dk) 100%);
+      gap: 9px;
+      padding: 15px 20px;
+      border-radius: var(--r);
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dk) 100%);
       color: var(--white);
-      font-family: 'Inter', sans-serif;
       font-weight: 700;
-      font-size: .95rem;
-      letter-spacing: .06em;
+      font-size: .88rem;
+      letter-spacing: .07em;
       text-transform: uppercase;
+      box-shadow: 0 6px 24px rgba(37,211,102,.22), inset 0 1px 0 rgba(255,255,255,.15);
+      transition: transform var(--ease), box-shadow var(--ease);
       border: none;
       cursor: pointer;
-      box-shadow: 0 8px 28px rgba(37,211,102,.25);
-      transition: transform var(--transition), box-shadow var(--transition);
-      line-height: 1;
     }
+    .btn-wa:hover  { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(37,211,102,.34), inset 0 1px 0 rgba(255,255,255,.15); }
+    .btn-wa:active { transform: translateY(0);    box-shadow: 0 4px 16px rgba(37,211,102,.2); }
+    .btn-wa svg { flex-shrink: 0; }
 
-    .btn-whatsapp:hover,
-    .btn-whatsapp:active {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 36px rgba(37,211,102,.38);
-    }
+    /* ── Op cards — logo IS the button ─────────────────── */
+    .ops { width: 100%; display: flex; flex-direction: column; gap: 12px; }
 
-    .btn-whatsapp svg { flex-shrink: 0; }
-
-    /* ── Section label ───────────────────────────────────────── */
-    .section-label {
-      font-size: .65rem;
-      font-weight: 700;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.3);
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    /* ── Cards das operações ─────────────────────────────────── */
-    .ops-section { width: 100%; }
-
-    .ops-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: .75rem;
-    }
-
-    .op-card {
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      background: linear-gradient(145deg, var(--navy-mid) 0%, var(--navy) 100%);
-      padding: 1.25rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: .85rem;
-      text-align: center;
-      transition: border-color var(--transition), transform var(--transition);
-    }
-
-    .op-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .op-card.teal:hover { border-color: rgba(0,181,169,.3); }
-    .op-card.orange:hover { border-color: rgba(244,117,48,.3); }
-
-    .op-logo {
-      height: 44px;
+    .op-link {
+      position: relative;
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
+      height: 100px;
+      border-radius: var(--r);
+      border: 1px solid var(--t08);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
     }
 
+    /* dark gradient background */
+    .op-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, var(--navy-mid) 0%, var(--navy) 100%);
+      transition: opacity var(--ease);
+    }
+
+    /* color wash on hover */
+    .op-link::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity var(--ease);
+    }
+
+    .op-link.teal::after  { background: radial-gradient(ellipse at 50% 60%, rgba(0,181,169,.14) 0%, transparent 70%); }
+    .op-link.orange::after { background: radial-gradient(ellipse at 50% 60%, rgba(244,117,48,.12) 0%, transparent 70%); }
+
+    .op-link:hover { transform: translateY(-3px); }
+    .op-link.teal:hover  { border-color: rgba(0,181,169,.35);  box-shadow: 0 12px 36px rgba(0,181,169,.12); }
+    .op-link.orange:hover { border-color: rgba(244,117,48,.35); box-shadow: 0 12px 36px rgba(244,117,48,.1); }
+    .op-link:hover::after { opacity: 1; }
+
+    /* logo image centered */
+    .op-logo {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0 24px;
+    }
     .op-logo img {
-      max-height: 44px;
-      max-width: 100%;
+      max-height: 52px;
+      max-width: 240px;
       object-fit: contain;
       margin: 0 auto;
     }
 
-    .op-desc {
-      font-size: .72rem;
-      color: rgba(255,255,255,.45);
-      line-height: 1.5;
-      letter-spacing: -.01em;
-      flex-grow: 1;
-    }
-
-    .op-btn {
-      display: block;
-      width: 100%;
-      padding: .6rem .75rem;
-      border-radius: var(--radius-sm);
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: .68rem;
-      letter-spacing: .05em;
+    /* corner label */
+    .op-corner {
+      position: absolute;
+      z-index: 2;
+      bottom: 12px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .06em;
       text-transform: uppercase;
-      text-align: center;
-      cursor: pointer;
-      transition: background var(--transition), border-color var(--transition);
-      line-height: 1.3;
+      opacity: .45;
+      transition: opacity var(--ease);
     }
+    .op-link:hover .op-corner { opacity: .9; }
+    .op-link.teal  .op-corner { color: var(--teal-lt); }
+    .op-link.orange .op-corner { color: var(--orange-lt); }
 
-    .op-btn.teal {
-      border: 1px solid rgba(0,181,169,.3);
-      background: rgba(0,181,169,.08);
-      color: var(--teal-light);
-    }
+    .op-corner svg { flex-shrink: 0; }
 
-    .op-btn.teal:hover {
-      background: rgba(0,181,169,.18);
-      border-color: rgba(0,181,169,.6);
-    }
-
-    .op-btn.orange {
-      border: 1px solid rgba(244,117,48,.3);
-      background: rgba(244,117,48,.08);
-      color: var(--orange-light);
-    }
-
-    .op-btn.orange:hover {
-      background: rgba(244,117,48,.18);
-      border-color: rgba(244,117,48,.6);
-    }
-
-    /* ── Redes Sociais ───────────────────────────────────────── */
-    .social-section {
+    /* ── Social ─────────────────────────────────────────── */
+    .social {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: .85rem;
-    }
-
-    .social-row {
-      display: flex;
-      gap: .6rem;
-      flex-wrap: wrap;
+      gap: 8px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
-    .social-link {
+    .soc-link {
       display: flex;
       align-items: center;
-      gap: .5rem;
-      padding: .65rem 1rem;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      color: rgba(255,255,255,.6);
-      font-size: .82rem;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--t08);
+      background: var(--t04);
+      font-size: .78rem;
       font-weight: 500;
+      color: var(--t40);
       letter-spacing: -.01em;
-      transition: border-color var(--transition), color var(--transition), background var(--transition);
+      transition: border-color var(--ease), color var(--ease), background var(--ease);
     }
-
-    .social-link:hover {
-      border-color: rgba(244,117,48,.3);
+    .soc-link:hover {
+      border-color: rgba(255,255,255,.18);
       color: var(--white);
-      background: rgba(244,117,48,.05);
+      background: rgba(255,255,255,.06);
     }
+    .soc-link .ig-c { color: #e1306c; flex-shrink: 0; }
 
-    .social-link .ig-icon { color: #e1306c; flex-shrink: 0; }
-
-    /* ── Rodapé ──────────────────────────────────────────────── */
+    /* ── Footer ─────────────────────────────────────────── */
     footer {
       margin-top: auto;
-      padding-top: .5rem;
+      padding-top: 4px;
+      font-size: .68rem;
+      color: rgba(255,255,255,.18);
       text-align: center;
     }
-
-    footer p {
-      font-size: .72rem;
-      color: rgba(255,255,255,.2);
-    }
-
     footer a {
-      color: rgba(255,255,255,.3);
-      transition: color var(--transition);
+      color: rgba(255,255,255,.25);
+      transition: color var(--ease);
     }
-
-    footer a:hover { color: var(--teal-light); }
+    footer a:hover { color: var(--teal-lt); }
   </style>
 </head>
 <body>
 
+  <div class="glow-teal"   aria-hidden="true"></div>
+  <div class="glow-orange" aria-hidden="true"></div>
+
   <div class="page">
 
-    <!-- ── HERO ─────────────────────────────────────────────── -->
+    <!-- HERO -->
     <section class="hero">
       <div class="avatar-ring">
         <div class="avatar-inner">
-          <img
-            src="../foto-perfil.jpg"
-            alt="Foto de Ronaldo Detoni"
-            width="110"
-            height="110"
-            loading="eager"
-          />
+          <img src="../foto-perfil.jpg" alt="Ronaldo Detoni" width="99" height="99" loading="eager" />
         </div>
       </div>
 
-      <div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
         <h1 class="hero-name">Ronaldo Detoni</h1>
-        <p class="hero-tagline" style="margin-top:.6rem">
-          Marketing médico do jeito que deveria ter sido feito desde sempre.
-        </p>
+        <div class="divider"></div>
+        <p class="hero-sub">Marketing médico do jeito que deveria ter sido feito desde sempre.</p>
       </div>
     </section>
 
-    <!-- ── BOTÃO WHATSAPP ────────────────────────────────────── -->
+    <!-- WHATSAPP -->
     <a
       href="https://wa.me/5511934619564?text=Ol%C3%A1+Ronaldo%2C+vim+pelo+seu+perfil+e+quero+saber+mais+sobre+o+seu+trabalho"
-      class="btn-whatsapp"
+      class="btn-wa"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Falar com Ronaldo pelo WhatsApp"
     >
-      <!-- WhatsApp SVG oficial -->
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
       </svg>
-      Falar com Ronaldo
+      Solicitar Atendimento
     </a>
 
-    <!-- ── MINHAS OPERAÇÕES ───────────────────────────────────── -->
-    <div class="ops-section">
-      <p class="section-label">Minhas Operações</p>
+    <!-- OPERAÇÕES -->
+    <div class="ops">
 
-      <div class="ops-grid">
-
-        <!-- Card AceleraGO -->
-        <div class="op-card teal">
-          <div class="op-logo">
-            <img
-              src="../acelerafundotransp.png"
-              alt="AceleraGO"
-              width="120"
-              height="44"
-              loading="lazy"
-            />
-          </div>
-          <p class="op-desc">
-            Captação de pacientes para especialistas em saúde da mulher
-          </p>
-          <a
-            href="https://acelerago.com.br"
-            class="op-btn teal"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Conhecer a AceleraGO
-          </a>
+      <!-- AceleraGO -->
+      <a
+        href="https://acelerago.com.br"
+        class="op-link teal"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Conhecer a AceleraGO — Saúde da Mulher"
+      >
+        <div class="op-logo">
+          <img src="../acelerafundotransp.png" alt="AceleraGO" width="200" height="52" loading="lazy" />
         </div>
-
-        <!-- Card Detoni -->
-        <div class="op-card orange">
-          <div class="op-logo">
-            <img
-              src="../logo-detoni.jpg"
-              alt="Detoni Marketing Digital"
-              width="120"
-              height="44"
-              loading="lazy"
-            />
-          </div>
-          <p class="op-desc">
-            Marketing digital para negócios que querem crescer com estratégia
-          </p>
-          <a
-            href="https://detonimarketingdigital.com.br"
-            class="op-btn orange"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Conhecer a Detoni
-          </a>
+        <div class="op-corner">
+          Saúde da Mulher
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 10L10 2M10 2H4M10 2v6"/>
+          </svg>
         </div>
+      </a>
 
-      </div>
+      <!-- Detoni -->
+      <a
+        href="https://detonimarketingdigital.com.br"
+        class="op-link orange"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Conhecer a Detoni Marketing Digital"
+      >
+        <div class="op-logo">
+          <img src="../logo-detoni.jpg" alt="Detoni Marketing Digital" width="200" height="52" loading="lazy" />
+        </div>
+        <div class="op-corner">
+          Marketing Digital
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 10L10 2M10 2H4M10 2v6"/>
+          </svg>
+        </div>
+      </a>
+
     </div>
 
-    <!-- ── REDES SOCIAIS ─────────────────────────────────────── -->
-    <div class="social-section">
-      <p class="section-label">Instagram</p>
-
-      <div class="social-row">
-        <a
-          href="https://instagram.com/ronaldodetoni"
-          class="social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Instagram @ronaldodetoni"
-        >
-          <svg class="ig-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-          </svg>
-          @ronaldodetoni
-        </a>
-
-        <a
-          href="https://instagram.com/acelerago.oficial"
-          class="social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Instagram @acelerago.oficial"
-        >
-          <svg class="ig-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-          </svg>
-          @acelerago.oficial
-        </a>
-      </div>
+    <!-- SOCIAL -->
+    <div class="social">
+      <a href="https://instagram.com/ronaldodetoni" class="soc-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram @ronaldodetoni">
+        <svg class="ig-c" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+        </svg>
+        @ronaldodetoni
+      </a>
+      <a href="https://instagram.com/acelerago.oficial" class="soc-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram @acelerago.oficial">
+        <svg class="ig-c" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+        </svg>
+        @acelerago.oficial
+      </a>
     </div>
 
-    <!-- ── RODAPÉ ─────────────────────────────────────────────── -->
+    <!-- FOOTER -->
     <footer>
-      <p>
-        &copy; 2026 &middot;
-        <a href="https://acelerago.com.br" target="_blank" rel="noopener noreferrer">
-          acelerago.com.br
-        </a>
-      </p>
+      <p>&copy; 2026 &middot; <a href="https://acelerago.com.br" target="_blank" rel="noopener noreferrer">acelerago.com.br</a></p>
     </footer>
 
   </div>
