@@ -472,7 +472,17 @@
     var GF_ENTRY_TELEFONE = 'entry.622784348';
     var LP_ESPECIALIDADE = 'Reprodução Humana';
 
-    function openModal(e) { if (e) e.preventDefault(); var m = document.getElementById('lp-modal'); m.classList.add('open'); m.style.display = 'flex'; document.body.style.overflow = 'hidden'; setTimeout(function() { var f = document.getElementById('lp-nome'); if (f) f.focus(); }, 50); }
+
+    function getLeadSource(defaultSource) {
+      var p = new URLSearchParams(window.location.search);
+      var s = p.get('utm_source') || '';
+      var m = p.get('utm_medium') || '';
+      if (s === 'google' && m === 'cpc') return 'google_ads';
+      if ((s === 'facebook' || s === 'instagram') && m === 'paid') return 'meta_ads';
+      if (s === 'instagram' && (m === 'bio' || m === 'social')) return 'instagram_bio';
+      return defaultSource;
+    }
+        function openModal(e) { if (e) e.preventDefault(); var m = document.getElementById('lp-modal'); m.classList.add('open'); m.style.display = 'flex'; document.body.style.overflow = 'hidden'; setTimeout(function() { var f = document.getElementById('lp-nome'); if (f) f.focus(); }, 50); }
     function closeModal() { var m = document.getElementById('lp-modal'); m.classList.remove('open'); m.style.display = ''; document.body.style.overflow = ''; }
 
     document.getElementById('lp-modal-close').addEventListener('click', closeModal);
@@ -490,7 +500,7 @@
       var fields = {}; fields[GF_ENTRY_NOME] = nome; fields[GF_ENTRY_ESPECIALIDADE] = LP_ESPECIALIDADE; fields[GF_ENTRY_TELEFONE] = telefone;
       Object.keys(fields).forEach(function(key) { var input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = fields[key]; gfForm.appendChild(input); });
       document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
-      var msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Trabalho com reprodução humana. Meu telefone é ' + telefone + '. Quero agendar uma consultoria de análise gratuita.');
+      var msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Trabalho com reprodução humana. Meu telefone é ' + telefone + '. Quero agendar uma consultoria de análise gratuita. (' + getLeadSource('google_ads') + ').');
       window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
       closeModal(); this.reset();
     });

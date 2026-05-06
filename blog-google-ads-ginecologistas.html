@@ -326,6 +326,18 @@
     function closeMobileMenu() { mobileMenu.classList.remove('open'); hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded', 'false'); }
     var GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdy5BtkXv0s8rQFagK9dYIlnc4X9dMwb9DNEQjxCXjK3EsYLw/formResponse';
     var GF_ENTRY_NOME = 'entry.1690417802'; var GF_ENTRY_ESPECIALIDADE = 'entry.968200167'; var GF_ENTRY_TELEFONE = 'entry.622784348';
+
+    // Detecta UTM da URL para rastrear origem do lead
+    function getLeadSource(defaultSource) {
+      var p = new URLSearchParams(window.location.search);
+      var s = p.get('utm_source') || '';
+      var m = p.get('utm_medium') || '';
+      if (s === 'google' && m === 'cpc') return 'google_ads';
+      if ((s === 'facebook' || s === 'instagram') && m === 'paid') return 'meta_ads';
+      if (s === 'instagram' && (m === 'bio' || m === 'social')) return 'instagram_bio';
+      return defaultSource;
+    }
+
     function openWAModal(e) { if (e) e.preventDefault(); var modal = document.getElementById('wa-modal'); if (!modal) return; modal.classList.add('open'); modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; setTimeout(function() { var f = document.getElementById('wa-nome'); if (f) f.focus(); }, 50); }
     function closeWAModal() { var modal = document.getElementById('wa-modal'); if (!modal) return; modal.classList.remove('open'); modal.style.display = ''; document.body.style.overflow = ''; }
     document.addEventListener('click', function(e) { var el = e.target; while (el && el !== document.body) { if (el.classList && el.classList.contains('wa-trigger')) { e.preventDefault(); openWAModal(null); return; } el = el.parentElement; } });
@@ -345,7 +357,7 @@
       var fields = {}; fields[GF_ENTRY_NOME] = nome; fields[GF_ENTRY_ESPECIALIDADE] = especialidade; fields[GF_ENTRY_TELEFONE] = telefone;
       Object.keys(fields).forEach(function(key) { var input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = fields[key]; gfForm.appendChild(input); });
       document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
-      const msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou especialista em ' + especialidade + '. Meu telefone é ' + telefone + '. Quero saber mais sobre a AceleraGO.');
+      const msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou especialista em ' + especialidade + '. Meu telefone é ' + telefone + '. Quero saber mais sobre a AceleraGO. (' + getLeadSource('blog_acelerago') + ').');
       window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
       closeWAModal(); this.reset();
     });

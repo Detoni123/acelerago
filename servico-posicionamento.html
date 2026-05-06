@@ -346,6 +346,18 @@
     var GF_ENTRY_ESPECIALIDADE = 'entry.968200167';
     var GF_ENTRY_TELEFONE      = 'entry.622784348';
 
+
+    // Detecta UTM da URL para rastrear origem do lead
+    function getLeadSource(defaultSource) {
+      var p = new URLSearchParams(window.location.search);
+      var s = p.get('utm_source') || '';
+      var m = p.get('utm_medium') || '';
+      if (s === 'google' && m === 'cpc') return 'google_ads';
+      if ((s === 'facebook' || s === 'instagram') && m === 'paid') return 'meta_ads';
+      if (s === 'instagram' && (m === 'bio' || m === 'social')) return 'instagram_bio';
+      return defaultSource;
+    }
+
     function openWAModal(e) {
       if (e) e.preventDefault();
       var modal = document.getElementById('wa-modal');
@@ -401,7 +413,7 @@
         gfForm.appendChild(input);
       });
       document.body.appendChild(gfForm); gfForm.submit(); document.body.removeChild(gfForm);
-      const msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou especialista em ' + especialidade + '. Meu telefone é ' + telefone + '. Quero saber mais sobre a AceleraGO.');
+      const msg = encodeURIComponent('Olá! Me chamo ' + nome + '. Sou especialista em ' + especialidade + '. Meu telefone é ' + telefone + '. Quero saber mais sobre a AceleraGO. (' + getLeadSource('site_acelerago') + ').');
       window.open('https://wa.me/5511934619564?text=' + msg, '_blank', 'noopener,noreferrer');
       closeWAModal(); waForm.reset();
     });
