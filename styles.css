@@ -428,7 +428,7 @@ section { padding: 5rem 0; }
   width: 100%;
   aspect-ratio: 3/4;
   object-fit: cover;
-  object-position: top;
+  object-position: center;
   border-radius: var(--radius-lg);
   display: block;
   box-shadow: var(--shadow-lg);
