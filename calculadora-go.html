@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Crescimento — AceleraGO</title>
+  <meta name="description" content="Calcule quanto investir em marketing para atingir seu faturamento ideal. Calculadora especializada em FIV, Reprodução Humana, Obstetrícia e Ginecologia." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/favicon.ico" />
+</head>
+<body style="margin:0;padding:0;background:#0D1928;">
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const fmt = (n) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+    const pct = (n) => `${n.toFixed(1)}%`;
+
+    function useAnimatedValue(target, duration = 400) {
+      const [display, setDisplay] = useState(target);
+      const raf = useRef(null);
+      const startRef = useRef(null);
+      const fromRef = useRef(target);
+      useEffect(() => {
+        fromRef.current = display;
+        startRef.current = null;
+        if (raf.current) cancelAnimationFrame(raf.current);
+        const animate = (ts) => {
+          if (!startRef.current) startRef.current = ts;
+          const p = Math.min((ts - startRef.current) / duration, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          setDisplay(Math.round(fromRef.current + (target - fromRef.current) * ease));
+          if (p < 1) raf.current = requestAnimationFrame(animate);
+        };
+        raf.current = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(raf.current);
+      }, [target]);
+      return display;
+    }
+
+    const TABS = [
+      { id: "fiv", label: "FIV / Reprodução", cor: "#7B5EA7" },
+      { id: "obs", label: "Obstetrícia", cor: "#2E86AB" },
+      { id: "gine", label: "Ginecologia", cor: "#E05C5C" },
+    ];
+
+    const CONFIGS = {
+      fiv: {
+        cac: 600, cacMin: 200, cacMax: 3000,
+        pacLabel: "pacientes / casais",
+        services: [
+          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 500, ticketStep: 50, pacDefault: 10, pacMax: 100 },
+          { id: "fiv", label: "Ciclo de FIV", ticketMin: 15000, ticketMax: 50000, ticketDefault: 30000, ticketStep: 500, pacDefault: 5, pacMax: 50 },
+          { id: "congelamento", label: "Congelamento de Óvulos", ticketMin: 10000, ticketMax: 30000, ticketDefault: 20000, ticketStep: 500, pacDefault: 3, pacMax: 30 },
+        ],
+      },
+      obs: {
+        cac: 250, cacMin: 100, cacMax: 2000,
+        pacLabel: "pacientes",
+        services: [
+          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 500, ticketStep: 50, pacDefault: 20, pacMax: 200 },
+          { id: "parto", label: "Parto / Pacote Pré-natal", ticketMin: 3000, ticketMax: 50000, ticketDefault: 18000, ticketStep: 500, pacDefault: 6, pacMax: 50 },
+        ],
+      },
+      gine: {
+        cac: 150, cacMin: 50, cacMax: 2000,
+        pacLabel: "pacientes",
+        services: [
+          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 400, ticketStep: 50, pacDefault: 20, pacMax: 200 },
+          { id: "procedimento", label: "Procedimento / Cirurgia", ticketMin: 1000, ticketMax: 50000, ticketDefault: 12000, ticketStep: 500, pacDefault: 9, pacMax: 50 },
+        ],
+      },
+    };
+
+    const MiniSlider = ({ value, min, max, step, onChange, format, cor }) => {
+      const ratio = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+      return (
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: cor, fontFamily: "'DM Mono',monospace", marginBottom: 4, textAlign: "right" }}>{format(value)}</div>
+          <input type="range" min={min} max={max} step={step} value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            style={{ width: "100%", appearance: "none", height: 3, borderRadius: 2, outline: "none", cursor: "pointer",
+              background: `linear-gradient(to right, ${cor} ${ratio}%, #1E3147 ${ratio}%)` }} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+            <span style={{ fontSize: 9, color: "#3D5572" }}>{format(min)}</span>
+            <span style={{ fontSize: 9, color: "#3D5572" }}>{format(max)}</span>
+          </div>
+        </div>
+      );
+    };
+
+    const ServiceRow = ({ service, ticket, pacientes, onTicket, onPacientes, cor }) => {
+      const receita = ticket * pacientes;
+      return (
+        <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#E2EAF4" }}>{service.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: cor, fontFamily: "'DM Mono',monospace" }}>{fmt(receita)}</span>
+          </div>
+          <div style={{ display: "flex", gap: 20 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#4A6580", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Ticket</div>
+              <MiniSlider value={ticket} min={service.ticketMin} max={service.ticketMax} step={service.ticketStep} onChange={onTicket} format={fmt} cor={cor} />
+            </div>
+            <div style={{ width: 1, background: "rgba(255,255,255,0.05)" }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#4A6580", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Pacientes/mês</div>
+              <MiniSlider value={pacientes} min={0} max={service.pacMax} step={1} onChange={onPacientes} format={(v) => `${v}p`} cor={cor} />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const SliderFull = ({ label, value, min, max, step, onChange, format, badge, cor }) => {
+      const ratio = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+      const c = cor || "#F47530";
+      return (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#8A9BB0", letterSpacing: "0.07em", textTransform: "uppercase" }}>{label}</span>
+              {badge && <span style={{ fontSize: 9, fontWeight: 700, background: "rgba(0,181,169,0.15)", color: "#00B5A9", padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em" }}>{badge}</span>}
+            </div>
+            <span style={{ fontSize: 18, fontWeight: 800, color: c, fontFamily: "'DM Mono', monospace" }}>{format(value)}</span>
+          </div>
+          <input type="range" min={min} max={max} step={step} value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            style={{ width: "100%", appearance: "none", height: 4, borderRadius: 2, outline: "none", cursor: "pointer",
+              background: `linear-gradient(to right, ${c} ${ratio}%, #1E3147 ${ratio}%)` }} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+            <span style={{ fontSize: 10, color: "#3D5572" }}>{format(min)}</span>
+            <span style={{ fontSize: 10, color: "#3D5572" }}>{format(max)}</span>
+          </div>
+        </div>
+      );
+    };
+
+    const Row = ({ label, value, highlight, sub }) => (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div>
+          <div style={{ fontSize: 13, color: "#8A9BB0" }}>{label}</div>
+          {sub && <div style={{ fontSize: 10, color: "#3D5572", marginTop: 2 }}>{sub}</div>}
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 700, color: highlight ? "#00B5A9" : "#E2EAF4", fontFamily: "'DM Mono', monospace" }}>{value}</span>
+      </div>
+    );
+
+    function Calculadora() {
+      const [tabId, setTabId] = useState("fiv");
+      const [cac, setCac] = useState(600);
+
+      const initValues = (cfg) => {
+        const t = {}, p = {};
+        cfg.services.forEach((s) => { t[s.id] = s.ticketDefault; p[s.id] = s.pacDefault; });
+        return { t, p };
+      };
+
+      const [tickets, setTickets] = useState(() => initValues(CONFIGS.fiv).t);
+      const [pacs, setPacs] = useState(() => initValues(CONFIGS.fiv).p);
+
+      const tab = TABS.find((t) => t.id === tabId);
+      const cfg = CONFIGS[tabId];
+
+      useEffect(() => {
+        const { t, p } = initValues(cfg);
+        setTickets(t);
+        setPacs(p);
+        setCac(cfg.cac);
+      }, [tabId]);
+
+      const setTicket = (id, v) => setTickets((prev) => ({ ...prev, [id]: v }));
+      const setPac = (id, v) => setPacs((prev) => ({ ...prev, [id]: v }));
+
+      const totalPacientes = cfg.services.reduce((acc, s) => acc + (pacs[s.id] || 0), 0);
+      const totalReceita = cfg.services.reduce((acc, s) => acc + ((tickets[s.id] || 0) * (pacs[s.id] || 0)), 0);
+      const investimento = totalPacientes * cac;
+      const roas = investimento > 0 ? Math.round(totalReceita / investimento) : 0;
+      const cacPct = totalReceita > 0 ? (investimento / totalReceita) * 100 : 0;
+      const saudavel = cacPct <= 6;
+
+      const receitaAnim = useAnimatedValue(totalReceita);
+      const invAnim = useAnimatedValue(investimento);
+      const roasAnim = useAnimatedValue(roas);
+      const pacAnim = useAnimatedValue(totalPacientes);
+
+      const waMsg = encodeURIComponent(`Olá! Usei a calculadora da AceleraGO para ${tab.label} e quero entender o CAC ideal pro meu consultório.`);
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#0D1928", fontFamily: "'Sora','Segoe UI',sans-serif", paddingBottom: 60, color: "#E2EAF4" }}>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Mono:wght@500;700&display=swap');
+            input[type=range]::-webkit-slider-thumb { appearance:none; width:16px; height:16px; border-radius:50%; background:${tab.cor}; cursor:pointer; border:2px solid #0D1928; box-shadow:0 0 0 2px ${tab.cor}; transition:transform 0.15s; }
+            input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+            * { box-sizing:border-box; }
+          `}</style>
+
+          <div style={{ background: "linear-gradient(180deg,#071020,#0D1928)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "28px 20px 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", color: "#F47530", textTransform: "uppercase", marginBottom: 10 }}>AceleraGO · Calculadora de Crescimento</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#E2EAF4", lineHeight: 1.25, marginBottom: 6 }}>
+              Quanto investir pra<br /><span style={{ color: "#F47530" }}>faturar o que você quer?</span>
+            </div>
+            <div style={{ fontSize: 12, color: "#4A6580" }}>Ajuste os serviços e veja o faturamento em tempo real</div>
+          </div>
+
+          <div style={{ display: "flex", background: "#071020", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setTabId(t.id)} style={{
+                flex: 1, padding: "13px 6px", background: "none", border: "none",
+                borderBottom: tabId === t.id ? `2px solid ${t.cor}` : "2px solid transparent",
+                color: tabId === t.id ? t.cor : "#4A6580",
+                fontSize: 11, fontWeight: 700, fontFamily: "'Sora',sans-serif",
+                cursor: "pointer", letterSpacing: "0.04em", transition: "all 0.2s",
+              }}>{t.label}</button>
+            ))}
+          </div>
+
+          <div style={{ padding: "24px 20px 0", maxWidth: 520, margin: "0 auto" }}>
+
+            <div style={{ background: `linear-gradient(135deg, ${tab.cor}, ${tab.cor}99)`, borderRadius: 20, padding: "22px 20px", marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>Faturamento total / mês</div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: "#fff", fontFamily: "'DM Mono',monospace", lineHeight: 1, marginBottom: 12 }}>{fmt(receitaAnim)}</div>
+              <div style={{ display: "flex", gap: 20 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>Investimento tráfego</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{fmt(invAnim)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>ROAS</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{roasAnim}x</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>Total pacientes</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{pacAnim}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "22px 20px", marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 20 }}>Serviços · ajuste ticket e pacientes</div>
+              {cfg.services.map((s) => (
+                <ServiceRow
+                  key={s.id}
+                  service={s}
+                  ticket={tickets[s.id] || s.ticketDefault}
+                  pacientes={pacs[s.id] || 0}
+                  onTicket={(v) => setTicket(s.id, v)}
+                  onPacientes={(v) => setPac(s.id, v)}
+                  cor={tab.cor}
+                />
+              ))}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0 20px" }} />
+              <SliderFull label="CAC por paciente captado" value={cac} min={cfg.cacMin} max={cfg.cacMax} step={50} onChange={setCac} format={fmt} badge="CAC MÉDIO" cor={tab.cor} />
+            </div>
+
+            <div style={{ background: saudavel ? "rgba(0,181,169,0.07)" : "rgba(244,117,48,0.07)", border: `1px solid ${saudavel ? "rgba(0,181,169,0.2)" : "rgba(244,117,48,0.2)"}`, borderRadius: 14, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ fontSize: 20 }}>{saudavel ? "✅" : "⚠️"}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: saudavel ? "#00B5A9" : "#F47530" }}>
+                  Investimento = {pct(cacPct)} do faturamento · {saudavel ? "Saudável" : "Acima do ideal"}
+                </div>
+                <div style={{ fontSize: 11, color: "#4A6580", marginTop: 2 }}>Referência saudável: até 6% do faturamento total</div>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "22px 20px", marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Análise completa</div>
+              {cfg.services.map((s) => (
+                <Row
+                  key={s.id}
+                  label={s.label}
+                  value={fmt((tickets[s.id] || 0) * (pacs[s.id] || 0))}
+                  sub={`${pacs[s.id] || 0} pacientes × ${fmt(tickets[s.id] || 0)}`}
+                />
+              ))}
+              <Row label="Faturamento total" value={fmt(receitaAnim)} highlight />
+              <Row label="Total de pacientes captados" value={`${pacAnim} pacientes`} />
+              <Row label="CAC médio por paciente" value={fmt(cac)} />
+              <Row label="Investimento em tráfego" value={fmt(invAnim)} />
+              <Row label="ROAS" value={`${roasAnim}x`} highlight />
+            </div>
+
+            <div style={{ background: "linear-gradient(135deg,rgba(0,181,169,0.08),rgba(0,181,169,0.02))", border: "1px solid rgba(0,181,169,0.14)", borderRadius: 16, padding: "18px 20px", marginBottom: 24 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#00B5A9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>O segredo não é investir mais</div>
+              <div style={{ fontSize: 13, color: "#8A9BB0", lineHeight: 1.6 }}>
+                Com CAC de <strong style={{ color: "#E2EAF4" }}>{fmt(cac)}</strong> e {pacAnim} pacientes captados, cada R$1 investido em tráfego retorna{" "}
+                <strong style={{ color: "#00B5A9" }}>{fmt(Math.round(totalReceita / Math.max(investimento, 1)))}</strong> em receita. Reduzir o CAC pela metade dobra esse retorno.
+              </div>
+            </div>
+
+            <a href={`https://wa.me/5511934619564?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+              style={{ display: "block", width: "100%", background: "linear-gradient(135deg,#25D366,#1da851)", borderRadius: 16, padding: "18px 24px", textDecoration: "none", textAlign: "center", marginBottom: 16, boxShadow: "0 4px 20px rgba(37,211,102,0.25)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.8)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Quer reduzir seu CAC e escalar?</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff" }}>Falar com a AceleraGO no WhatsApp →</div>
+            </a>
+
+            <div style={{ textAlign: "center", paddingBottom: 8 }}>
+              <div style={{ fontSize: 10, color: "#3D5572", marginBottom: 2 }}>Marketing exclusivo para saúde da mulher</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#F47530" }}>acelerago.com.br</div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>
