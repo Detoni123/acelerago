@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora Médica de CAC — AceleraGO</title>
-  <meta name="description" content="Calcule o investimento ideal em marketing para sua especialidade médica. Consulta, procedimentos e CAC em tempo real." />
+  <meta name="description" content="Calcule o investimento ideal em marketing para sua especialidade médica. Meta de faturamento, tickets e CAC em tempo real." />
   <meta name="robots" content="noindex" />
   <link rel="icon" href="/favicon.ico" />
 </head>
@@ -43,48 +43,7 @@
       return display;
     }
 
-    const MiniSlider = ({ value, min, max, step, onChange, format }) => {
-      const ratio = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-      return (
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#F47530", fontFamily: "'DM Mono',monospace", marginBottom: 4, textAlign: "right" }}>{format(value)}</div>
-          <input type="range" min={min} max={max} step={step} value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            style={{ width: "100%", appearance: "none", height: 3, borderRadius: 2, outline: "none", cursor: "pointer",
-              background: `linear-gradient(to right, #F47530 ${ratio}%, #1E3147 ${ratio}%)` }} />
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
-            <span style={{ fontSize: 9, color: "#3D5572" }}>{format(min)}</span>
-            <span style={{ fontSize: 9, color: "#3D5572" }}>{format(max)}</span>
-          </div>
-        </div>
-      );
-    };
-
-    const ServiceRow = ({ label, ticket, pacientes, onTicket, onPacientes, ticketMin, ticketMax, pacMax }) => {
-      const receita = ticket * pacientes;
-      const stepT = ticket < 1000 ? 50 : ticket < 5000 ? 100 : 500;
-      return (
-        <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#E2EAF4" }}>{label}</span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: "#F47530", fontFamily: "'DM Mono',monospace" }}>{fmt(receita)}</span>
-          </div>
-          <div style={{ display: "flex", gap: 20 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#4A6580", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Ticket</div>
-              <MiniSlider value={ticket} min={ticketMin} max={ticketMax} step={stepT} onChange={onTicket} format={fmt} />
-            </div>
-            <div style={{ width: 1, background: "rgba(255,255,255,0.05)" }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#4A6580", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Pacientes/mês</div>
-              <MiniSlider value={pacientes} min={0} max={pacMax} step={1} onChange={onPacientes} format={(v) => `${v}p`} />
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const SliderFull = ({ label, value, min, max, step, onChange, format, badge }) => {
+    const Slider = ({ label, value, min, max, step, onChange, format, badge, large }) => {
       const ratio = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
       return (
         <div style={{ marginBottom: 24 }}>
@@ -93,7 +52,7 @@
               <span style={{ fontSize: 11, fontWeight: 700, color: "#8A9BB0", letterSpacing: "0.07em", textTransform: "uppercase" }}>{label}</span>
               {badge && <span style={{ fontSize: 9, fontWeight: 700, background: "rgba(0,181,169,0.15)", color: "#00B5A9", padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em" }}>{badge}</span>}
             </div>
-            <span style={{ fontSize: 18, fontWeight: 800, color: "#F47530", fontFamily: "'DM Mono', monospace" }}>{format(value)}</span>
+            <span style={{ fontSize: large ? 22 : 18, fontWeight: 800, color: "#F47530", fontFamily: "'DM Mono', monospace" }}>{format(value)}</span>
           </div>
           <input type="range" min={min} max={max} step={step} value={value}
             onChange={(e) => onChange(Number(e.target.value))}
@@ -107,12 +66,19 @@
       );
     };
 
-    const Row = ({ label, value, highlight, sub }) => (
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+    const ServiceResultRow = ({ label, ticket, pacientes, receita }) => (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div>
-          <div style={{ fontSize: 13, color: "#8A9BB0" }}>{label}</div>
-          {sub && <div style={{ fontSize: 10, color: "#3D5572", marginTop: 2 }}>{sub}</div>}
+          <div style={{ fontSize: 13, color: "#E2EAF4", fontWeight: 600 }}>{label}</div>
+          <div style={{ fontSize: 11, color: "#4A6580", marginTop: 2 }}>{pacientes} pacientes × {fmt(ticket)}</div>
         </div>
+        <div style={{ fontSize: 15, fontWeight: 800, color: "#F47530", fontFamily: "'DM Mono',monospace" }}>{fmt(receita)}</div>
+      </div>
+    );
+
+    const Row = ({ label, value, highlight }) => (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <span style={{ fontSize: 13, color: "#8A9BB0" }}>{label}</span>
         <span style={{ fontSize: 14, fontWeight: 700, color: highlight ? "#00B5A9" : "#E2EAF4", fontFamily: "'DM Mono', monospace" }}>{value}</span>
       </div>
     );
@@ -122,10 +88,9 @@
       const [pronto, setPronto] = useState(false);
       const [animIn, setAnimIn] = useState(false);
 
+      const [meta, setMeta] = useState(100000);
       const [ticketC, setTicketC] = useState(400);
-      const [pacC, setPacC] = useState(20);
       const [ticketP, setTicketP] = useState(8000);
-      const [pacP, setPacP] = useState(9);
       const [cac, setCac] = useState(200);
 
       useEffect(() => {
@@ -134,10 +99,13 @@
         } else { setPronto(false); setAnimIn(false); }
       }, [especialidade]);
 
-      const receitaC = ticketC * pacC;
-      const receitaP = ticketP * pacP;
+      const sumTickets = ticketC + ticketP;
+      const pacPorServico = Math.ceil(meta / sumTickets);
+
+      const receitaC = pacPorServico * ticketC;
+      const receitaP = pacPorServico * ticketP;
       const totalReceita = receitaC + receitaP;
-      const totalPacientes = pacC + pacP;
+      const totalPacientes = pacPorServico * 2;
       const investimento = totalPacientes * cac;
       const roas = investimento > 0 ? Math.round(totalReceita / investimento) : 0;
       const cacPct = totalReceita > 0 ? (investimento / totalReceita) * 100 : 0;
@@ -148,16 +116,20 @@
       const roasAnim = useAnimatedValue(pronto ? roas : 0);
       const pacAnim = useAnimatedValue(pronto ? totalPacientes : 0);
 
+      const stepP = ticketP < 2000 ? 100 : 500;
+
       const waMsg = encodeURIComponent(`Olá! Usei a Calculadora Médica de CAC da AceleraGO e quero entender o CAC ideal para o meu consultório de ${especialidade || "medicina"}.`);
 
       return (
         <div style={{ minHeight: "100vh", background: "#0D1928", fontFamily: "'Sora','Segoe UI',sans-serif", paddingBottom: 60, color: "#E2EAF4" }}>
           <style>{`
             @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Mono:wght@500;700&display=swap');
-            input[type=range]::-webkit-slider-thumb { appearance:none; width:16px; height:16px; border-radius:50%; background:#F47530; cursor:pointer; border:2px solid #0D1928; box-shadow:0 0 0 2px #F47530; transition:transform 0.15s; }
+            input[type=range]::-webkit-slider-thumb { appearance:none; width:18px; height:18px; border-radius:50%; background:#F47530; cursor:pointer; border:3px solid #0D1928; box-shadow:0 0 0 2px #F47530; transition:transform 0.15s; }
             input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
             input[type=text] { outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
             input[type=text]:focus { border-color:#F47530 !important; box-shadow:0 0 0 3px rgba(244,117,48,0.15) !important; }
+            .anim-enter { opacity:0; transform:translateY(16px); }
+            .anim-in { opacity:1; transform:translateY(0); transition:opacity 0.5s ease, transform 0.5s ease; }
             * { box-sizing:border-box; }
           `}</style>
 
@@ -167,7 +139,7 @@
               Calculadora Médica<br /><span style={{ color: "#F47530" }}>de CAC</span>
             </div>
             <div style={{ fontSize: 12, color: "#4A6580", maxWidth: 300, margin: "0 auto" }}>
-              Ajuste os serviços e veja o faturamento combinado em tempo real
+              Ajuste a meta, os tickets e o CAC. Os pacientes são calculados automaticamente.
             </div>
           </div>
 
@@ -181,34 +153,46 @@
               {!pronto && <div style={{ marginTop: 12, fontSize: 12, color: "#3D5572", textAlign: "center" }}>Preencha o campo acima pra liberar a calculadora</div>}
             </div>
 
-            <div style={{ opacity: pronto ? 1 : 0, transition: "opacity 0.5s ease, transform 0.5s ease", transform: animIn ? "translateY(0)" : "translateY(16px)" }}>
+            <div className={pronto ? (animIn ? "anim-in" : "anim-enter") : "anim-enter"} style={{ opacity: pronto ? 1 : 0, transition: "opacity 0.5s ease, transform 0.5s ease", transform: animIn ? "translateY(0)" : "translateY(16px)" }}>
               {pronto && (
                 <>
                   <div style={{ background: "linear-gradient(135deg,#F47530,#d4601a)", borderRadius: 20, padding: "22px 20px", marginBottom: 20 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>Faturamento total / mês · {especialidade}</div>
-                    <div style={{ fontSize: 38, fontWeight: 900, color: "#fff", fontFamily: "'DM Mono',monospace", lineHeight: 1, marginBottom: 12 }}>{fmt(receitaAnim)}</div>
-                    <div style={{ display: "flex", gap: 20 }}>
+                    <div style={{ fontSize: 38, fontWeight: 900, color: "#fff", fontFamily: "'DM Mono',monospace", lineHeight: 1, marginBottom: 14 }}>{fmt(receitaAnim)}</div>
+                    <div style={{ display: "flex", gap: 16 }}>
                       <div>
                         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>Investimento tráfego</div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{fmt(invAnim)}</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{fmt(invAnim)}</div>
                       </div>
                       <div>
                         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>ROAS</div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{roasAnim}x</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{roasAnim}x</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>Total pacientes</div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{pacAnim}</div>
+                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 2 }}>Pacientes captados</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{pacAnim}</div>
                       </div>
                     </div>
                   </div>
 
                   <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "22px 20px", marginBottom: 18 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 20 }}>Serviços · ajuste ticket e pacientes</div>
-                    <ServiceRow label="Consulta" ticket={ticketC} pacientes={pacC} onTicket={setTicketC} onPacientes={setPacC} ticketMin={200} ticketMax={3000} pacMax={200} />
-                    <ServiceRow label="Procedimento / Cirurgia" ticket={ticketP} pacientes={pacP} onTicket={setTicketP} onPacientes={setPacP} ticketMin={200} ticketMax={80000} pacMax={100} />
-                    <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0 20px" }} />
-                    <SliderFull label="CAC por paciente captado" value={cac} min={30} max={5000} step={50} onChange={setCac} format={fmt} badge="CAC MÉDIO" />
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 20 }}>Parâmetros</div>
+                    <Slider label="Meta de faturamento" value={meta} min={10000} max={1000000} step={10000} onChange={setMeta} format={fmt} large />
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 0 20px" }} />
+                    <Slider label="Ticket · Consulta" value={ticketC} min={200} max={3000} step={10} onChange={setTicketC} format={fmt} />
+                    <Slider label="Ticket · Procedimento / Cirurgia" value={ticketP} min={200} max={80000} step={stepP} onChange={setTicketP} format={fmt} />
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 0 20px" }} />
+                    <Slider label="CAC por paciente captado" value={cac} min={30} max={5000} step={50} onChange={setCac} format={fmt} badge="CAC MÉDIO" />
+                  </div>
+
+                  <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "22px 20px", marginBottom: 18 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Receita por serviço</div>
+                    <ServiceResultRow label="Consulta" ticket={ticketC} pacientes={pacPorServico} receita={receitaC} />
+                    <ServiceResultRow label="Procedimento / Cirurgia" ticket={ticketP} pacientes={pacPorServico} receita={receitaP} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#E2EAF4" }}>Total</span>
+                      <span style={{ fontSize: 16, fontWeight: 900, color: "#00B5A9", fontFamily: "'DM Mono',monospace" }}>{fmt(receitaAnim)}</span>
+                    </div>
                   </div>
 
                   <div style={{ background: saudavel ? "rgba(0,181,169,0.07)" : "rgba(244,117,48,0.07)", border: `1px solid ${saudavel ? "rgba(0,181,169,0.2)" : "rgba(244,117,48,0.2)"}`, borderRadius: 14, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
@@ -221,12 +205,12 @@
 
                   <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "22px 20px", marginBottom: 18 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#4A6580", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Análise completa</div>
-                    <Row label="Consulta" value={fmt(receitaC)} sub={`${pacC} pacientes × ${fmt(ticketC)}`} />
-                    <Row label="Procedimento / Cirurgia" value={fmt(receitaP)} sub={`${pacP} pacientes × ${fmt(ticketP)}`} />
-                    <Row label="Faturamento total" value={fmt(receitaAnim)} highlight />
+                    <Row label="Meta de faturamento" value={fmt(meta)} />
+                    <Row label="Pacientes por serviço" value={`${pacPorServico} pacientes`} />
                     <Row label="Total de pacientes captados" value={`${pacAnim} pacientes`} />
                     <Row label="CAC médio por paciente" value={fmt(cac)} />
                     <Row label="Investimento em tráfego" value={fmt(invAnim)} />
+                    <Row label="Faturamento total" value={fmt(receitaAnim)} highlight />
                     <Row label="ROAS" value={`${roasAnim}x`} highlight />
                   </div>
 
@@ -240,7 +224,9 @@
                   </div>
 
                   <a href={`https://wa.me/5511934619564?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "block", width: "100%", background: "linear-gradient(135deg,#25D366,#1da851)", borderRadius: 16, padding: "18px 24px", textDecoration: "none", textAlign: "center", marginBottom: 16, boxShadow: "0 4px 20px rgba(37,211,102,0.25)" }}>
+                    style={{ display: "block", width: "100%", background: "linear-gradient(135deg,#25D366,#1da851)", borderRadius: 16, padding: "18px 24px", textDecoration: "none", textAlign: "center", marginBottom: 16, boxShadow: "0 4px 20px rgba(37,211,102,0.25)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 30px rgba(37,211,102,0.35)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,0.25)"; }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.8)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Quer reduzir seu CAC e escalar?</div>
                     <div style={{ fontSize: 16, fontWeight: 900, color: "#fff" }}>Falar com a AceleraGO no WhatsApp →</div>
                   </a>
