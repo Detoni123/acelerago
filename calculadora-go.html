@@ -54,25 +54,25 @@
         metaDefault: 200000,
         cac: 600, cacMin: 200, cacMax: 3000,
         services: [
-          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 500, ticketStep: 10 },
-          { id: "fiv", label: "Ciclo de FIV", ticketMin: 15000, ticketMax: 50000, ticketDefault: 30000, ticketStep: 100 },
-          { id: "congelamento", label: "Congelamento de Óvulos", ticketMin: 10000, ticketMax: 30000, ticketDefault: 20000, ticketStep: 100 },
+          { id: "consulta", label: "Consulta", ticketMin: 0, ticketMax: 3000, ticketDefault: 500, ticketStep: 10 },
+          { id: "fiv", label: "Ciclo de FIV", ticketMin: 0, ticketMax: 50000, ticketDefault: 30000, ticketStep: 100 },
+          { id: "congelamento", label: "Congelamento de Óvulos", ticketMin: 0, ticketMax: 30000, ticketDefault: 20000, ticketStep: 100 },
         ],
       },
       obs: {
         metaDefault: 100000,
         cac: 250, cacMin: 100, cacMax: 2000,
         services: [
-          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 500, ticketStep: 10 },
-          { id: "parto", label: "Parto / Pacote Pré-natal", ticketMin: 3000, ticketMax: 50000, ticketDefault: 18000, ticketStep: 100 },
+          { id: "consulta", label: "Consulta", ticketMin: 0, ticketMax: 3000, ticketDefault: 500, ticketStep: 10 },
+          { id: "parto", label: "Parto / Pacote Pré-natal", ticketMin: 0, ticketMax: 50000, ticketDefault: 18000, ticketStep: 100 },
         ],
       },
       gine: {
         metaDefault: 100000,
         cac: 150, cacMin: 50, cacMax: 2000,
         services: [
-          { id: "consulta", label: "Consulta", ticketMin: 200, ticketMax: 3000, ticketDefault: 400, ticketStep: 10 },
-          { id: "procedimento", label: "Procedimento / Cirurgia", ticketMin: 1000, ticketMax: 50000, ticketDefault: 12000, ticketStep: 100 },
+          { id: "consulta", label: "Consulta", ticketMin: 0, ticketMax: 3000, ticketDefault: 400, ticketStep: 10 },
+          { id: "procedimento", label: "Procedimento / Cirurgia", ticketMin: 0, ticketMax: 50000, ticketDefault: 12000, ticketStep: 100 },
         ],
       },
     };
@@ -139,18 +139,20 @@
 
       const setTicket = (id, v) => setTickets((prev) => ({ ...prev, [id]: v }));
 
-      const ticketValues = cfg.services.map((s) => tickets[s.id] || s.ticketDefault);
-      const sumTickets = ticketValues.reduce((a, b) => a + b, 0);
-      const pacPorServico = Math.ceil(meta / sumTickets);
+      const ticketValues = cfg.services.map((s) => tickets[s.id] ?? s.ticketDefault);
+      const activeServices = cfg.services.filter((s, i) => ticketValues[i] > 0);
+      const sumTickets = activeServices.reduce((acc, s, i) => acc + ticketValues[cfg.services.indexOf(s)], 0);
+      const pacPorServico = sumTickets > 0 ? Math.ceil(meta / sumTickets) : 0;
 
       const serviceResults = cfg.services.map((s, i) => ({
         ...s,
         ticket: ticketValues[i],
-        pacientes: pacPorServico,
-        receita: pacPorServico * ticketValues[i],
+        pacientes: ticketValues[i] > 0 ? pacPorServico : 0,
+        receita: ticketValues[i] > 0 ? pacPorServico * ticketValues[i] : 0,
+        active: ticketValues[i] > 0,
       }));
 
-      const totalPacientes = pacPorServico * cfg.services.length;
+      const totalPacientes = pacPorServico * activeServices.length;
       const totalReceita = serviceResults.reduce((acc, s) => acc + s.receita, 0);
       const investimento = totalPacientes * cac;
       const roas = investimento > 0 ? Math.round(totalReceita / investimento) : 0;
