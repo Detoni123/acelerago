@@ -58,13 +58,15 @@
     /* ── GEMINI IMAGE GENERATION ── */
     async function generateImage(prompt, key) {
       const model = 'gemini-2.0-flash-preview-image-generation';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      const res = await fetch(url, {
+      const res = await fetch('/api/gemini', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-gemini-key': key },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ['IMAGE'] }
+          model,
+          payload: {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['IMAGE'] }
+          }
         })
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `Gemini ${res.status}`); }
@@ -145,13 +147,11 @@ Retorne exatamente este JSON:
   "palavra_gatilho_dm": "PALAVRA"
 }`;
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': claudeKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-iab': 'true'
+          'x-claude-key': claudeKey
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
