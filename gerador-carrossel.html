@@ -136,11 +136,7 @@ FORMATO: ${fmt.label} — ${fmt.desc}
 
 ${slideGuide}
 
-Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata e emoção relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira de 25 a 35 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico.
-
-REGRA CRÍTICA PARA PROMPTS DE IMAGEM: NUNCA mencione nomes de celebridades, pessoas públicas, políticos ou qualquer pessoa real nos prompts de imagem — o gerador não consegue criar rostos de pessoas reais. Em vez disso, descreva a emoção, o contexto e a cena de forma evocativa. Ex: formato "Celebridade + Você" sobre perda gestacional → prompt da capa deve focar na emoção da paciente, não na celebridade: "Fotografia editorial de uma mulher brasileira de 28 anos sentada no chão de um quarto, joelhos no peito, choro contido, iluminação baixa e íntima, atmosfera de luto silencioso, estilo editorial de revista de saúde, sem texto".
-
-Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 30 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
+Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata e emoção relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira de 25 a 35 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico. Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 30 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
 
 Retorne exatamente este JSON:
 {
@@ -151,7 +147,7 @@ Retorne exatamente este JSON:
       "headline": "texto impactante de até 60 chars",
       "destaque": "UMA PALAVRA ou FRASE CURTA em maiúsculas",
       "subtitulo": "frase de apoio curta",
-      "prompt_imagem": "Fotografia editorial de [cena específica e emoção do tema], mulher brasileira de [25 a 35 anos], [contexto/expressão], [iluminação], [ambiente], estilo fotojornalismo médico, sem texto na imagem. NUNCA mencione celebridade ou pessoa real."
+      "prompt_imagem": "Fotografia editorial de [cena específica e emoção do tema], mulher brasileira de [25 a 35 anos], [contexto/expressão], [iluminação], [ambiente], estilo fotojornalismo médico, sem texto na imagem"
     },
     {
       "numero": 2,
