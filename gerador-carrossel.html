@@ -33,7 +33,7 @@
     const ORANGE = '#F47530';
     const DARK   = '#0D1928';
     const SW = 1080, SH = 1350;
-    const SCALE = 0.30;
+    const SCALE = 0.38;
 
     const FORMATS = [
       { id: 'alerta',     label: 'Alerta de Indústria',      desc: '"A morte de / O fim de..." — FOMO profissional' },
@@ -302,17 +302,15 @@ Retorne exatamente este JSON:
           ctx.font = `400 38px ${font}`;
           ctx.textAlign = 'left';
           y = wrapText(ctx, slide.subtitulo, PAD, y, SW - PAD*2, 56);
-          y += 16;
         }
 
-        // branding bar
-        y += 20;
+        // branding bar — sempre fixo no rodapé
+        const brandY = SH - 110;
         ctx.fillStyle = cp;
-        ctx.beginPath(); ctx.arc(PAD + 8, y + 8, 8, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = cp;
+        ctx.beginPath(); ctx.arc(PAD + 8, brandY + 8, 8, 0, Math.PI*2); ctx.fill();
         ctx.font = `700 28px ${font}`;
         ctx.textAlign = 'left';
-        ctx.fillText(client.instagram ? `@${client.instagram.replace(/^@/,'')}` : (client.nome || ''), PAD + 28, y + 16);
+        ctx.fillText(client.instagram ? `@${client.instagram.replace(/^@/,'')}` : (client.nome || ''), PAD + 28, brandY + 16);
 
       } else if (slide.tipo === 'cta') {
         /* ── CTA: solid primary color, no image ── */
@@ -420,24 +418,40 @@ Retorne exatamente este JSON:
           drawCounter();
 
         } else {
-          // inline (default)
-          let ty = await drawTitle(220);
-          if (slide.imageData) {
-            const imgH = 380;
+          // inline (default) — respeita imagePosition: top | middle | bottom
+          const imgPos = slide.imagePosition || 'middle';
+          const imgH = 380;
+          const drawImg = async (y) => {
+            if (!slide.imageData) return y;
             ctx.save();
             ctx.beginPath();
-            ctx.roundRect(PAD, ty, SW - PAD*2, imgH, 18);
+            ctx.roundRect(PAD, y, SW - PAD*2, imgH, 18);
             ctx.clip();
             const img = new Image();
             await new Promise(r => {
-              img.onload = () => { ctx.drawImage(img, PAD, ty, SW - PAD*2, imgH); r(); };
+              img.onload = () => { ctx.drawImage(img, PAD, y, SW - PAD*2, imgH); r(); };
               img.onerror = r;
               img.src = `data:image/png;base64,${slide.imageData}`;
             });
             ctx.restore();
-            ty += imgH + 40;
+            return y + imgH + 40;
+          };
+
+          let ty = 220;
+          if (imgPos === 'top') {
+            ty = await drawImg(ty);
+            ty = await drawTitle(ty);
+            drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
+          } else if (imgPos === 'bottom') {
+            ty = await drawTitle(ty);
+            ty = drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
+            await drawImg(ty + 20);
+          } else {
+            // middle (padrão)
+            ty = await drawTitle(ty);
+            ty = await drawImg(ty);
+            drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
           }
-          drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
           drawCounter();
         }
       }
@@ -643,6 +657,18 @@ Retorne exatamente este JSON:
                   ))}
                 </div>
               </div>
+              {(s.layout||'inline')==='inline' && (
+                <div style={{marginBottom:14}}>
+                  <label style={S.label}>Posição da Imagem</label>
+                  <div style={{display:'flex',gap:6}}>
+                    {[['top','Topo'],['middle','Meio (padrão)'],['bottom','Fundo']].map(([v,l])=>(
+                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'7px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.imagePosition||'middle')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {field('Título (opcional)', 'titulo', false)}
               {field('Texto', 'texto', true)}
             </>}
@@ -717,13 +743,14 @@ Retorne exatamente este JSON:
                     {slide.destaque && <div style={{color:cp,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.destaque}</div>}
                     <div style={{color:slide.textColor||'#fff',fontSize:78,fontWeight:700,lineHeight:1.18}}>{slide.headline}</div>
                     {slide.subtitulo && <div style={{color:slide.textColor?`${slide.textColor}99`:'rgba(255,255,255,0.6)',fontSize:36,lineHeight:1.5}}>{slide.subtitulo}</div>}
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
-                      <div style={{display:'flex',alignItems:'center',gap:14}}>
-                        <div style={{width:8,height:8,borderRadius:'50%',background:cp}} />
-                        <span style={{color:cp,fontSize:26,fontWeight:700}}>{client?.instagram ? `@${client.instagram.replace(/^@/,'')}` : client?.nome || ''}</span>
-                      </div>
-                      <div style={{color:'rgba(255,255,255,0.35)',fontSize:28}}>deslize →</div>
+                  </div>
+                  {/* Branding — sempre fixo no rodapé */}
+                  <div style={{position:'absolute',bottom:72,left:0,right:0,padding:`0 ${PAD}px`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:14}}>
+                      <div style={{width:8,height:8,borderRadius:'50%',background:cp}} />
+                      <span style={{color:cp,fontSize:26,fontWeight:700}}>{client?.instagram ? `@${client.instagram.replace(/^@/,'')}` : client?.nome || ''}</span>
                     </div>
+                    <div style={{color:'rgba(255,255,255,0.35)',fontSize:28}}>deslize →</div>
                   </div>
                   <div style={{position:'absolute',top:60,right:PAD,color:'rgba(255,255,255,0.25)',fontSize:30}}>1 / {idx+1}</div>
                 </div>
@@ -767,18 +794,22 @@ Retorne exatamente este JSON:
                   );
                 }
                 // inline (default)
+                const imgPos = slide.imagePosition || 'middle';
+                const imgBlock = slide.imageData ? (
+                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
+                    <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
+                  </div>
+                ) : null;
                 return (
                   <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                     <div style={{height:8,background:cp,flexShrink:0}} />
                     <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
                       {numLabel}
+                      {imgPos==='top' && imgBlock}
                       {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
-                      {slide.imageData && (
-                        <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
-                          <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
-                        </div>
-                      )}
-                      {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
+                      {imgPos==='middle' && imgBlock}
+                      {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:imgPos==='bottom'?1:undefined}}>{slide.texto}</div>}
+                      {imgPos==='bottom' && imgBlock}
                       {counter}
                     </div>
                   </div>
@@ -809,11 +840,11 @@ Retorne exatamente este JSON:
             {regenning ? '⟳ Gerando imagem...' : '⟳ Gerar Imagem com Gemini'}
           </button>
           {/* ações secundárias */}
-          <div style={{display:'flex',gap:3,width:PW}}>
-            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>✏ Editar</button>
-            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>↓ PNG</button>
-            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>📁 Upload</button>
-            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(220,50,50,0.7)'}}>✕ Img</button>}
+          <div style={{display:'flex',gap:1,width:PW,background:'rgba(255,255,255,0.04)',borderRadius:6,overflow:'hidden'}}>
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
+            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁</button>
+            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕</button>}
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
@@ -848,6 +879,15 @@ Retorne exatamente este JSON:
       );
     }
 
+    /* ── TOAST ── */
+    function Toast({ msg }) {
+      return (
+        <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'rgba(13,25,40,0.97)',border:'1px solid rgba(255,255,255,0.13)',borderRadius:10,padding:'12px 22px',fontSize:13,fontWeight:500,color:'#fff',zIndex:9999,pointerEvents:'none',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+          {msg}
+        </div>
+      );
+    }
+
     /* ── APP ── */
     function App() {
       const [clients, setClients]               = useState(() => LS.get('clients', []));
@@ -873,6 +913,8 @@ Retorne exatamente este JSON:
       const [pautaSuggestions, setPautaSuggestions] = useState([]);
       const [pautaForm, setPautaForm]           = useState({ temas:'' });
       const [generatingPauta, setGeneratingPauta] = useState(false);
+      const [toast, setToast]                     = useState(null);
+      const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
       const client = clients.find(c => c.id === selId);
 
@@ -982,6 +1024,7 @@ Retorne exatamente este JSON:
         const arr = [estrutura, ...viralStructures].slice(0, 10);
         setViralStructures(arr);
         LS.set('viralStructures', arr);
+        showToast('⚡ Estrutura viral salva!');
       };
 
       const handleApplyViral = (estrutura) => {
@@ -1017,6 +1060,7 @@ Retorne exatamente este JSON:
             const arr = savedCarousels.map(c => c.id === activeCarouselId ? { ...c, ...data } : c);
             LS.set('savedCarousels', arr);
             setSavedCarousels(arr);
+            showToast('💾 Carrossel atualizado!');
           } else {
             // novo carrossel — pede nome
             const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
@@ -1026,6 +1070,7 @@ Retorne exatamente este JSON:
             LS.set('savedCarousels', arr);
             setSavedCarousels(arr);
             setActiveCarouselId(entry.id);
+            showToast('💾 Carrossel salvo!');
           }
           setSavedOpen(true);
         } catch(e) {
@@ -1104,6 +1149,8 @@ Retorne exatamente:
             {/* LEFT PANEL */}
             <div style={{width:290,background:'#080f1c',borderRight:'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
+
               <div>
                 <label style={S.label}>Formato</label>
                 <div style={{display:'flex',flexDirection:'column',gap:5}}>
@@ -1135,8 +1182,23 @@ Retorne exatamente:
                 <Toggle label="Usar foto da médica" sub="Insere o rosto nos prompts (Beta)" checked={form.usarFotoMedica} onChange={v=>setF('usarFotoMedica',v)} disabled={!client?.fotoRostoUrl} />
               </div>
 
-              {error && <div style={{background:'rgba(220,38,38,0.12)',border:'1px solid rgba(220,38,38,0.25)',borderRadius:7,padding:'10px 14px',fontSize:12,color:'#fca5a5',lineHeight:1.5}}>{error}</div>}
-              {(generating||genImgIdx>=0) && progress && <div style={{background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'10px 14px',fontSize:12,color:ORANGE}}>{progress}</div>}
+              <div style={{height:1,background:'rgba(255,255,255,0.06)'}} />
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Ações</div>
+
+              {error && (
+                <div style={{background:'rgba(220,38,38,0.1)',border:'1px solid rgba(220,38,38,0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#fca5a5',lineHeight:1.5}}>
+                  <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                    <span style={{flexShrink:0,fontSize:14}}>⚠</span>
+                    <span>{error}</span>
+                  </div>
+                  {(error.toLowerCase().includes('claude') || error.toLowerCase().includes('gemini') || error.toLowerCase().includes('api') || error.toLowerCase().includes('erro')) && (
+                    <button onClick={slides.length===0 ? handleGenerate : handleGenerateAllImages} style={{...S.btnS,fontSize:11,padding:'5px 12px',marginTop:8,width:'100%',borderColor:'rgba(220,38,38,0.25)',color:'rgba(252,165,165,0.85)'}}>
+                      ↺ Tentar novamente
+                    </button>
+                  )}
+                </div>
+              )}
+              {progress && genImgIdx<0 && <div style={{background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'10px 14px',fontSize:12,color:ORANGE}}>{progress}</div>}
 
               <button onClick={handleGenerate} disabled={generating||!client} style={{...S.btnP,opacity:generating||!client?0.45:1,fontSize:15,padding:'14px'}}>
                 {generating ? 'Gerando copy...' : '✦ Fase 1: Gerar Copy'}
@@ -1144,9 +1206,21 @@ Retorne exatamente:
 
               {slides.length > 0 && (
                 <>
-                  <button onClick={handleGenerateAllImages} disabled={genImgIdx>=0} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:genImgIdx>=0?0.5:1,borderColor:'rgba(244,117,48,0.4)',color:ORANGE}}>
-                    {genImgIdx>=0 ? progress||'Gerando imagens...' : `⟳ Fase 2: Gerar Todas as Imagens`}
-                  </button>
+                  {genImgIdx>=0 ? (
+                    <div style={{borderRadius:8,border:'1px solid rgba(244,117,48,0.25)',padding:'10px 12px',background:'rgba(244,117,48,0.05)'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7,fontSize:11,color:ORANGE}}>
+                        <span>Gerando imagens...</span>
+                        <span style={{fontWeight:700}}>{genImgIdx+1}/{slides.length}</span>
+                      </div>
+                      <div style={{height:3,background:'rgba(255,255,255,0.08)',borderRadius:2,overflow:'hidden'}}>
+                        <div style={{width:`${((genImgIdx+1)/slides.length)*100}%`,height:3,background:ORANGE,borderRadius:2,transition:'width 0.4s ease'}} />
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={handleGenerateAllImages} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'rgba(244,117,48,0.4)',color:ORANGE}}>
+                      ⟳ Fase 2: Gerar Todas as Imagens
+                    </button>
+                  )}
                   <button onClick={handleSaveCarousel} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'rgba(100,200,100,0.4)',color:'rgba(100,220,100,0.9)'}}>
                     {activeCarouselId ? '💾 Salvar alterações' : '💾 Salvar Carrossel (para editar depois)'}
                   </button>
@@ -1161,12 +1235,47 @@ Retorne exatamente:
                 </>
               )}
 
+              {(savedCarousels.length > 0 || viralStructures.length > 0) && (
+                <>
+                  <div style={{height:1,background:'rgba(255,255,255,0.06)'}} />
+                  <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Histórico</div>
+                </>
+              )}
+
+              {/* Pauta do Mês — primeiro no histórico */}
+              <div>
+                <button onClick={()=>setPautaOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,180,255,0.25)',color:'rgba(100,180,255,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <span>📅 Pauta do Mês</span>
+                  <span style={{fontSize:10}}>{pautaOpen?'▲':'▼'}</span>
+                </button>
+                {pautaOpen && (
+                  <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:8}}>
+                    <textarea style={{...S.input,resize:'vertical',minHeight:60,fontSize:12}} value={pautaForm.temas} onChange={e=>setPautaForm({temas:e.target.value})} placeholder="Ex: menopausa, tireoide, emagrecimento hormonal" />
+                    <button onClick={handleGeneratePauta} disabled={generatingPauta||!client} style={{...S.btnP,padding:'10px',fontSize:12,opacity:generatingPauta||!client?0.5:1}}>
+                      {generatingPauta ? 'Gerando...' : '✦ Gerar 12 sugestões'}
+                    </button>
+                    {pautaSuggestions.length > 0 && (
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:260,overflowY:'auto'}}>
+                        {pautaSuggestions.map((p,i) => (
+                          <div key={i} style={{background:'rgba(100,180,255,0.05)',border:'1px solid rgba(100,180,255,0.12)',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
+                            onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
+                            <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)'}}>{p.tema}</div>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.4)',marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Carrosseis Salvos */}
               {savedCarousels.length > 0 && (
                 <div>
                   <button onClick={()=>setSavedOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,220,100,0.25)',color:'rgba(100,220,100,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                     <span>💾 Carrosseis Salvos ({savedCarousels.length}/5)</span>
-                    <span>{savedOpen?'▲':'▼'}</span>
+                    <span style={{fontSize:10}}>{savedOpen?'▲':'▼'}</span>
                   </button>
                   {savedOpen && (
                     <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:4}}>
@@ -1204,49 +1313,6 @@ Retorne exatamente:
                   </div>
                 </div>
               )}
-
-              {/* Pauta do Mês */}
-              <div>
-                <button onClick={()=>setPautaOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,180,255,0.25)',color:'rgba(100,180,255,0.8)'}}>
-                  {pautaOpen ? '▲ Fechar Pauta' : '📅 Pauta do Mês'}
-                </button>
-                {pautaOpen && (
-                  <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:8}}>
-                    <textarea style={{...S.input,resize:'vertical',minHeight:60,fontSize:12}} value={pautaForm.temas} onChange={e=>setPautaForm({temas:e.target.value})} placeholder="Ex: menopausa, tireoide, emagrecimento hormonal" />
-                    <button onClick={handleGeneratePauta} disabled={generatingPauta||!client} style={{...S.btnP,padding:'10px',fontSize:12,opacity:generatingPauta||!client?0.5:1}}>
-                      {generatingPauta ? 'Gerando...' : '✦ Gerar 12 sugestões'}
-                    </button>
-                    {pautaSuggestions.length > 0 && (
-                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:260,overflowY:'auto'}}>
-                        {pautaSuggestions.map((p,i) => (
-                          <div key={i} style={{background:'rgba(100,180,255,0.05)',border:'1px solid rgba(100,180,255,0.12)',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
-                            onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
-                            <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)'}}>{p.tema}</div>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.4)',marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {legenda && (
-                <div>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                    <label style={S.label}>Legenda gerada</label>
-                    <button onClick={()=>navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''))} style={{...S.btnG,fontSize:10,color:ORANGE}}>Copiar</button>
-                  </div>
-                  <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:7,padding:12,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.65,maxHeight:160,overflowY:'auto',whiteSpace:'pre-wrap'}}>{legenda}</div>
-                  {hashtags.length > 0 && <div style={{marginTop:6,fontSize:11,color:ORANGE,lineHeight:1.9}}>{hashtags.join(' ')}</div>}
-                  {palavraGatilho && (
-                    <div style={{marginTop:8,background:'rgba(244,117,48,0.1)',borderRadius:6,padding:'7px 12px',fontSize:11}}>
-                      Palavra-gatilho DM: <strong style={{color:ORANGE}}>{palavraGatilho}</strong>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* SLIDES AREA */}
@@ -1262,19 +1328,36 @@ Retorne exatamente:
                   )}
                 </div>
               ) : (
-                <div style={{display:'flex',flexWrap:'wrap',gap:18,alignContent:'flex-start'}}>
-                  {slides.map((slide,i) => (
-                    <SlideCard key={i} slide={slide} idx={i}
-                      client={client}
-                      onEdit={(sl,ix,silent) => { if(silent){setSlides(prev=>prev.map((s,j)=>j===ix?sl:s));}else{setEditSlide({slide:sl,idx:ix});}}}
-                      onDownload={handleDownloadOne}
-                      onRegen={handleRegen}
-                      regenning={genImgIdx===i}
-                      onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64}:s))}
-                      onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null}:s))}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:18,alignContent:'flex-start'}}>
+                    {slides.map((slide,i) => (
+                      <SlideCard key={i} slide={slide} idx={i}
+                        client={client}
+                        onEdit={(sl,ix,silent) => { if(silent){setSlides(prev=>prev.map((s,j)=>j===ix?sl:s));}else{setEditSlide({slide:sl,idx:ix});}}}
+                        onDownload={handleDownloadOne}
+                        onRegen={handleRegen}
+                        regenning={genImgIdx===i}
+                        onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64}:s))}
+                        onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null}:s))}
+                      />
+                    ))}
+                  </div>
+                  {legenda && (
+                    <div style={{marginTop:28,maxWidth:660,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:10,padding:'16px 20px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                        <span style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
+                        <button onClick={()=>{navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''));showToast('Legenda copiada!');}} style={{...S.btnG,fontSize:11,color:ORANGE}}>Copiar tudo</button>
+                      </div>
+                      <div style={{fontSize:13,color:'rgba(255,255,255,0.65)',lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
+                      {hashtags.length > 0 && <div style={{fontSize:12,color:ORANGE,lineHeight:1.9,marginBottom:8}}>{hashtags.join(' ')}</div>}
+                      {palavraGatilho && (
+                        <div style={{background:'rgba(244,117,48,0.1)',borderRadius:6,padding:'7px 12px',fontSize:12}}>
+                          Palavra-gatilho DM: <strong style={{color:ORANGE}}>{palavraGatilho}</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1283,6 +1366,7 @@ Retorne exatamente:
           {modal==='settings' && <SettingsModal onClose={()=>setModal(null)} />}
           {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} />}
           {editSlide && <EditModal slide={editSlide.slide} onSave={s=>{setSlides(prev=>prev.map((sl,i)=>i===editSlide.idx?s:sl));setEditSlide(null);}} onClose={()=>setEditSlide(null)} />}
+          {toast && <Toast msg={toast} />}
         </div>
       );
     }
