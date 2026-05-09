@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Carrossel — AceleraGO</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sora', sans-serif; background: #060e18; color: #fff; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+    select option { background: #0D1928; color: #fff; }
+    textarea { font-family: 'Sora', sans-serif; }
+    input[type=color] { padding: 2px; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const ORANGE = '#F47530';
+    const DARK   = '#0D1928';
+    const SW = 1080, SH = 1350;
+    const SCALE = 0.24;
+
+    const FORMATS = [
+      { id: 'alerta',     label: 'Alerta de Indústria',      desc: '"A morte de / O fim de..." — FOMO profissional' },
+      { id: 'analogia',   label: 'Analogia Cultural',        desc: 'Pop culture + problema médico' },
+      { id: 'noticia',    label: 'Notícia Urgente',          desc: 'Estudo recente como gancho de credibilidade' },
+      { id: 'serie',      label: 'Celebridade + Você',       desc: 'Famosa com o mesmo problema da paciente' },
+      { id: 'diagnostico',label: 'Diagnóstico de Erro',      desc: '"Você está fazendo X errado" + 5 passos' },
+    ];
+
+    const FONTS = ['Sora', 'Arial', 'Georgia', 'Trebuchet MS', 'Verdana'];
+
+    const DEFAULT_FORBIDDEN = [
+      'cura','milagre','garanto','resultado garantido','melhor médica',
+      'número 1','antes e depois','compare','tratamento definitivo','curo'
+    ];
+
+    const LS = {
+      get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+    };
+
+    /* ── GEMINI IMAGE GENERATION ── */
+    async function generateImage(prompt, key) {
+      const model = 'gemini-2.0-flash-preview-image-generation';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE'] }
+        })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `Gemini ${res.status}`); }
+      const data = await res.json();
+      const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+      if (!part) throw new Error('Gemini não retornou imagem');
+      return part.inlineData.data;
+    }
+
+    /* ── CLAUDE COPY GENERATION ── */
+    async function generateCopy(form, client, claudeKey) {
+      const fmt = FORMATS.find(f => f.id === form.formato);
+      const forbidden = (client.palavrasProibidas || DEFAULT_FORBIDDEN).join(', ');
+      const n = form.numSlides;
+
+      const system = `Você é especialista em criação de carrosseis de Instagram para médicas especialistas em saúde da mulher no Brasil.
+
+REGRAS ABSOLUTAS DO CFM:
+1. NUNCA prometer cura, resultado garantido ou tempo específico
+2. NUNCA comparar com outros médicos ou tratamentos
+3. NUNCA usar linguagem de "antes e depois"
+4. NUNCA afirmar ser "melhor", "número 1" ou similar
+5. Toda afirmação clínica deve ter base científica
+6. Conteúdo educativo, não propaganda direta de serviço
+7. NUNCA usar travessão (—) em nenhum texto
+
+PALAVRAS PROIBIDAS: ${forbidden}
+
+PERFIL DA MÉDICA:
+- Nome: ${client.nome || 'Dra.'}
+- Especialidade: ${client.especialidade || ''}
+- Nicho: ${client.nicho || client.especialidade || ''}
+- Tom de voz: ${client.tomVoz || 'Acolhedor, científico, direto, sem exageros'}
+
+Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`;
+
+      const slideGuide = buildSlideGuide(n);
+
+      const user = `Crie ${n} slides de carrossel para o seguinte tema:
+
+TEMA: ${form.tema}
+FORMATO: ${fmt.label} — ${fmt.desc}
+
+${slideGuide}
+
+Para cada slide, crie também um prompt_imagem em inglês (para o Gemini gerar imagem editorial, fotorrealista, foco em mulheres, sem texto na imagem, estilo médico e acolhedor).
+
+Retorne exatamente este JSON:
+{
+  "slides": [
+    {
+      "numero": 1,
+      "tipo": "capa",
+      "headline": "texto impactante de até 60 chars",
+      "destaque": "UMA PALAVRA ou FRASE CURTA em maiúsculas",
+      "subtitulo": "frase de apoio curta",
+      "prompt_imagem": "editorial photo of [scene], warm lighting, professional, female-focused, no text, medical aesthetic"
+    },
+    {
+      "numero": 2,
+      "tipo": "conteudo",
+      "titulo": "título do slide",
+      "texto": "texto do slide (2-3 frases, linguagem acessível)",
+      "prompt_imagem": "..."
+    },
+    ...slides intermediários com tipo conteudo...
+    {
+      "numero": ${n},
+      "tipo": "cta",
+      "texto": "frase de chamada para ação",
+      "palavra_gatilho": "PALAVRA",
+      "beneficio": "o que a paciente recebe ao comentar",
+      "prompt_imagem": "..."
+    }
+  ],
+  "legenda": "legenda completa para o post com emojis estratégicos (máx 2200 chars, sem travessão)",
+  "hashtags": ["#hashtag1", "#hashtag2"],
+  "palavra_gatilho_dm": "PALAVRA"
+}`;
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': claudeKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-iab': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 4096,
+          system,
+          messages: [{ role: 'user', content: user }]
+        })
+      });
+
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `Claude ${res.status}`); }
+      const data = await res.json();
+      const text = data.content[0].text.trim();
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Claude não retornou JSON válido');
+      return JSON.parse(match[0]);
+    }
+
+    function buildSlideGuide(n) {
+      const lines = ['ESTRUTURA DOS SLIDES:'];
+      lines.push('Slide 1 (CAPA): gancho emocional forte, headline de impacto, palavra destaque em caixa alta');
+      lines.push('Slide 2: validar a dor da paciente ("você não está sozinha")');
+      if (n >= 8) lines.push('Slide 3: ampliar o problema com dado científico ou estatística');
+      const mid = n <= 5 ? '3-4' : n <= 8 ? '4-7' : '4-8';
+      lines.push(`Slides ${mid}: conteúdo com 1 ideia por slide, linguagem acessível, sem jargão excessivo`);
+      if (n >= 8) lines.push(`Slide ${n-1}: autoridade da médica + credenciais relevantes`);
+      lines.push(`Slide ${n} (CTA): palavra-gatilho para DM bot + benefício concreto de responder`);
+      return lines.join('\n');
+    }
+
+    /* ── CANVAS EXPORT ── */
+    function wrapText(ctx, text, x, y, maxW, lh, textAlign) {
+      if (!text) return y;
+      const align = textAlign || ctx.textAlign;
+      const words = text.split(' ');
+      let line = '';
+      let cy = y;
+      for (let i = 0; i < words.length; i++) {
+        const test = line + words[i] + ' ';
+        if (ctx.measureText(test).width > maxW && i > 0) {
+          ctx.fillText(line.trimEnd(), align === 'center' ? x : x, cy);
+          line = words[i] + ' ';
+          cy += lh;
+        } else { line = test; }
+      }
+      if (line.trim()) ctx.fillText(line.trimEnd(), x, cy);
+      return cy + lh;
+    }
+
+    function adaptiveFontSize(text, max, min) {
+      if (!text) return max;
+      if (text.length > 60) return min;
+      if (text.length > 35) return Math.round((max + min) / 2);
+      return max;
+    }
+
+    async function renderToCanvas(slide, client) {
+      await document.fonts.ready;
+      const canvas = document.createElement('canvas');
+      canvas.width = SW; canvas.height = SH;
+      const ctx = canvas.getContext('2d');
+      const cp = client.corPrimaria || ORANGE;
+      const cs = client.corSecundaria || DARK;
+      const font = client.fonte || 'Sora';
+      const isCta = slide.tipo === 'cta';
+
+      ctx.fillStyle = isCta ? cp : cs;
+      ctx.fillRect(0, 0, SW, SH);
+
+      if (slide.imageData) {
+        await new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => {
+            ctx.save();
+            ctx.globalAlpha = 0.30;
+            ctx.drawImage(img, 0, 0, SW, SH);
+            ctx.restore();
+            resolve();
+          };
+          img.onerror = resolve;
+          img.src = `data:image/png;base64,${slide.imageData}`;
+        });
+        ctx.fillStyle = isCta ? `${cp}99` : 'rgba(6,14,24,0.55)';
+        ctx.fillRect(0, 0, SW, SH);
+      }
+
+      const PAD = 80;
+      ctx.textAlign = 'center';
+
+      if (slide.tipo === 'capa') {
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.font = `400 34px ${font}`;
+        ctx.textAlign = 'right';
+        ctx.fillText('1 →', SW - PAD, 100);
+
+        const hSize = adaptiveFontSize(slide.headline, 84, 52);
+        ctx.fillStyle = '#fff';
+        ctx.font = `700 ${hSize}px ${font}`;
+        ctx.textAlign = 'center';
+        wrapText(ctx, slide.headline || '', SW/2, 360, SW - PAD*2, Math.round(hSize*1.25));
+
+        if (slide.destaque) {
+          ctx.fillStyle = cp;
+          ctx.font = `800 88px ${font}`;
+          ctx.textAlign = 'center';
+          ctx.fillText(slide.destaque.toUpperCase(), SW/2, 720);
+        }
+
+        if (slide.subtitulo) {
+          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.font = `400 38px ${font}`;
+          ctx.textAlign = 'center';
+          wrapText(ctx, slide.subtitulo, SW/2, 840, SW - PAD*2, 56);
+        }
+
+        ctx.fillStyle = cp;
+        ctx.font = `700 30px ${font}`;
+        ctx.textAlign = 'center';
+        ctx.fillText('AceleraGO', SW/2, SH - 80);
+
+      } else if (slide.tipo === 'cta') {
+        ctx.fillStyle = '#fff';
+        ctx.font = `700 56px ${font}`;
+        ctx.textAlign = 'center';
+        wrapText(ctx, slide.texto || '', SW/2, 300, SW - PAD*2, 74);
+
+        const gw = slide.palavra_gatilho ? Math.min(slide.palavra_gatilho.length * 70 + 120, SW - 80) : 500;
+        const gh = 140;
+        const gx = (SW - gw) / 2;
+        const gy = 600;
+        ctx.fillStyle = cs;
+        ctx.beginPath();
+        ctx.roundRect(gx, gy, gw, gh, 20);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = `800 90px ${font}`;
+        ctx.textAlign = 'center';
+        ctx.fillText((slide.palavra_gatilho || 'COMENTE').toUpperCase(), SW/2, gy + 98);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.font = `400 40px ${font}`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Comente esta palavra abaixo', SW/2, 820);
+
+        if (slide.beneficio) {
+          ctx.fillStyle = cs;
+          ctx.font = `600 36px ${font}`;
+          wrapText(ctx, `e receba: ${slide.beneficio}`, SW/2, 920, SW - PAD*2, 50);
+        }
+
+      } else {
+        ctx.fillStyle = cp;
+        ctx.font = `700 54px ${font}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`0${slide.numero}`, PAD, 120);
+
+        if (slide.titulo) {
+          const tSize = adaptiveFontSize(slide.titulo, 66, 44);
+          ctx.fillStyle = '#fff';
+          ctx.font = `700 ${tSize}px ${font}`;
+          ctx.textAlign = 'left';
+          wrapText(ctx, slide.titulo, PAD, 250, SW - PAD*2, Math.round(tSize*1.3));
+        }
+
+        if (slide.texto) {
+          ctx.fillStyle = 'rgba(255,255,255,0.82)';
+          ctx.font = `400 40px ${font}`;
+          ctx.textAlign = 'left';
+          wrapText(ctx, slide.texto, PAD, 550, SW - PAD*2, 62);
+        }
+
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.font = `400 36px ${font}`;
+        ctx.textAlign = 'right';
+        ctx.fillText(`${slide.numero} →`, SW - PAD, SH - 80);
+      }
+
+      return canvas;
+    }
+
+    async function downloadAll(slides, client) {
+      const zip = new JSZip();
+      for (let i = 0; i < slides.length; i++) {
+        const canvas = await renderToCanvas(slides[i], client);
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        zip.file(`slide-${String(i+1).padStart(2,'0')}.png`, blob);
+      }
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = `carrossel-${Date.now()}.zip`;
+      a.click();
+    }
+
+    async function downloadOne(slide, client, i) {
+      const canvas = await renderToCanvas(slide, client);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `slide-${String(i+1).padStart(2,'0')}.png`;
+      a.click();
+    }
+
+    /* ── STYLES ── */
+    const S = {
+      overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999 },
+      modal: { background:'#0D1928', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:32, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto' },
+      input: { width:'100%', background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.14)', borderRadius:8, padding:'10px 14px', color:'#fff', fontFamily:'Sora,sans-serif', fontSize:14, outline:'none' },
+      label: { display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.45)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
+      btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
+      btnS: { background:'rgba(255,255,255,0.07)', color:'#fff', border:'1px solid rgba(255,255,255,0.13)', borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
+      btnG: { background:'transparent', color:'rgba(255,255,255,0.45)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'4px 8px' },
+    };
+
+    /* ── SETTINGS MODAL ── */
+    function SettingsModal({ onClose }) {
+      const [ck, setCk] = useState(LS.get('claudeKey', ''));
+      const [gk, setGk] = useState(LS.get('geminiKey', ''));
+      const save = () => { LS.set('claudeKey', ck); LS.set('geminiKey', gk); onClose(); };
+      return (
+        <div style={S.overlay} onClick={onClose}>
+          <div style={S.modal} onClick={e => e.stopPropagation()}>
+            <h2 style={{fontSize:19,fontWeight:700,marginBottom:24}}>Configurações de API</h2>
+            <div style={{marginBottom:18}}>
+              <label style={S.label}>Chave API Claude (Anthropic) — copy dos slides</label>
+              <input style={S.input} type="password" value={ck} onChange={e => setCk(e.target.value)} placeholder="sk-ant-..." />
+              <p style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginTop:5}}>Modelo: claude-haiku-4-5 · custo por carrossel: ~R$0,05</p>
+            </div>
+            <div style={{marginBottom:24}}>
+              <label style={S.label}>Chave API Gemini (Google AI Studio) — imagens</label>
+              <input style={S.input} type="password" value={gk} onChange={e => setGk(e.target.value)} placeholder="AIza..." />
+              <p style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginTop:5}}>Modelo: gemini-2.0-flash · Obtenha em aistudio.google.com · US$300 grátis em contas novas</p>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button style={S.btnP} onClick={save}>Salvar</button>
+              <button style={{...S.btnS,width:'auto'}} onClick={onClose}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── CLIENT MODAL ── */
+    function ClientModal({ client, onSave, onClose }) {
+      const [f, setF] = useState(client || {
+        id: Date.now().toString(), nome:'', especialidade:'', instagram:'',
+        nicho:'', tomVoz:'Acolhedor, científico, direto',
+        corPrimaria: ORANGE, corSecundaria: DARK, fonte:'Sora',
+        palavrasProibidas: [...DEFAULT_FORBIDDEN], fotoRostoUrl:''
+      });
+      const [tag, setTag] = useState('');
+      const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+
+      const addTag = () => {
+        const t = tag.trim().toLowerCase();
+        if (t && !f.palavrasProibidas.includes(t)) { set('palavrasProibidas', [...f.palavrasProibidas, t]); setTag(''); }
+      };
+
+      return (
+        <div style={S.overlay} onClick={onClose}>
+          <div style={{...S.modal,maxWidth:620}} onClick={e => e.stopPropagation()}>
+            <h2 style={{fontSize:19,fontWeight:700,marginBottom:22}}>{client ? 'Editar Perfil' : 'Nova Médica'}</h2>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
+              {[['nome','Nome da Médica','Dra. Nome Sobrenome'],['especialidade','Especialidade','Ginecologia e Obstetrícia'],['instagram','@ Instagram','@draexemplo'],['nicho','Nicho','Menopausa e saúde hormonal 40+']].map(([k,l,p]) => (
+                <div key={k}>
+                  <label style={S.label}>{l}</label>
+                  <input style={S.input} value={f[k]} onChange={e => set(k, e.target.value)} placeholder={p} />
+                </div>
+              ))}
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Tom de Voz</label>
+              <input style={S.input} value={f.tomVoz} onChange={e => set('tomVoz', e.target.value)} />
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14,marginBottom:14}}>
+              {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
+                <div key={k}>
+                  <label style={S.label}>{l}</label>
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    <input type="color" value={f[k]} onChange={e => set(k, e.target.value)} style={{width:38,height:34,border:'none',background:'none'}} />
+                    <input style={{...S.input,flex:1}} value={f[k]} onChange={e => set(k, e.target.value)} />
+                  </div>
+                </div>
+              ))}
+              <div>
+                <label style={S.label}>Fonte</label>
+                <select style={S.input} value={f.fonte} onChange={e => set('fonte', e.target.value)}>
+                  {FONTS.map(fn => <option key={fn} value={fn}>{fn}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{marginBottom:18}}>
+              <label style={S.label}>Palavras Proibidas (CFM)</label>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <input style={{...S.input,flex:1}} value={tag} onChange={e => setTag(e.target.value)} onKeyDown={e => e.key==='Enter'&&addTag()} placeholder="Adicionar..." />
+                <button style={{...S.btnS,whiteSpace:'nowrap'}} onClick={addTag}>+ Add</button>
+              </div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                {f.palavrasProibidas.map(w => (
+                  <span key={w} style={{background:'rgba(244,117,48,0.12)',border:'1px solid rgba(244,117,48,0.25)',borderRadius:20,padding:'3px 10px',fontSize:12,display:'flex',alignItems:'center',gap:6}}>
+                    {w}
+                    <button onClick={() => set('palavrasProibidas', f.palavrasProibidas.filter(x=>x!==w))} style={{background:'none',border:'none',color:ORANGE,cursor:'pointer',fontSize:15,lineHeight:1,padding:0}}>×</button>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button style={S.btnP} onClick={() => onSave(f)}>Salvar Perfil</button>
+              <button style={{...S.btnS,width:'auto'}} onClick={onClose}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── SLIDE EDIT MODAL ── */
+    function EditModal({ slide, onSave, onClose }) {
+      const [s, setS] = useState({ ...slide });
+      const set = (k, v) => setS(p => ({ ...p, [k]: v }));
+      const Field = ({ label, k, multi }) => (
+        <div style={{marginBottom:14}}>
+          <label style={S.label}>{label}</label>
+          {multi
+            ? <textarea style={{...S.input,resize:'vertical',minHeight:76}} value={s[k]||''} onChange={e=>set(k,e.target.value)} />
+            : <input style={S.input} value={s[k]||''} onChange={e=>set(k,e.target.value)} />
+          }
+        </div>
+      );
+      return (
+        <div style={S.overlay} onClick={onClose}>
+          <div style={{...S.modal,maxWidth:480}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+              <h2 style={{fontSize:17,fontWeight:700}}>Editar Slide {s.numero}</h2>
+              <button onClick={onClose} style={S.btnG}>✕</button>
+            </div>
+            {s.tipo==='capa'    && <><Field label="Headline" k="headline" multi /><Field label="Palavra Destaque" k="destaque" /><Field label="Subtítulo" k="subtitulo" multi /></>}
+            {s.tipo==='conteudo'&& <><Field label="Título" k="titulo" multi /><Field label="Texto" k="texto" multi /></>}
+            {s.tipo==='cta'     && <><Field label="Texto Principal" k="texto" multi /><Field label="Palavra-Gatilho (DM)" k="palavra_gatilho" /><Field label="Benefício" k="beneficio" /></>}
+            <Field label="Prompt da Imagem (Gemini)" k="prompt_imagem" multi />
+            <div style={{display:'flex',gap:10}}>
+              <button style={S.btnP} onClick={()=>onSave(s)}>Salvar</button>
+              <button style={{...S.btnS,width:'auto'}} onClick={onClose}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── SLIDE CARD PREVIEW ── */
+    function SlideCard({ slide, idx, onEdit, onDownload, onRegen, regenning }) {
+      const PW = Math.round(SW * SCALE);
+      const PH = Math.round(SH * SCALE);
+      const cp = ORANGE, cs = DARK;
+      const isCta = slide.tipo === 'cta';
+      const bg = isCta ? cp : cs;
+
+      const wrapperStyle = {
+        width: PW, height: PH, borderRadius:8, overflow:'hidden',
+        cursor:'pointer', position:'relative', flexShrink:0,
+        border:'1px solid rgba(255,255,255,0.08)',
+        transition:'border-color 0.2s'
+      };
+      const innerStyle = {
+        width: SW, height: SH, position:'absolute', top:0, left:0,
+        transform:`scale(${SCALE})`, transformOrigin:'top left',
+        background: bg, overflow:'hidden', fontFamily:'Sora,sans-serif',
+        display:'flex', flexDirection:'column',
+        ...(slide.imageData ? {
+          backgroundImage:`linear-gradient(rgba(6,14,24,${isCta?'0.4':'0.65'}),rgba(6,14,24,${isCta?'0.4':'0.65'})),url(data:image/png;base64,${slide.imageData})`,
+          backgroundSize:'cover', backgroundPosition:'center'
+        } : {})
+      };
+
+      return (
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          <div style={wrapperStyle} onClick={()=>onEdit(slide,idx)}>
+            <div style={innerStyle}>
+              {slide.tipo==='capa' && (
+                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,justifyContent:'center',alignItems:'center',textAlign:'center',gap:20}}>
+                  <div style={{color:'rgba(255,255,255,0.3)',fontSize:34,alignSelf:'flex-end',marginTop:-20}}>1 →</div>
+                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',gap:24}}>
+                    <div style={{color:'#fff',fontSize:76,fontWeight:700,lineHeight:1.2}}>{slide.headline}</div>
+                    {slide.destaque && <div style={{color:ORANGE,fontSize:84,fontWeight:800,textTransform:'uppercase'}}>{slide.destaque}</div>}
+                    {slide.subtitulo && <div style={{color:'rgba(255,255,255,0.65)',fontSize:38}}>{slide.subtitulo}</div>}
+                  </div>
+                  <div style={{color:ORANGE,fontSize:30,fontWeight:700}}>AceleraGO</div>
+                </div>
+              )}
+              {slide.tipo==='conteudo' && (
+                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,gap:20}}>
+                  <div style={{color:ORANGE,fontSize:56,fontWeight:700}}>0{slide.numero}</div>
+                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',gap:20}}>
+                    {slide.titulo && <div style={{color:'#fff',fontSize:62,fontWeight:700,lineHeight:1.2}}>{slide.titulo}</div>}
+                    {slide.texto  && <div style={{color:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.6}}>{slide.texto}</div>}
+                  </div>
+                  <div style={{color:'rgba(255,255,255,0.2)',fontSize:36,textAlign:'right'}}>{slide.numero} →</div>
+                </div>
+              )}
+              {slide.tipo==='cta' && (
+                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,justifyContent:'center',alignItems:'center',textAlign:'center',gap:36}}>
+                  <div style={{color:'#fff',fontSize:58,fontWeight:700,lineHeight:1.3}}>{slide.texto}</div>
+                  <div style={{background:DARK,borderRadius:18,padding:'20px 60px',fontSize:88,fontWeight:800,textTransform:'uppercase',color:'#fff'}}>{slide.palavra_gatilho||'COMENTE'}</div>
+                  <div style={{color:'rgba(255,255,255,0.85)',fontSize:38}}>Comente esta palavra abaixo</div>
+                  {slide.beneficio && <div style={{color:DARK,fontSize:34,fontWeight:600}}>e receba: {slide.beneficio}</div>}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:4,width:PW}}>
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.5)'}}>Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.5)'}}>↓ PNG</button>
+            <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:regenning?'rgba(255,255,255,0.3)':ORANGE}}>
+              {regenning ? '...' : '⟳ Img'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── TOGGLE ── */
+    function Toggle({ label, sub, checked, onChange, disabled }) {
+      return (
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,opacity:disabled?0.4:1}}>
+          <div>
+            <div style={{fontSize:13,fontWeight:500}}>{label}</div>
+            {sub && <div style={{fontSize:11,color:'rgba(255,255,255,0.38)',marginTop:2}}>{sub}</div>}
+          </div>
+          <div onClick={()=>!disabled&&onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?ORANGE:'rgba(255,255,255,0.14)',position:'relative',cursor:disabled?'default':'pointer',transition:'background 0.2s',flexShrink:0}}>
+            <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:checked?23:3,transition:'left 0.2s'}} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ── APP ── */
+    function App() {
+      const [clients, setClients]               = useState(() => LS.get('clients', []));
+      const [selId, setSelId]                   = useState(() => LS.get('selId', null));
+      const [form, setForm]                     = useState({ tema:'', formato:'alerta', numSlides:10, gerarImagens:true, usarFotoMedica:false });
+      const [slides, setSlides]                 = useState([]);
+      const [legenda, setLegenda]               = useState('');
+      const [hashtags, setHashtags]             = useState([]);
+      const [palavraGatilho, setPalavraGatilho] = useState('');
+      const [generating, setGenerating]         = useState(false);
+      const [genImgIdx, setGenImgIdx]           = useState(-1);
+      const [progress, setProgress]             = useState('');
+      const [error, setError]                   = useState('');
+      const [modal, setModal]                   = useState(null);
+      const [editClient, setEditClient]         = useState(null);
+      const [editSlide, setEditSlide]           = useState(null);
+      const [downloading, setDownloading]       = useState(false);
+
+      const client = clients.find(c => c.id === selId);
+
+      const saveClients = (arr) => { setClients(arr); LS.set('clients', arr); };
+      const selectClient = (id) => { setSelId(id); LS.set('selId', id); };
+
+      const handleSaveClient = (data) => {
+        const idx = clients.findIndex(c => c.id === data.id);
+        const arr = idx >= 0 ? clients.map(c => c.id===data.id ? data : c) : [...clients, data];
+        saveClients(arr);
+        selectClient(data.id);
+        setModal(null); setEditClient(null);
+      };
+
+      const handleDelClient = (id) => {
+        if (!confirm('Remover este perfil?')) return;
+        const arr = clients.filter(c => c.id !== id);
+        saveClients(arr);
+        if (selId === id) { const nid = arr[0]?.id||null; selectClient(nid); }
+      };
+
+      const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+      const handleGenerate = async () => {
+        if (!client) { setError('Selecione ou crie uma médica primeiro.'); return; }
+        if (!form.tema.trim()) { setError('Digite o tema do carrossel.'); return; }
+        const ck = LS.get('claudeKey','');
+        const gk = LS.get('geminiKey','');
+        if (!ck) { setError('Configure a chave API do Claude nas Configurações (⚙).'); return; }
+        setError(''); setGenerating(true); setSlides([]); setLegenda(''); setHashtags([]); setPalavraGatilho('');
+
+        try {
+          setProgress('Gerando copy com Claude...');
+          const result = await generateCopy(form, client, ck);
+          setSlides(result.slides || []);
+          setLegenda(result.legenda || '');
+          setHashtags(result.hashtags || []);
+          setPalavraGatilho(result.palavra_gatilho_dm || '');
+          setProgress('');
+
+          if (form.gerarImagens && gk && result.slides?.length) {
+            const updated = [...result.slides];
+            for (let i = 0; i < updated.length; i++) {
+              if (updated[i].prompt_imagem) {
+                try {
+                  setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
+                  setGenImgIdx(i);
+                  const imgData = await generateImage(updated[i].prompt_imagem, gk);
+                  updated[i] = { ...updated[i], imageData: imgData };
+                  setSlides([...updated]);
+                } catch (e) { console.warn(`Slide ${i+1} imagem:`, e.message); }
+              }
+            }
+            setGenImgIdx(-1);
+          } else if (form.gerarImagens && !gk) {
+            setError('Imagens não geradas: configure a chave API Gemini nas Configurações.');
+          }
+
+        } catch (e) { setError(e.message || 'Erro ao gerar conteúdo'); }
+        finally { setGenerating(false); setProgress(''); }
+      };
+
+      const handleRegen = async (slide, idx) => {
+        const gk = LS.get('geminiKey','');
+        if (!gk) { setError('Configure a chave API Gemini nas Configurações.'); return; }
+        if (!slide.prompt_imagem) { setError('Slide sem prompt de imagem. Edite o slide para adicionar um.'); return; }
+        setGenImgIdx(idx); setError('');
+        try {
+          const imgData = await generateImage(slide.prompt_imagem, gk);
+          setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
+        } catch (e) { setError(e.message); }
+        finally { setGenImgIdx(-1); }
+      };
+
+      const handleDownloadAll = async () => {
+        if (!client || !slides.length) return;
+        setDownloading(true); setError('');
+        try { await downloadAll(slides, client); }
+        catch (e) { setError(e.message); }
+        finally { setDownloading(false); }
+      };
+
+      const handleDownloadOne = async (slide, idx) => {
+        if (!client) return;
+        try { await downloadOne(slide, client, idx); }
+        catch (e) { setError(e.message); }
+      };
+
+      return (
+        <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
+
+          {/* TOP BAR */}
+          <div style={{background:'#0D1928',borderBottom:'1px solid rgba(255,255,255,0.07)',padding:'0 20px',height:58,display:'flex',alignItems:'center',gap:14,flexShrink:0}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:30,height:30,background:ORANGE,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:13}}>A</div>
+              <span style={{fontWeight:700,fontSize:15}}>Gerador de Carrossel</span>
+              <span style={{color:'rgba(255,255,255,0.25)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>
+            </div>
+            <div style={{flex:1}} />
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              {clients.length > 0 && (
+                <select value={selId||''} onChange={e=>selectClient(e.target.value)} style={{...S.input,width:'auto',minWidth:190,height:34,padding:'0 10px',fontSize:13}}>
+                  <option value="">— Selecionar médica —</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                </select>
+              )}
+              <button onClick={()=>{setEditClient(null);setModal('client');}} style={{...S.btnS,height:34,padding:'0 12px',fontSize:12,whiteSpace:'nowrap'}}>+ Nova Médica</button>
+              {client && <button onClick={()=>{setEditClient(client);setModal('client');}} style={{...S.btnS,height:34,padding:'0 10px',fontSize:13}}>✏</button>}
+            </div>
+            <button onClick={()=>setModal('settings')} style={{background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,width:34,height:34,color:'#fff',cursor:'pointer',fontSize:15}}>⚙</button>
+          </div>
+
+          {/* LAYOUT */}
+          <div style={{display:'flex',flex:1,minHeight:0}}>
+
+            {/* LEFT PANEL */}
+            <div style={{width:290,background:'#080f1c',borderRight:'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:18,flexShrink:0}}>
+
+              <div>
+                <label style={S.label}>Formato</label>
+                <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                  {FORMATS.map(f => (
+                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.12)':'rgba(255,255,255,0.03)',border:`1px solid ${form.formato===f.id?ORANGE:'rgba(255,255,255,0.07)'}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?'#fff':'rgba(255,255,255,0.55)',cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
+                      <div style={{fontSize:12,fontWeight:600}}>{f.label}</div>
+                      <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginTop:2}}>{f.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={S.label}>Tema do Carrossel</label>
+                <textarea style={{...S.input,resize:'vertical',minHeight:78,lineHeight:1.55}} value={form.tema} onChange={e=>setF('tema',e.target.value)} placeholder={"Ex: menopausa e ganho de peso\nEx: mitos sobre a pílula anticoncepcional"} />
+              </div>
+
+              <div>
+                <label style={S.label}>Número de Slides</label>
+                <div style={{display:'flex',gap:6}}>
+                  {[5,8,10].map(n => (
+                    <button key={n} onClick={()=>setF('numSlides',n)} style={{flex:1,background:form.numSlides===n?ORANGE:'rgba(255,255,255,0.06)',border:'none',borderRadius:7,padding:'9px',color:'#fff',cursor:'pointer',fontFamily:'Sora,sans-serif',fontWeight:700,fontSize:14}}>{n}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                <Toggle label="Gerar imagens com Gemini" sub="Requer chave API Gemini" checked={form.gerarImagens} onChange={v=>setF('gerarImagens',v)} />
+                <Toggle label="Usar foto da médica" sub="Insere o rosto nos prompts (Beta)" checked={form.usarFotoMedica} onChange={v=>setF('usarFotoMedica',v)} disabled={!client?.fotoRostoUrl} />
+              </div>
+
+              {error && <div style={{background:'rgba(220,38,38,0.12)',border:'1px solid rgba(220,38,38,0.25)',borderRadius:7,padding:'10px 14px',fontSize:12,color:'#fca5a5',lineHeight:1.5}}>{error}</div>}
+              {(generating||genImgIdx>=0) && progress && <div style={{background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'10px 14px',fontSize:12,color:ORANGE}}>{progress}</div>}
+
+              <button onClick={handleGenerate} disabled={generating||!client} style={{...S.btnP,opacity:generating||!client?0.45:1,fontSize:15,padding:'14px'}}>
+                {generating ? 'Gerando...' : '✦ Gerar Carrossel'}
+              </button>
+
+              {slides.length > 0 && (
+                <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
+                  {downloading ? 'Preparando...' : `↓ Baixar Todos (${slides.length} slides)`}
+                </button>
+              )}
+
+              {legenda && (
+                <div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                    <label style={S.label}>Legenda gerada</label>
+                    <button onClick={()=>navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''))} style={{...S.btnG,fontSize:10,color:ORANGE}}>Copiar</button>
+                  </div>
+                  <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:7,padding:12,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.65,maxHeight:160,overflowY:'auto',whiteSpace:'pre-wrap'}}>{legenda}</div>
+                  {hashtags.length > 0 && <div style={{marginTop:6,fontSize:11,color:ORANGE,lineHeight:1.9}}>{hashtags.join(' ')}</div>}
+                  {palavraGatilho && (
+                    <div style={{marginTop:8,background:'rgba(244,117,48,0.1)',borderRadius:6,padding:'7px 12px',fontSize:11}}>
+                      Palavra-gatilho DM: <strong style={{color:ORANGE}}>{palavraGatilho}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SLIDES AREA */}
+            <div style={{flex:1,overflowY:'auto',padding:24}}>
+              {slides.length === 0 ? (
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:14,color:'rgba(255,255,255,0.18)'}}>
+                  <div style={{fontSize:52}}>◈</div>
+                  <div style={{fontSize:15,textAlign:'center'}}>
+                    {client ? `Pronto para gerar carrossel para ${client.nome}` : 'Selecione ou crie uma médica para começar'}
+                  </div>
+                  {!client && (
+                    <button onClick={()=>setModal('client')} style={{...S.btnP,width:'auto',padding:'11px 22px',marginTop:8,fontSize:13}}>+ Criar primeira médica</button>
+                  )}
+                </div>
+              ) : (
+                <div style={{display:'flex',flexWrap:'wrap',gap:18,alignContent:'flex-start'}}>
+                  {slides.map((slide,i) => (
+                    <SlideCard key={i} slide={slide} idx={i}
+                      onEdit={(sl,ix) => setEditSlide({slide:sl,idx:ix})}
+                      onDownload={handleDownloadOne}
+                      onRegen={handleRegen}
+                      regenning={genImgIdx===i}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* MODALS */}
+          {modal==='settings' && <SettingsModal onClose={()=>setModal(null)} />}
+          {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} />}
+          {editSlide && <EditModal slide={editSlide.slide} onSave={s=>{setSlides(prev=>prev.map((sl,i)=>i===editSlide.idx?s:sl));setEditSlide(null);}} onClose={()=>setEditSlide(null)} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
