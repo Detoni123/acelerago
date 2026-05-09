@@ -554,10 +554,22 @@ Retorne exatamente este JSON:
     }
 
     /* ── SLIDE CARD PREVIEW ── */
-    function SlideCard({ slide, idx, onEdit, onDownload, onRegen, regenning }) {
+    function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage }) {
       const PW = Math.round(SW * SCALE);
       const PH = Math.round(SH * SCALE);
       const isCta = slide.tipo === 'cta';
+      const cp = client?.corPrimaria || ORANGE;
+      const cs = client?.corSecundaria || DARK;
+      const slideBg = slide.bgColor || (isCta ? cp : cs);
+
+      const fileRef = useRef(null);
+      const handleUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => onUploadImage(idx, ev.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      };
 
       const imgBg = slide.imageData ? `url(data:image/png;base64,${slide.imageData})` : null;
 
@@ -582,54 +594,41 @@ Retorne exatamente este JSON:
 
               {/* ── CAPA ── */}
               {slide.tipo === 'capa' && (
-                <div style={{width:SW,height:SH,position:'relative',background:DARK}}>
+                <div style={{width:SW,height:SH,position:'relative',background:cs}}>
                   {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:'cover',backgroundPosition:'center top'}} />}
-                  {/* gradient overlay: transparent top → dark bottom */}
-                  <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg, rgba(6,14,24,0.05) 0%, rgba(6,14,24,0.4) 35%, rgba(6,14,24,0.92) 70%, rgba(6,14,24,0.98) 100%)'}} />
-                  {/* content anchored to bottom */}
+                  <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(6,14,24,0.05) 0%,rgba(6,14,24,0.4) 35%,rgba(6,14,24,0.92) 70%,rgba(6,14,24,0.98) 100%)'}} />
                   <div style={{position:'absolute',bottom:0,left:0,right:0,padding:`0 ${PAD}px 100px`,display:'flex',flexDirection:'column',gap:24}}>
-                    {slide.destaque && (
-                      <div style={{color:ORANGE,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.destaque}</div>
-                    )}
-                    <div style={{color:'#fff',fontSize:78,fontWeight:700,lineHeight:1.18,letterSpacing:'-0.01em'}}>{slide.headline}</div>
-                    {slide.subtitulo && (
-                      <div style={{color:'rgba(255,255,255,0.6)',fontSize:36,fontWeight:400,lineHeight:1.5}}>{slide.subtitulo}</div>
-                    )}
+                    {slide.destaque && <div style={{color:cp,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.destaque}</div>}
+                    <div style={{color:'#fff',fontSize:78,fontWeight:700,lineHeight:1.18}}>{slide.headline}</div>
+                    {slide.subtitulo && <div style={{color:'rgba(255,255,255,0.6)',fontSize:36,lineHeight:1.5}}>{slide.subtitulo}</div>}
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
                       <div style={{display:'flex',alignItems:'center',gap:14}}>
-                        <div style={{width:8,height:8,borderRadius:'50%',background:ORANGE}} />
-                        <span style={{color:ORANGE,fontSize:26,fontWeight:700,letterSpacing:'0.05em'}}>AceleraGO</span>
+                        <div style={{width:8,height:8,borderRadius:'50%',background:cp}} />
+                        <span style={{color:cp,fontSize:26,fontWeight:700}}>AceleraGO</span>
                       </div>
                       <div style={{color:'rgba(255,255,255,0.35)',fontSize:28}}>deslize →</div>
                     </div>
                   </div>
-                  {/* slide number top right */}
                   <div style={{position:'absolute',top:60,right:PAD,color:'rgba(255,255,255,0.25)',fontSize:30}}>1 / {idx+1}</div>
                 </div>
               )}
 
               {/* ── CONTEÚDO ── */}
               {slide.tipo === 'conteudo' && (
-                <div style={{width:SW,height:SH,background:DARK,display:'flex',flexDirection:'column'}}>
-                  {/* orange top border */}
-                  <div style={{height:8,background:ORANGE,flexShrink:0}} />
+                <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
+                  <div style={{height:8,background:cp,flexShrink:0}} />
                   <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
-                    {/* number + line */}
                     <div style={{display:'flex',alignItems:'center',gap:24}}>
-                      <span style={{color:ORANGE,fontSize:36,fontWeight:800}}>0{slide.numero}</span>
-                      <div style={{flex:1,height:2,background:'rgba(244,117,48,0.25)'}} />
+                      <span style={{color:cp,fontSize:36,fontWeight:800}}>0{slide.numero}</span>
+                      <div style={{flex:1,height:2,background:`${cp}30`}} />
                     </div>
-                    {/* title */}
-                    {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18,letterSpacing:'-0.01em'}}>{slide.titulo}</div>}
-                    {/* inline image between title and text */}
+                    {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
                     {slide.imageData && (
                       <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
                         <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
                       </div>
                     )}
-                    {/* body text */}
-                    {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,fontWeight:400,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
-                    {/* arrow */}
+                    {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
                     <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right'}}>{slide.numero} →</div>
                   </div>
                 </div>
@@ -637,15 +636,11 @@ Retorne exatamente este JSON:
 
               {/* ── CTA ── */}
               {slide.tipo === 'cta' && (
-                <div style={{width:SW,height:SH,position:'relative',background:ORANGE}}>
-                  {/* subtle texture with dark diagonal */}
-                  <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 60%)'}} />
+                <div style={{width:SW,height:SH,position:'relative',background:cp}}>
+                  <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0) 60%)'}} />
                   <div style={{position:'absolute',inset:0,padding:`${PAD}px`,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',textAlign:'center',gap:48}}>
-                    {slide.texto && (
-                      <div style={{color:'#fff',fontSize:58,fontWeight:700,lineHeight:1.3,letterSpacing:'-0.01em'}}>{slide.texto}</div>
-                    )}
-                    {/* trigger word pill */}
-                    <div style={{background:DARK,borderRadius:20,padding:'32px 80px',display:'inline-block'}}>
+                    {slide.texto && <div style={{color:'#fff',fontSize:56,fontWeight:700,lineHeight:1.3}}>{slide.texto}</div>}
+                    <div style={{background:cs,borderRadius:20,padding:'32px 80px'}}>
                       <div style={{color:'#fff',fontSize:96,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.palavra_gatilho||'COMENTE'}</div>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',gap:12}}>
@@ -658,13 +653,26 @@ Retorne exatamente este JSON:
 
             </div>
           </div>
-          <div style={{display:'flex',gap:4,width:PW}}>
-            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.5)'}}>Editar</button>
-            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.5)'}}>↓ PNG</button>
-            <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:regenning?'rgba(255,255,255,0.3)':ORANGE}}>
-              {regenning ? '...' : '⟳ Img'}
+          {/* action bar */}
+          <div style={{display:'flex',gap:3,width:PW,flexWrap:'wrap'}}>
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>✏ Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>↓ PNG</button>
+            <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:regenning?'rgba(255,255,255,0.2)':cp}}>
+              {regenning?'...':'⟳ Gemini'}
             </button>
+            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>📁 Upload</button>
+            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(220,50,50,0.7)'}}>✕ Img</button>}
           </div>
+          {/* hidden file input */}
+          <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
+          {/* bg color picker for content slides */}
+          {slide.tipo === 'conteudo' && (
+            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,marginTop:2}}>
+              <span style={{fontSize:9,color:'rgba(255,255,255,0.3)'}}>Fundo:</span>
+              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:20,height:16,border:'none',background:'none',cursor:'pointer',padding:0}} />
+              <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>reset</button>
+            </div>
+          )}
         </div>
       );
     }
@@ -741,23 +749,7 @@ Retorne exatamente este JSON:
           setPalavraGatilho(result.palavra_gatilho_dm || '');
           setProgress('');
 
-          if (form.gerarImagens && gk && result.slides?.length) {
-            const updated = [...result.slides];
-            for (let i = 0; i < updated.length; i++) {
-              if (updated[i].prompt_imagem) {
-                try {
-                  setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
-                  setGenImgIdx(i);
-                  const imgData = await generateImage(updated[i].prompt_imagem, gk);
-                  updated[i] = { ...updated[i], imageData: imgData };
-                  setSlides([...updated]);
-                } catch (e) { console.warn(`Slide ${i+1} imagem:`, e.message); }
-              }
-            }
-            setGenImgIdx(-1);
-          } else if (form.gerarImagens && !gk) {
-            setError('Imagens não geradas: configure a chave API Gemini nas Configurações.');
-          }
+          // Fase 1 completa — imagens ficam para fase 2 (manual por slide ou botão "Gerar todas")
 
         } catch (e) { setError(e.message || 'Erro ao gerar conteúdo'); }
         finally { setGenerating(false); setProgress(''); }
@@ -773,6 +765,25 @@ Retorne exatamente este JSON:
           setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
         } catch (e) { setError(e.message); }
         finally { setGenImgIdx(-1); }
+      };
+
+      const handleGenerateAllImages = async () => {
+        const gk = LS.get('geminiKey','');
+        if (!gk) { setError('Configure a chave API Gemini nas Configurações (⚙).'); return; }
+        setError('');
+        const updated = [...slides];
+        for (let i = 0; i < updated.length; i++) {
+          if (updated[i].prompt_imagem) {
+            try {
+              setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
+              setGenImgIdx(i);
+              const imgData = await generateImage(updated[i].prompt_imagem, gk);
+              updated[i] = { ...updated[i], imageData: imgData };
+              setSlides([...updated]);
+            } catch (e) { console.warn(`Slide ${i+1}:`, e.message); }
+          }
+        }
+        setGenImgIdx(-1); setProgress('');
       };
 
       const handleDownloadAll = async () => {
@@ -854,13 +865,18 @@ Retorne exatamente este JSON:
               {(generating||genImgIdx>=0) && progress && <div style={{background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'10px 14px',fontSize:12,color:ORANGE}}>{progress}</div>}
 
               <button onClick={handleGenerate} disabled={generating||!client} style={{...S.btnP,opacity:generating||!client?0.45:1,fontSize:15,padding:'14px'}}>
-                {generating ? 'Gerando...' : '✦ Gerar Carrossel'}
+                {generating ? 'Gerando copy...' : '✦ Fase 1: Gerar Copy'}
               </button>
 
               {slides.length > 0 && (
-                <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
-                  {downloading ? 'Preparando...' : `↓ Baixar Todos (${slides.length} slides)`}
-                </button>
+                <>
+                  <button onClick={handleGenerateAllImages} disabled={genImgIdx>=0} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:genImgIdx>=0?0.5:1,borderColor:'rgba(244,117,48,0.4)',color:ORANGE}}>
+                    {genImgIdx>=0 ? progress||'Gerando imagens...' : `⟳ Fase 2: Gerar Todas as Imagens`}
+                  </button>
+                  <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
+                    {downloading ? 'Preparando...' : `↓ Baixar Todos (${slides.length} slides)`}
+                  </button>
+                </>
               )}
 
               {legenda && (
@@ -896,10 +912,13 @@ Retorne exatamente este JSON:
                 <div style={{display:'flex',flexWrap:'wrap',gap:18,alignContent:'flex-start'}}>
                   {slides.map((slide,i) => (
                     <SlideCard key={i} slide={slide} idx={i}
-                      onEdit={(sl,ix) => setEditSlide({slide:sl,idx:ix})}
+                      client={client}
+                      onEdit={(sl,ix,silent) => { if(silent){setSlides(prev=>prev.map((s,j)=>j===ix?sl:s));}else{setEditSlide({slide:sl,idx:ix});}}}
                       onDownload={handleDownloadOne}
                       onRegen={handleRegen}
                       regenning={genImgIdx===i}
+                      onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64}:s))}
+                      onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null}:s))}
                     />
                   ))}
                 </div>
