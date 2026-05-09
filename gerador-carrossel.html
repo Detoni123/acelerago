@@ -45,6 +45,12 @@
 
     const FONTS = ['Sora', 'Arial', 'Georgia', 'Trebuchet MS', 'Verdana'];
 
+    const LAYOUTS = [
+      { id:'inline', label:'Imagem + Texto' },
+      { id:'texto',  label:'Só Texto' },
+      { id:'lateral',label:'Lado a Lado' },
+    ];
+
     const DEFAULT_FORBIDDEN = [
       'cura','milagre','garanto','resultado garantido','melhor médica',
       'número 1','antes e depois','compare','tratamento definitivo','curo'
@@ -56,15 +62,19 @@
     };
 
     /* ── GEMINI IMAGE GENERATION ── */
-    async function generateImage(prompt, key) {
+    async function generateImage(prompt, key, fotoBase64 = null) {
       const model = 'gemini-3.1-flash-image-preview';
+      const parts = fotoBase64
+        ? [{ inlineData: { mimeType: 'image/jpeg', data: fotoBase64 } },
+           { text: prompt + ' Integre o rosto desta pessoa à cena de forma natural e editorial, como se ela fosse a protagonista da foto.' }]
+        : [{ text: prompt }];
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-gemini-key': key },
         body: JSON.stringify({
           model,
           payload: {
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{ parts }],
             generationConfig: { responseModalities: ['IMAGE'] }
           }
         })
@@ -101,9 +111,14 @@ PERFIL DA MÉDICA:
 - Nicho: ${client.nicho || client.especialidade || ''}
 - Tom de voz: ${client.tomVoz || 'Acolhedor, científico, direto, sem exageros'}
 
+ESTRUTURA DOS SLIDES DE CONTEÚDO:
+- Slides de conteúdo NÃO precisam de título. O texto é o protagonista.
+- Cada slide de conteúdo traz UMA ideia. Uma frase forte OU 2-3 frases curtas.
+- Quando usar título: apenas quando o slide apresenta um conceito que precisa ser nomeado (ex: "O que é perimenopause?"). Nos demais, omita.
+
 LIMITES OBRIGATÓRIOS DE TEXTO (respeite sem exceção):
-- Título de slide de conteúdo: MÁXIMO 6 PALAVRAS
-- Texto de slide de conteúdo: MÁXIMO 45 PALAVRAS (2-3 frases curtas)
+- Texto de slide de conteúdo: MÁXIMO 45 PALAVRAS
+- Título de slide (quando usar): MÁXIMO 6 PALAVRAS
 - Texto de CTA: MÁXIMO 12 PALAVRAS
 - Headline de capa: MÁXIMO 8 PALAVRAS
 - Subtítulo de capa: MÁXIMO 8 PALAVRAS
@@ -136,11 +151,10 @@ Retorne exatamente este JSON:
     {
       "numero": 2,
       "tipo": "conteudo",
-      "titulo": "título curto (MÁXIMO 6 PALAVRAS)",
-      "texto": "texto direto, máximo 45 palavras, 2-3 frases curtas",
+      "texto": "uma frase de impacto OU 2-3 frases curtas, máximo 45 palavras no total",
       "prompt_imagem": "..."
     },
-    ...slides intermediários com tipo conteudo...
+    ...slides intermediários com tipo conteudo (título é OPCIONAL — omita quando o texto já for auto-suficiente)...
     {
       "numero": ${n},
       "tipo": "cta",
@@ -335,11 +349,10 @@ Retorne exatamente este JSON:
         }
 
       } else {
-        /* ── CONTEÚDO: dark bg, inline image between title and text ── */
-        ctx.fillStyle = cs;
+        /* ── CONTEÚDO ── */
+        const layout = slide.layout || 'inline';
+        ctx.fillStyle = slide.bgColor || cs;
         ctx.fillRect(0, 0, SW, SH);
-
-        // orange top border
         ctx.fillStyle = cp;
         ctx.fillRect(0, 0, SW, 8);
 
@@ -351,44 +364,69 @@ Retorne exatamente este JSON:
         ctx.fillStyle = `${cp}40`;
         ctx.fillRect(PAD + 100, 112, SW - PAD*2 - 100, 3);
 
-        // title
-        const tSize = adaptFs(slide.titulo || '', 76, 52);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `700 ${tSize}px ${font}`;
-        ctx.textAlign = 'left';
-        let ty = wrapText(ctx, slide.titulo || '', PAD, 230, SW - PAD*2, Math.round(tSize*1.2));
-        ty += 40;
-
-        // inline image (clipped to rounded rect)
-        if (slide.imageData) {
-          const imgH = 380;
-          ctx.save();
-          ctx.beginPath();
-          ctx.roundRect(PAD, ty, SW - PAD*2, imgH, 18);
-          ctx.clip();
-          const img = new Image();
-          await new Promise(r => {
-            img.onload = () => { ctx.drawImage(img, PAD, ty, SW - PAD*2, imgH); r(); };
-            img.onerror = r;
-            img.src = `data:image/png;base64,${slide.imageData}`;
-          });
-          ctx.restore();
-          ty += imgH + 40;
-        }
-
-        // body text
-        if (slide.texto) {
-          ctx.fillStyle = 'rgba(255,255,255,0.72)';
-          ctx.font = `400 44px ${font}`;
+        const drawTitle = async (y) => {
+          if (!slide.titulo) return y;
+          const tSize = adaptFs(slide.titulo, 76, 52);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `700 ${tSize}px ${font}`;
           ctx.textAlign = 'left';
-          wrapText(ctx, slide.texto, PAD, ty, SW - PAD*2, 68);
-        }
+          return wrapText(ctx, slide.titulo, PAD, y, SW - PAD*2, Math.round(tSize*1.2)) + 30;
+        };
+        const drawBody = (y, color, size, lh) => {
+          if (!slide.texto) return y;
+          ctx.fillStyle = color;
+          ctx.font = `400 ${size}px ${font}`;
+          ctx.textAlign = 'left';
+          return wrapText(ctx, slide.texto, PAD, y, SW - PAD*2, lh);
+        };
+        const drawCounter = () => {
+          ctx.fillStyle = 'rgba(255,255,255,0.18)';
+          ctx.font = `400 32px ${font}`;
+          ctx.textAlign = 'right';
+          ctx.fillText(`${slide.numero} →`, SW - PAD, SH - 80);
+        };
 
-        // slide counter bottom right
-        ctx.fillStyle = 'rgba(255,255,255,0.18)';
-        ctx.font = `400 32px ${font}`;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${slide.numero} →`, SW - PAD, SH - 80);
+        if (layout === 'lateral') {
+          let ty = 200;
+          ty = await drawTitle(ty);
+          drawBody(ty, 'rgba(255,255,255,0.78)', 40, 62);
+          if (slide.imageData) {
+            const img = new Image();
+            await new Promise(r => {
+              img.onload = () => { ctx.drawImage(img, SW/2 + 20, 8, SW/2 - 20, SH - 8); r(); };
+              img.onerror = r;
+              img.src = `data:image/png;base64,${slide.imageData}`;
+            });
+          }
+          drawCounter();
+
+        } else if (layout === 'texto') {
+          const textY = slide.titulo ? 220 : 300;
+          let ty = await drawTitle(textY);
+          drawBody(ty, '#ffffff', 58, 88);
+          drawCounter();
+
+        } else {
+          // inline (default)
+          let ty = await drawTitle(220);
+          if (slide.imageData) {
+            const imgH = 380;
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(PAD, ty, SW - PAD*2, imgH, 18);
+            ctx.clip();
+            const img = new Image();
+            await new Promise(r => {
+              img.onload = () => { ctx.drawImage(img, PAD, ty, SW - PAD*2, imgH); r(); };
+              img.onerror = r;
+              img.src = `data:image/png;base64,${slide.imageData}`;
+            });
+            ctx.restore();
+            ty += imgH + 40;
+          }
+          drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
+          drawCounter();
+        }
       }
 
       return canvas;
@@ -487,6 +525,21 @@ Retorne exatamente este JSON:
               <label style={S.label}>Tom de Voz</label>
               <input style={S.input} value={f.tomVoz} onChange={e => set('tomVoz', e.target.value)} />
             </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Foto da Médica (para Gemini integrar o rosto)</label>
+              {f.fotoRostoUrl
+                ? <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                    <img src={f.fotoRostoUrl} style={{width:56,height:56,borderRadius:'50%',objectFit:'cover',border:`2px solid ${ORANGE}`}} alt="foto" />
+                    <button style={{...S.btnS,width:'auto',fontSize:12}} onClick={()=>set('fotoRostoUrl','')}>Remover</button>
+                    <span style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>Foto carregada</span>
+                  </div>
+                : <input type="file" accept="image/*" style={{...S.input,padding:'7px 14px',cursor:'pointer'}} onChange={e=>{
+                    const file=e.target.files[0]; if(!file) return;
+                    const r=new FileReader(); r.onload=ev=>set('fotoRostoUrl',ev.target.result); r.readAsDataURL(file);
+                  }} />
+              }
+              <p style={{fontSize:11,color:'rgba(255,255,255,0.3)',marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
+            </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
                 <div key={k}>
@@ -549,7 +602,19 @@ Retorne exatamente este JSON:
               <button onClick={onClose} style={S.btnG}>✕</button>
             </div>
             {s.tipo==='capa'    && <><Field label="Headline" k="headline" multi /><Field label="Palavra Destaque" k="destaque" /><Field label="Subtítulo" k="subtitulo" multi /></>}
-            {s.tipo==='conteudo'&& <><Field label="Título" k="titulo" multi /><Field label="Texto" k="texto" multi /></>}
+            {s.tipo==='conteudo'&& <>
+              <div style={{marginBottom:14}}>
+                <label style={S.label}>Layout do Slide</label>
+                <div style={{display:'flex',gap:6}}>
+                  {LAYOUTS.map(l=>(
+                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'7px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.layout||'inline')===l.id?ORANGE:'rgba(255,255,255,0.1)'}}>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Field label="Título (opcional)" k="titulo" /><Field label="Texto" k="texto" multi />
+            </>}
             {s.tipo==='cta'     && <><Field label="Texto Principal" k="texto" multi /><Field label="Palavra-Gatilho (DM)" k="palavra_gatilho" /><Field label="Benefício" k="beneficio" /></>}
             <Field label="Prompt da Imagem (Gemini)" k="prompt_imagem" multi />
             <div style={{display:'flex',gap:10}}>
@@ -622,25 +687,59 @@ Retorne exatamente este JSON:
               )}
 
               {/* ── CONTEÚDO ── */}
-              {slide.tipo === 'conteudo' && (
-                <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
-                  <div style={{height:8,background:cp,flexShrink:0}} />
-                  <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
-                    <div style={{display:'flex',alignItems:'center',gap:24}}>
-                      <span style={{color:cp,fontSize:36,fontWeight:800}}>0{slide.numero}</span>
-                      <div style={{flex:1,height:2,background:`${cp}30`}} />
-                    </div>
-                    {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
-                    {slide.imageData && (
-                      <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
-                        <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
+              {slide.tipo === 'conteudo' && (() => {
+                const layout = slide.layout || 'inline';
+                const numLabel = <div style={{display:'flex',alignItems:'center',gap:24,flexShrink:0}}><span style={{color:cp,fontSize:36,fontWeight:800}}>0{slide.numero}</span><div style={{flex:1,height:2,background:`${cp}30`}} /></div>;
+                const counter = <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right',flexShrink:0}}>{slide.numero} →</div>;
+                const imgEl = slide.imageData ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" /></div> : null;
+
+                if (layout === 'lateral') {
+                  return (
+                    <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
+                      <div style={{height:8,background:cp,flexShrink:0}} />
+                      <div style={{flex:1,display:'flex',minHeight:0}}>
+                        <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent:'center'}}>
+                          {numLabel}
+                          {slide.titulo && <div style={{color:'#fff',fontSize:60,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                          {slide.texto && <div style={{color:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.65}}>{slide.texto}</div>}
+                          {counter}
+                        </div>
+                        {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}} alt="" /></div>}
                       </div>
-                    )}
-                    {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
-                    <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right'}}>{slide.numero} →</div>
+                    </div>
+                  );
+                }
+                if (layout === 'texto') {
+                  return (
+                    <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
+                      <div style={{height:8,background:cp,flexShrink:0}} />
+                      <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:'center'}}>
+                        {numLabel}
+                        {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                        {slide.texto && <div style={{color:'#fff',fontSize:58,fontWeight:500,lineHeight:1.5}}>{slide.texto}</div>}
+                        {counter}
+                      </div>
+                    </div>
+                  );
+                }
+                // inline (default)
+                return (
+                  <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
+                    <div style={{height:8,background:cp,flexShrink:0}} />
+                    <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
+                      {numLabel}
+                      {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                      {slide.imageData && (
+                        <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
+                          <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
+                        </div>
+                      )}
+                      {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
+                      {counter}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* ── CTA ── */}
               {slide.tipo === 'cta' && (
@@ -717,6 +816,11 @@ Retorne exatamente este JSON:
       const [editClient, setEditClient]         = useState(null);
       const [editSlide, setEditSlide]           = useState(null);
       const [downloading, setDownloading]       = useState(false);
+      const [viralStructures, setViralStructures] = useState(() => LS.get('viralStructures', []));
+      const [pautaOpen, setPautaOpen]           = useState(false);
+      const [pautaSuggestions, setPautaSuggestions] = useState([]);
+      const [pautaForm, setPautaForm]           = useState({ temas:'' });
+      const [generatingPauta, setGeneratingPauta] = useState(false);
 
       const client = clients.find(c => c.id === selId);
 
@@ -769,7 +873,9 @@ Retorne exatamente este JSON:
         if (!slide.prompt_imagem) { setError('Slide sem prompt de imagem. Edite o slide para adicionar um.'); return; }
         setGenImgIdx(idx); setError('');
         try {
-          const imgData = await generateImage(slide.prompt_imagem, gk);
+          const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
+            ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
+          const imgData = await generateImage(slide.prompt_imagem, gk, fotoB64);
           setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
         } catch (e) { setError(e.message); }
         finally { setGenImgIdx(-1); }
@@ -779,13 +885,15 @@ Retorne exatamente este JSON:
         const gk = LS.get('geminiKey','');
         if (!gk) { setError('Configure a chave API Gemini nas Configurações (⚙).'); return; }
         setError('');
+        const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
+          ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
         const updated = [...slides];
         for (let i = 0; i < updated.length; i++) {
           if (updated[i].prompt_imagem) {
             try {
               setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
               setGenImgIdx(i);
-              const imgData = await generateImage(updated[i].prompt_imagem, gk);
+              const imgData = await generateImage(updated[i].prompt_imagem, gk, fotoB64);
               updated[i] = { ...updated[i], imageData: imgData };
               setSlides([...updated]);
             } catch (e) { console.warn(`Slide ${i+1}:`, e.message); }
@@ -806,6 +914,60 @@ Retorne exatamente este JSON:
         if (!client) return;
         try { await downloadOne(slide, client, idx); }
         catch (e) { setError(e.message); }
+      };
+
+      const handleSaveViral = () => {
+        const nome = prompt('Nome para esta estrutura viral:');
+        if (!nome?.trim()) return;
+        const estrutura = {
+          id: Date.now().toString(),
+          nome: nome.trim(),
+          formato: form.formato,
+          numSlides: slides.length,
+          criado: new Date().toLocaleDateString('pt-BR'),
+          slides: slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:!!s.imageData }))
+        };
+        const arr = [estrutura, ...viralStructures].slice(0, 10);
+        setViralStructures(arr);
+        LS.set('viralStructures', arr);
+      };
+
+      const handleApplyViral = (estrutura) => {
+        const fmt = FORMATS.find(f=>f.id===estrutura.formato);
+        setF('formato', estrutura.formato);
+        setF('numSlides', estrutura.numSlides);
+        const hint = `Formato salvo: ${fmt?.label||estrutura.formato} (${estrutura.numSlides} slides). Insira o tema e clique em Gerar Copy.`;
+        setError(''); setProgress(hint);
+        setTimeout(() => setProgress(''), 4000);
+      };
+
+      const handleDeleteViral = (id) => {
+        const arr = viralStructures.filter(v=>v.id!==id);
+        setViralStructures(arr);
+        LS.set('viralStructures', arr);
+      };
+
+      const handleGeneratePauta = async () => {
+        const ck = LS.get('claudeKey','');
+        if (!ck) { setError('Configure a chave Claude nas Configurações.'); return; }
+        if (!client) { setError('Selecione uma médica primeiro.'); return; }
+        if (!pautaForm.temas.trim()) { setError('Informe os temas do mês.'); return; }
+        setGeneratingPauta(true); setPautaSuggestions([]);
+        const systemPauta = `Você é estrategista de conteúdo para médicas de saúde da mulher no Brasil. Crie pautas de Instagram objetivas. Retorne APENAS JSON válido.`;
+        const userPauta = `Crie uma pauta de 12 posts de Instagram para ${client.nome} (${client.especialidade}) para o próximo mês.
+Temas principais do mês: ${pautaForm.temas}
+
+Retorne exatamente:
+{"posts":[{"semana":1,"tema":"tema curto","formato":"alerta|analogia|noticia|serie|diagnostico","gancho":"uma frase de gancho","palavraGatilho":"PALAVRA"},...12 posts]}`;
+        try {
+          const res = await fetch('/api/claude', { method:'POST', headers:{'Content-Type':'application/json','x-claude-key':ck},
+            body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:2048, system:systemPauta, messages:[{role:'user',content:userPauta}] }) });
+          const data = await res.json();
+          const txt = data.content[0].text.trim();
+          const match = txt.match(/\{[\s\S]*\}/);
+          if (match) { const j = JSON.parse(match[0]); setPautaSuggestions(j.posts||[]); }
+        } catch(e) { setError(e.message); }
+        finally { setGeneratingPauta(false); }
       };
 
       return (
@@ -881,11 +1043,61 @@ Retorne exatamente este JSON:
                   <button onClick={handleGenerateAllImages} disabled={genImgIdx>=0} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:genImgIdx>=0?0.5:1,borderColor:'rgba(244,117,48,0.4)',color:ORANGE}}>
                     {genImgIdx>=0 ? progress||'Gerando imagens...' : `⟳ Fase 2: Gerar Todas as Imagens`}
                   </button>
-                  <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
-                    {downloading ? 'Preparando...' : `↓ Baixar Todos (${slides.length} slides)`}
-                  </button>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
+                      {downloading ? 'Preparando...' : `↓ Baixar ZIP`}
+                    </button>
+                    <button onClick={handleSaveViral} style={{...S.btnS,padding:'11px 12px',fontSize:12,borderColor:'rgba(255,215,0,0.3)',color:'rgba(255,215,0,0.8)'}} title="Salvar estrutura viral">
+                      ⚡ Salvar
+                    </button>
+                  </div>
                 </>
               )}
+
+              {/* Estruturas Virais */}
+              {viralStructures.length > 0 && (
+                <div>
+                  <label style={{...S.label,color:'rgba(255,215,0,0.5)'}}>Estruturas Virais Salvas</label>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {viralStructures.map(v => (
+                      <div key={v.id} style={{background:'rgba(255,215,0,0.05)',border:'1px solid rgba(255,215,0,0.12)',borderRadius:7,padding:'7px 10px',display:'flex',alignItems:'center',gap:6}}>
+                        <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleApplyViral(v)}>
+                          <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.8)'}}>{v.nome}</div>
+                          <div style={{fontSize:10,color:'rgba(255,255,255,0.3)',marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
+                        </div>
+                        <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:'rgba(255,255,255,0.2)'}}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pauta do Mês */}
+              <div>
+                <button onClick={()=>setPautaOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,180,255,0.25)',color:'rgba(100,180,255,0.8)'}}>
+                  {pautaOpen ? '▲ Fechar Pauta' : '📅 Pauta do Mês'}
+                </button>
+                {pautaOpen && (
+                  <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:8}}>
+                    <textarea style={{...S.input,resize:'vertical',minHeight:60,fontSize:12}} value={pautaForm.temas} onChange={e=>setPautaForm({temas:e.target.value})} placeholder="Ex: menopausa, tireoide, emagrecimento hormonal" />
+                    <button onClick={handleGeneratePauta} disabled={generatingPauta||!client} style={{...S.btnP,padding:'10px',fontSize:12,opacity:generatingPauta||!client?0.5:1}}>
+                      {generatingPauta ? 'Gerando...' : '✦ Gerar 12 sugestões'}
+                    </button>
+                    {pautaSuggestions.length > 0 && (
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:260,overflowY:'auto'}}>
+                        {pautaSuggestions.map((p,i) => (
+                          <div key={i} style={{background:'rgba(100,180,255,0.05)',border:'1px solid rgba(100,180,255,0.12)',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
+                            onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
+                            <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)'}}>{p.tema}</div>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.4)',marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {legenda && (
                 <div>
