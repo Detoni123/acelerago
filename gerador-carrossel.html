@@ -819,6 +819,8 @@ Retorne exatamente este JSON:
       const [editSlide, setEditSlide]           = useState(null);
       const [downloading, setDownloading]       = useState(false);
       const [viralStructures, setViralStructures] = useState(() => LS.get('viralStructures', []));
+      const [savedCarousels, setSavedCarousels] = useState(() => LS.get('savedCarousels', []));
+      const [savedOpen, setSavedOpen]           = useState(false);
       const [pautaOpen, setPautaOpen]           = useState(false);
       const [pautaSuggestions, setPautaSuggestions] = useState([]);
       const [pautaForm, setPautaForm]           = useState({ temas:'' });
@@ -949,6 +951,49 @@ Retorne exatamente este JSON:
         LS.set('viralStructures', arr);
       };
 
+      const handleSaveCarousel = () => {
+        if (!slides.length) return;
+        const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
+        if (nome === null) return;
+        const entry = {
+          id: Date.now().toString(),
+          nome: nome.trim() || form.tema || 'Carrossel',
+          clientId: selId,
+          clientNome: client?.nome || '',
+          savedAt: new Date().toLocaleDateString('pt-BR'),
+          form: { ...form },
+          slides,
+          legenda,
+          hashtags,
+          palavraGatilho,
+        };
+        try {
+          const arr = [entry, ...savedCarousels].slice(0, 5);
+          LS.set('savedCarousels', arr);
+          setSavedCarousels(arr);
+          setSavedOpen(true);
+        } catch(e) {
+          setError('Sem espaço para salvar. Delete um carrossel salvo e tente novamente.');
+        }
+      };
+
+      const handleLoadCarousel = (entry) => {
+        if (!confirm(`Carregar "${entry.nome}"? O carrossel atual será substituído.`)) return;
+        if (entry.clientId) selectClient(entry.clientId);
+        setForm(entry.form);
+        setSlides(entry.slides);
+        setLegenda(entry.legenda);
+        setHashtags(entry.hashtags);
+        setPalavraGatilho(entry.palavraGatilho);
+        setSavedOpen(false);
+      };
+
+      const handleDeleteCarousel = (id) => {
+        const arr = savedCarousels.filter(c=>c.id!==id);
+        setSavedCarousels(arr);
+        LS.set('savedCarousels', arr);
+      };
+
       const handleGeneratePauta = async () => {
         const ck = LS.get('claudeKey','');
         if (!ck) { setError('Configure a chave Claude nas Configurações.'); return; }
@@ -1049,11 +1094,40 @@ Retorne exatamente:
                     <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
                       {downloading ? 'Preparando...' : `↓ Baixar ZIP`}
                     </button>
+                    <button onClick={handleSaveCarousel} style={{...S.btnS,padding:'11px 12px',fontSize:12,borderColor:'rgba(100,200,100,0.35)',color:'rgba(100,220,100,0.85)'}} title="Salvar carrossel para editar depois">
+                      💾 Salvar
+                    </button>
                     <button onClick={handleSaveViral} style={{...S.btnS,padding:'11px 12px',fontSize:12,borderColor:'rgba(255,215,0,0.3)',color:'rgba(255,215,0,0.8)'}} title="Salvar estrutura viral">
-                      ⚡ Salvar
+                      ⚡
                     </button>
                   </div>
                 </>
+              )}
+
+              {/* Carrosseis Salvos */}
+              {savedCarousels.length > 0 && (
+                <div>
+                  <button onClick={()=>setSavedOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,220,100,0.25)',color:'rgba(100,220,100,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <span>💾 Carrosseis Salvos ({savedCarousels.length}/5)</span>
+                    <span>{savedOpen?'▲':'▼'}</span>
+                  </button>
+                  {savedOpen && (
+                    <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:4}}>
+                      {savedCarousels.map(c => (
+                        <div key={c.id} style={{background:'rgba(100,220,100,0.05)',border:'1px solid rgba(100,220,100,0.15)',borderRadius:7,padding:'8px 10px'}}>
+                          <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                            <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleLoadCarousel(c)}>
+                              <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)',lineHeight:1.3}}>{c.nome}</div>
+                              <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
+                            </div>
+                            <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:'rgba(255,255,255,0.2)',flexShrink:0}}>×</button>
+                          </div>
+                        </div>
+                      ))}
+                      <p style={{fontSize:10,color:'rgba(255,255,255,0.2)',textAlign:'center',marginTop:2}}>Máx. 5 salvos. Inclui imagens.</p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Estruturas Virais */}
