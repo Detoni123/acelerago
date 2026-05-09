@@ -1096,15 +1096,15 @@ Retorne exatamente:
                   <button onClick={handleGenerateAllImages} disabled={genImgIdx>=0} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,opacity:genImgIdx>=0?0.5:1,borderColor:'rgba(244,117,48,0.4)',color:ORANGE}}>
                     {genImgIdx>=0 ? progress||'Gerando imagens...' : `⟳ Fase 2: Gerar Todas as Imagens`}
                   </button>
+                  <button onClick={handleSaveCarousel} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'rgba(100,200,100,0.4)',color:'rgba(100,220,100,0.9)'}}>
+                    💾 Salvar Carrossel (para editar depois)
+                  </button>
                   <div style={{display:'flex',gap:6}}>
-                    <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'11px',fontSize:13,opacity:downloading?0.5:1}}>
+                    <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'10px',fontSize:12,opacity:downloading?0.5:1}}>
                       {downloading ? 'Preparando...' : `↓ Baixar ZIP`}
                     </button>
-                    <button onClick={handleSaveCarousel} style={{...S.btnS,padding:'11px 12px',fontSize:12,borderColor:'rgba(100,200,100,0.35)',color:'rgba(100,220,100,0.85)'}} title="Salvar carrossel para editar depois">
-                      💾 Salvar
-                    </button>
-                    <button onClick={handleSaveViral} style={{...S.btnS,padding:'11px 12px',fontSize:12,borderColor:'rgba(255,215,0,0.3)',color:'rgba(255,215,0,0.8)'}} title="Salvar estrutura viral">
-                      ⚡
+                    <button onClick={handleSaveViral} style={{...S.btnS,padding:'10px 12px',fontSize:12,borderColor:'rgba(255,215,0,0.3)',color:'rgba(255,215,0,0.8)'}} title="Salvar apenas a estrutura (formato, nº slides)">
+                      ⚡ Estrutura
                     </button>
                   </div>
                 </>
