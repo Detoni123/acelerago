@@ -33,7 +33,7 @@
     const ORANGE = '#F47530';
     const DARK   = '#0D1928';
     const SW = 1080, SH = 1350;
-    const SCALE = 0.24;
+    const SCALE = 0.30;
 
     const FORMATS = [
       { id: 'alerta',     label: 'Alerta de Indústria',      desc: '"A morte de / O fim de..." — FOMO profissional' },
@@ -112,7 +112,7 @@ FORMATO: ${fmt.label} — ${fmt.desc}
 
 ${slideGuide}
 
-Para cada slide, crie também um prompt_imagem em inglês (para o Gemini gerar imagem editorial, fotorrealista, foco em mulheres, sem texto na imagem, estilo médico e acolhedor).
+Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira, 30-50 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico. Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 42 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
 
 Retorne exatamente este JSON:
 {
@@ -123,7 +123,7 @@ Retorne exatamente este JSON:
       "headline": "texto impactante de até 60 chars",
       "destaque": "UMA PALAVRA ou FRASE CURTA em maiúsculas",
       "subtitulo": "frase de apoio curta",
-      "prompt_imagem": "editorial photo of [scene], warm lighting, professional, female-focused, no text, medical aesthetic"
+      "prompt_imagem": "Fotografia editorial de [cena específica relacionada ao tema], mulher brasileira [idade/contexto], [iluminação], [ambiente], estilo fotojornalismo médico, sem texto na imagem"
     },
     {
       "numero": 2,
@@ -154,7 +154,7 @@ Retorne exatamente este JSON:
           'x-claude-key': claudeKey
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-sonnet-4-6',
           max_tokens: 4096,
           system,
           messages: [{ role: 'user', content: user }]
@@ -327,39 +327,53 @@ Retorne exatamente este JSON:
         }
 
       } else {
-        /* ── CONTEÚDO: dark overlay on image, text hierarchy ── */
+        /* ── CONTEÚDO: dark bg, inline image between title and text ── */
         ctx.fillStyle = cs;
-        ctx.fillRect(0, 0, SW, SH);
-        if (slide.imageData) await drawImage(ctx, slide.imageData);
-        ctx.fillStyle = 'rgba(6,14,24,0.78)';
         ctx.fillRect(0, 0, SW, SH);
 
         // orange top border
         ctx.fillStyle = cp;
-        ctx.fillRect(0, 0, SW, 6);
+        ctx.fillRect(0, 0, SW, 8);
 
         // number + line
         ctx.fillStyle = cp;
-        ctx.font = `800 36px ${font}`;
+        ctx.font = `800 40px ${font}`;
         ctx.textAlign = 'left';
-        ctx.fillText(`0${slide.numero}`, PAD, 120);
-        ctx.fillStyle = `${cp}44`;
-        ctx.fillRect(PAD + 90, 104, SW - PAD*2 - 90, 3);
+        ctx.fillText(`0${slide.numero}`, PAD, 130);
+        ctx.fillStyle = `${cp}40`;
+        ctx.fillRect(PAD + 100, 112, SW - PAD*2 - 100, 3);
 
         // title
-        const tSize = adaptFs(slide.titulo || '', 72, 48);
+        const tSize = adaptFs(slide.titulo || '', 76, 52);
         ctx.fillStyle = '#ffffff';
         ctx.font = `700 ${tSize}px ${font}`;
         ctx.textAlign = 'left';
-        let ty = wrapText(ctx, slide.titulo || '', PAD, 260, SW - PAD*2, Math.round(tSize*1.22));
-        ty += 32;
+        let ty = wrapText(ctx, slide.titulo || '', PAD, 230, SW - PAD*2, Math.round(tSize*1.2));
+        ty += 40;
+
+        // inline image (clipped to rounded rect)
+        if (slide.imageData) {
+          const imgH = 380;
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(PAD, ty, SW - PAD*2, imgH, 18);
+          ctx.clip();
+          const img = new Image();
+          await new Promise(r => {
+            img.onload = () => { ctx.drawImage(img, PAD, ty, SW - PAD*2, imgH); r(); };
+            img.onerror = r;
+            img.src = `data:image/png;base64,${slide.imageData}`;
+          });
+          ctx.restore();
+          ty += imgH + 40;
+        }
 
         // body text
         if (slide.texto) {
-          ctx.fillStyle = 'rgba(255,255,255,0.74)';
-          ctx.font = `400 40px ${font}`;
+          ctx.fillStyle = 'rgba(255,255,255,0.72)';
+          ctx.font = `400 44px ${font}`;
           ctx.textAlign = 'left';
-          wrapText(ctx, slide.texto, PAD, ty, SW - PAD*2, 64);
+          wrapText(ctx, slide.texto, PAD, ty, SW - PAD*2, 68);
         }
 
         // slide counter bottom right
@@ -596,27 +610,27 @@ Retorne exatamente este JSON:
 
               {/* ── CONTEÚDO ── */}
               {slide.tipo === 'conteudo' && (
-                <div style={{width:SW,height:SH,position:'relative',background:DARK}}>
-                  {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:'cover',backgroundPosition:'center'}} />}
-                  {/* strong uniform dark overlay */}
-                  <div style={{position:'absolute',inset:0,background:'rgba(6,14,24,0.78)'}} />
-                  {/* thin orange top border */}
-                  <div style={{position:'absolute',top:0,left:0,right:0,height:6,background:ORANGE}} />
-                  <div style={{position:'absolute',inset:0,padding:`80px ${PAD}px`,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
-                    {/* top: number */}
-                    <div style={{display:'flex',alignItems:'center',gap:20}}>
-                      <div style={{color:ORANGE,fontSize:32,fontWeight:800,letterSpacing:'0.05em'}}>0{slide.numero}</div>
-                      <div style={{flex:1,height:2,background:'rgba(244,117,48,0.3)',borderRadius:2}} />
+                <div style={{width:SW,height:SH,background:DARK,display:'flex',flexDirection:'column'}}>
+                  {/* orange top border */}
+                  <div style={{height:8,background:ORANGE,flexShrink:0}} />
+                  <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
+                    {/* number + line */}
+                    <div style={{display:'flex',alignItems:'center',gap:24}}>
+                      <span style={{color:ORANGE,fontSize:36,fontWeight:800}}>0{slide.numero}</span>
+                      <div style={{flex:1,height:2,background:'rgba(244,117,48,0.25)'}} />
                     </div>
-                    {/* middle: title + text */}
-                    <div style={{display:'flex',flexDirection:'column',gap:32,flex:1,justifyContent:'center',paddingTop:40}}>
-                      {slide.titulo && <div style={{color:'#fff',fontSize:68,fontWeight:700,lineHeight:1.2,letterSpacing:'-0.01em'}}>{slide.titulo}</div>}
-                      {slide.texto  && <div style={{color:'rgba(255,255,255,0.75)',fontSize:38,lineHeight:1.7,fontWeight:400}}>{slide.texto}</div>}
-                    </div>
-                    {/* bottom: arrow */}
-                    <div style={{display:'flex',justifyContent:'flex-end'}}>
-                      <div style={{color:'rgba(255,255,255,0.2)',fontSize:30}}>{slide.numero} →</div>
-                    </div>
+                    {/* title */}
+                    {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18,letterSpacing:'-0.01em'}}>{slide.titulo}</div>}
+                    {/* inline image between title and text */}
+                    {slide.imageData && (
+                      <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
+                        <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
+                      </div>
+                    )}
+                    {/* body text */}
+                    {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,fontWeight:400,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
+                    {/* arrow */}
+                    <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right'}}>{slide.numero} →</div>
                   </div>
                 </div>
               )}
