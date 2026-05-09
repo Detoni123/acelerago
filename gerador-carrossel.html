@@ -122,6 +122,7 @@ LIMITES OBRIGATÓRIOS DE TEXTO (respeite sem exceção):
 - Texto de CTA: MÁXIMO 12 PALAVRAS
 - Headline de capa: MÁXIMO 8 PALAVRAS
 - Subtítulo de capa: MÁXIMO 8 PALAVRAS
+- Hashtags: EXATAMENTE 5. Não mais, não menos.
 Slides de carrossel são visuais. Menos texto = mais impacto. Seja cirúrgico.
 
 Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`;
@@ -135,7 +136,11 @@ FORMATO: ${fmt.label} — ${fmt.desc}
 
 ${slideGuide}
 
-Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira, 30-50 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico. Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 42 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
+Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata e emoção relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira de 25 a 35 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico.
+
+REGRA CRÍTICA PARA PROMPTS DE IMAGEM: NUNCA mencione nomes de celebridades, pessoas públicas, políticos ou qualquer pessoa real nos prompts de imagem — o gerador não consegue criar rostos de pessoas reais. Em vez disso, descreva a emoção, o contexto e a cena de forma evocativa. Ex: formato "Celebridade + Você" sobre perda gestacional → prompt da capa deve focar na emoção da paciente, não na celebridade: "Fotografia editorial de uma mulher brasileira de 28 anos sentada no chão de um quarto, joelhos no peito, choro contido, iluminação baixa e íntima, atmosfera de luto silencioso, estilo editorial de revista de saúde, sem texto".
+
+Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 30 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
 
 Retorne exatamente este JSON:
 {
@@ -146,7 +151,7 @@ Retorne exatamente este JSON:
       "headline": "texto impactante de até 60 chars",
       "destaque": "UMA PALAVRA ou FRASE CURTA em maiúsculas",
       "subtitulo": "frase de apoio curta",
-      "prompt_imagem": "Fotografia editorial de [cena específica relacionada ao tema], mulher brasileira [idade/contexto], [iluminação], [ambiente], estilo fotojornalismo médico, sem texto na imagem"
+      "prompt_imagem": "Fotografia editorial de [cena específica e emoção do tema], mulher brasileira de [25 a 35 anos], [contexto/expressão], [iluminação], [ambiente], estilo fotojornalismo médico, sem texto na imagem. NUNCA mencione celebridade ou pessoa real."
     },
     {
       "numero": 2,
@@ -165,7 +170,7 @@ Retorne exatamente este JSON:
     }
   ],
   "legenda": "legenda completa para o post com emojis estratégicos (máx 2200 chars, sem travessão)",
-  "hashtags": ["#hashtag1", "#hashtag2"],
+  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"],
   "palavra_gatilho_dm": "PALAVRA"
 }`;
 
@@ -249,7 +254,7 @@ Retorne exatamente este JSON:
 
       if (slide.tipo === 'capa') {
         /* ── CAPA: image top, gradient overlay, text bottom ── */
-        ctx.fillStyle = cs;
+        ctx.fillStyle = slide.bgColor || cs;
         ctx.fillRect(0, 0, SW, SH);
         if (slide.imageData) await drawImage(ctx, slide.imageData);
         const grad = ctx.createLinearGradient(0, 0, 0, SH);
@@ -760,24 +765,25 @@ Retorne exatamente este JSON:
 
             </div>
           </div>
-          {/* action bar */}
-          <div style={{display:'flex',gap:3,width:PW,flexWrap:'wrap'}}>
+          {/* Gemini — linha dedicada e destacada */}
+          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?'rgba(255,255,255,0.04)':'rgba(244,117,48,0.1)',border:`1px solid ${regenning?'rgba(255,255,255,0.08)':'rgba(244,117,48,0.35)'}`,borderRadius:7,padding:'8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?'rgba(255,255,255,0.2)':cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
+            {regenning ? '⟳ Gerando imagem...' : '⟳ Gerar Imagem com Gemini'}
+          </button>
+          {/* ações secundárias */}
+          <div style={{display:'flex',gap:3,width:PW}}>
             <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>✏ Editar</button>
             <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>↓ PNG</button>
-            <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:regenning?'rgba(255,255,255,0.2)':cp}}>
-              {regenning?'...':'⟳ Gemini'}
-            </button>
             <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(255,255,255,0.5)'}}>📁 Upload</button>
             {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:10,color:'rgba(220,50,50,0.7)'}}>✕ Img</button>}
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
-          {/* bg color picker for content slides */}
-          {slide.tipo === 'conteudo' && (
-            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,marginTop:2}}>
-              <span style={{fontSize:9,color:'rgba(255,255,255,0.3)'}}>Fundo:</span>
-              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:20,height:16,border:'none',background:'none',cursor:'pointer',padding:0}} />
-              <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>reset</button>
+          {/* cor de fundo — disponível para capa e conteudo */}
+          {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
+            <div style={{display:'flex',alignItems:'center',gap:8,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'5px 8px'}}>
+              <span style={{fontSize:10,color:'rgba(255,255,255,0.4)',flex:1}}>Cor de fundo</span>
+              <input type="color" value={slide.bgColor||(slide.tipo==='capa'?cs:cs)} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:28,height:22,border:'1px solid rgba(255,255,255,0.15)',borderRadius:4,background:'none',cursor:'pointer',padding:2}} />
+              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:10,padding:'2px 6px',color:'rgba(255,255,255,0.35)'}}>reset</button>}
             </div>
           )}
         </div>
