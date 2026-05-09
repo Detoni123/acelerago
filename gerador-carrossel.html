@@ -101,6 +101,14 @@ PERFIL DA MÉDICA:
 - Nicho: ${client.nicho || client.especialidade || ''}
 - Tom de voz: ${client.tomVoz || 'Acolhedor, científico, direto, sem exageros'}
 
+LIMITES OBRIGATÓRIOS DE TEXTO (respeite sem exceção):
+- Título de slide de conteúdo: MÁXIMO 6 PALAVRAS
+- Texto de slide de conteúdo: MÁXIMO 45 PALAVRAS (2-3 frases curtas)
+- Texto de CTA: MÁXIMO 12 PALAVRAS
+- Headline de capa: MÁXIMO 8 PALAVRAS
+- Subtítulo de capa: MÁXIMO 8 PALAVRAS
+Slides de carrossel são visuais. Menos texto = mais impacto. Seja cirúrgico.
+
 Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`;
 
       const slideGuide = buildSlideGuide(n);
@@ -128,15 +136,15 @@ Retorne exatamente este JSON:
     {
       "numero": 2,
       "tipo": "conteudo",
-      "titulo": "título do slide",
-      "texto": "texto do slide (2-3 frases, linguagem acessível)",
+      "titulo": "título curto (MÁXIMO 6 PALAVRAS)",
+      "texto": "texto direto, máximo 45 palavras, 2-3 frases curtas",
       "prompt_imagem": "..."
     },
     ...slides intermediários com tipo conteudo...
     {
       "numero": ${n},
       "tipo": "cta",
-      "texto": "frase de chamada para ação",
+      "texto": "chamada para ação direta (MÁXIMO 12 PALAVRAS)",
       "palavra_gatilho": "PALAVRA",
       "beneficio": "o que a paciente recebe ao comentar",
       "prompt_imagem": "..."
@@ -175,7 +183,7 @@ Retorne exatamente este JSON:
       lines.push('Slide 2: validar a dor da paciente ("você não está sozinha")');
       if (n >= 8) lines.push('Slide 3: ampliar o problema com dado científico ou estatística');
       const mid = n <= 5 ? '3-4' : n <= 8 ? '4-7' : '4-8';
-      lines.push(`Slides ${mid}: conteúdo com 1 ideia por slide, linguagem acessível, sem jargão excessivo`);
+      lines.push(`Slides ${mid}: conteúdo com 1 ideia por slide, linguagem acessível, sem jargão excessivo — título máx 6 palavras, texto máx 45 palavras`);
       if (n >= 8) lines.push(`Slide ${n-1}: autoridade da médica + credenciais relevantes`);
       lines.push(`Slide ${n} (CTA): palavra-gatilho para DM bot + benefício concreto de responder`);
       return lines.join('\n');
