@@ -57,7 +57,7 @@
 
     /* ── GEMINI IMAGE GENERATION ── */
     async function generateImage(prompt, key) {
-      const model = 'gemini-2.0-flash-preview-image-generation';
+      const model = 'gemini-3.1-flash-image-preview';
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-gemini-key': key },
