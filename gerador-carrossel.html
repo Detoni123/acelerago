@@ -301,7 +301,7 @@ Retorne exatamente este JSON:
         ctx.fillStyle = cp;
         ctx.font = `700 28px ${font}`;
         ctx.textAlign = 'left';
-        ctx.fillText('AceleraGO', PAD + 28, y + 16);
+        ctx.fillText(client.instagram ? `@${client.instagram.replace(/^@/,'')}` : (client.nome || ''), PAD + 28, y + 16);
 
       } else if (slide.tipo === 'cta') {
         /* ── CTA: solid primary color, no image ── */
@@ -678,7 +678,7 @@ Retorne exatamente este JSON:
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
                       <div style={{display:'flex',alignItems:'center',gap:14}}>
                         <div style={{width:8,height:8,borderRadius:'50%',background:cp}} />
-                        <span style={{color:cp,fontSize:26,fontWeight:700}}>AceleraGO</span>
+                        <span style={{color:cp,fontSize:26,fontWeight:700}}>{client?.instagram ? `@${client.instagram.replace(/^@/,'')}` : client?.nome || ''}</span>
                       </div>
                       <div style={{color:'rgba(255,255,255,0.35)',fontSize:28}}>deslize →</div>
                     </div>
