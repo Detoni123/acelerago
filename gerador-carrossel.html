@@ -588,8 +588,10 @@ Retorne exatamente este JSON:
     function EditModal({ slide, onSave, onClose }) {
       const [s, setS] = useState({ ...slide });
       const set = (k, v) => setS(p => ({ ...p, [k]: v }));
-      const Field = ({ label, k, multi }) => (
-        <div style={{marginBottom:14}}>
+
+      // função normal, não componente — evita perda de foco ao remontar
+      const field = (label, k, multi) => (
+        <div key={k} style={{marginBottom:14}}>
           <label style={S.label}>{label}</label>
           {multi
             ? <textarea style={{...S.input,resize:'vertical',minHeight:76}} value={s[k]||''} onChange={e=>set(k,e.target.value)} />
@@ -597,6 +599,7 @@ Retorne exatamente este JSON:
           }
         </div>
       );
+
       return (
         <div style={S.overlay} onClick={onClose}>
           <div style={{...S.modal,maxWidth:480}} onClick={e=>e.stopPropagation()}>
@@ -604,8 +607,12 @@ Retorne exatamente este JSON:
               <h2 style={{fontSize:17,fontWeight:700}}>Editar Slide {s.numero}</h2>
               <button onClick={onClose} style={S.btnG}>✕</button>
             </div>
-            {s.tipo==='capa'    && <><Field label="Headline" k="headline" multi /><Field label="Palavra Destaque" k="destaque" /><Field label="Subtítulo" k="subtitulo" multi /></>}
-            {s.tipo==='conteudo'&& <>
+            {s.tipo==='capa' && <>
+              {field('Headline', 'headline', true)}
+              {field('Palavra Destaque', 'destaque', false)}
+              {field('Subtítulo', 'subtitulo', true)}
+            </>}
+            {s.tipo==='conteudo' && <>
               <div style={{marginBottom:14}}>
                 <label style={S.label}>Layout do Slide</label>
                 <div style={{display:'flex',gap:6}}>
@@ -616,10 +623,15 @@ Retorne exatamente este JSON:
                   ))}
                 </div>
               </div>
-              <Field label="Título (opcional)" k="titulo" /><Field label="Texto" k="texto" multi />
+              {field('Título (opcional)', 'titulo', false)}
+              {field('Texto', 'texto', true)}
             </>}
-            {s.tipo==='cta'     && <><Field label="Texto Principal" k="texto" multi /><Field label="Palavra-Gatilho (DM)" k="palavra_gatilho" /><Field label="Benefício" k="beneficio" /></>}
-            <Field label="Prompt da Imagem (Gemini)" k="prompt_imagem" multi />
+            {s.tipo==='cta' && <>
+              {field('Texto Principal', 'texto', true)}
+              {field('Palavra-Gatilho (DM)', 'palavra_gatilho', false)}
+              {field('Benefício', 'beneficio', false)}
+            </>}
+            {field('Prompt da Imagem (Gemini)', 'prompt_imagem', true)}
             <div style={{display:'flex',gap:10}}>
               <button style={S.btnP} onClick={()=>onSave(s)}>Salvar</button>
               <button style={{...S.btnS,width:'auto'}} onClick={onClose}>Cancelar</button>
