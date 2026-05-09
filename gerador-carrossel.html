@@ -867,6 +867,7 @@ Retorne exatamente este JSON:
       const [downloading, setDownloading]       = useState(false);
       const [viralStructures, setViralStructures] = useState(() => LS.get('viralStructures', []));
       const [savedCarousels, setSavedCarousels] = useState(() => LS.get('savedCarousels', []));
+      const [activeCarouselId, setActiveCarouselId] = useState(null);
       const [savedOpen, setSavedOpen]           = useState(false);
       const [pautaOpen, setPautaOpen]           = useState(false);
       const [pautaSuggestions, setPautaSuggestions] = useState([]);
@@ -901,7 +902,7 @@ Retorne exatamente este JSON:
         const ck = LS.get('claudeKey','');
         const gk = LS.get('geminiKey','');
         if (!ck) { setError('Configure a chave API do Claude nas Configurações (⚙).'); return; }
-        setError(''); setGenerating(true); setSlides([]); setLegenda(''); setHashtags([]); setPalavraGatilho('');
+        setError(''); setGenerating(true); setSlides([]); setLegenda(''); setHashtags([]); setPalavraGatilho(''); setActiveCarouselId(null);
 
         try {
           setProgress('Gerando copy com Claude...');
@@ -1000,11 +1001,7 @@ Retorne exatamente este JSON:
 
       const handleSaveCarousel = () => {
         if (!slides.length) return;
-        const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
-        if (nome === null) return;
-        const entry = {
-          id: Date.now().toString(),
-          nome: nome.trim() || form.tema || 'Carrossel',
+        const data = {
           clientId: selId,
           clientNome: client?.nome || '',
           savedAt: new Date().toLocaleDateString('pt-BR'),
@@ -1015,9 +1012,21 @@ Retorne exatamente este JSON:
           palavraGatilho,
         };
         try {
-          const arr = [entry, ...savedCarousels].slice(0, 5);
-          LS.set('savedCarousels', arr);
-          setSavedCarousels(arr);
+          if (activeCarouselId) {
+            // atualiza o carrossel existente no lugar
+            const arr = savedCarousels.map(c => c.id === activeCarouselId ? { ...c, ...data } : c);
+            LS.set('savedCarousels', arr);
+            setSavedCarousels(arr);
+          } else {
+            // novo carrossel — pede nome
+            const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
+            if (nome === null) return;
+            const entry = { id: Date.now().toString(), nome: nome.trim() || form.tema || 'Carrossel', ...data };
+            const arr = [entry, ...savedCarousels].slice(0, 5);
+            LS.set('savedCarousels', arr);
+            setSavedCarousels(arr);
+            setActiveCarouselId(entry.id);
+          }
           setSavedOpen(true);
         } catch(e) {
           setError('Sem espaço para salvar. Delete um carrossel salvo e tente novamente.');
@@ -1032,6 +1041,7 @@ Retorne exatamente este JSON:
         setLegenda(entry.legenda);
         setHashtags(entry.hashtags);
         setPalavraGatilho(entry.palavraGatilho);
+        setActiveCarouselId(entry.id);
         setSavedOpen(false);
       };
 
@@ -1138,7 +1148,7 @@ Retorne exatamente:
                     {genImgIdx>=0 ? progress||'Gerando imagens...' : `⟳ Fase 2: Gerar Todas as Imagens`}
                   </button>
                   <button onClick={handleSaveCarousel} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'rgba(100,200,100,0.4)',color:'rgba(100,220,100,0.9)'}}>
-                    💾 Salvar Carrossel (para editar depois)
+                    {activeCarouselId ? '💾 Salvar alterações' : '💾 Salvar Carrossel (para editar depois)'}
                   </button>
                   <div style={{display:'flex',gap:6}}>
                     <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'10px',fontSize:12,opacity:downloading?0.5:1}}>
