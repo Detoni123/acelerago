@@ -279,7 +279,8 @@ Retorne exatamente este JSON:
 
         // headline
         const hSize = adaptFs(slide.headline, 88, 58);
-        ctx.fillStyle = '#ffffff';
+        const tc = slide.textColor || '#ffffff';
+        ctx.fillStyle = tc;
         ctx.font = `700 ${hSize}px ${font}`;
         ctx.textAlign = 'left';
         y = wrapText(ctx, slide.headline || '', PAD, y, SW - PAD*2, Math.round(hSize * 1.22));
@@ -287,7 +288,7 @@ Retorne exatamente este JSON:
 
         // subtitulo
         if (slide.subtitulo) {
-          ctx.fillStyle = 'rgba(255,255,255,0.58)';
+          ctx.fillStyle = slide.textColor ? tc + '99' : 'rgba(255,255,255,0.58)';
           ctx.font = `400 38px ${font}`;
           ctx.textAlign = 'left';
           y = wrapText(ctx, slide.subtitulo, PAD, y, SW - PAD*2, 56);
@@ -365,17 +366,18 @@ Retorne exatamente este JSON:
         ctx.fillStyle = `${cp}40`;
         ctx.fillRect(PAD + 100, 112, SW - PAD*2 - 100, 3);
 
+        const stc = slide.textColor || '#ffffff';
         const drawTitle = async (y) => {
           if (!slide.titulo) return y;
           const tSize = adaptFs(slide.titulo, 76, 52);
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = stc;
           ctx.font = `700 ${tSize}px ${font}`;
           ctx.textAlign = 'left';
           return wrapText(ctx, slide.titulo, PAD, y, SW - PAD*2, Math.round(tSize*1.2)) + 30;
         };
         const drawBody = (y, color, size, lh) => {
           if (!slide.texto) return y;
-          ctx.fillStyle = color;
+          ctx.fillStyle = slide.textColor ? stc + 'cc' : color;
           ctx.font = `400 ${size}px ${font}`;
           ctx.textAlign = 'left';
           return wrapText(ctx, slide.texto, PAD, y, SW - PAD*2, lh);
@@ -673,8 +675,8 @@ Retorne exatamente este JSON:
                   <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(6,14,24,0.05) 0%,rgba(6,14,24,0.4) 35%,rgba(6,14,24,0.92) 70%,rgba(6,14,24,0.98) 100%)'}} />
                   <div style={{position:'absolute',bottom:0,left:0,right:0,padding:`0 ${PAD}px 100px`,display:'flex',flexDirection:'column',gap:24}}>
                     {slide.destaque && <div style={{color:cp,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.destaque}</div>}
-                    <div style={{color:'#fff',fontSize:78,fontWeight:700,lineHeight:1.18}}>{slide.headline}</div>
-                    {slide.subtitulo && <div style={{color:'rgba(255,255,255,0.6)',fontSize:36,lineHeight:1.5}}>{slide.subtitulo}</div>}
+                    <div style={{color:slide.textColor||'#fff',fontSize:78,fontWeight:700,lineHeight:1.18}}>{slide.headline}</div>
+                    {slide.subtitulo && <div style={{color:slide.textColor?`${slide.textColor}99`:'rgba(255,255,255,0.6)',fontSize:36,lineHeight:1.5}}>{slide.subtitulo}</div>}
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
                       <div style={{display:'flex',alignItems:'center',gap:14}}>
                         <div style={{width:8,height:8,borderRadius:'50%',background:cp}} />
@@ -701,8 +703,8 @@ Retorne exatamente este JSON:
                       <div style={{flex:1,display:'flex',minHeight:0}}>
                         <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent:'center'}}>
                           {numLabel}
-                          {slide.titulo && <div style={{color:'#fff',fontSize:60,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
-                          {slide.texto && <div style={{color:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.65}}>{slide.texto}</div>}
+                          {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:60,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                          {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.65}}>{slide.texto}</div>}
                           {counter}
                         </div>
                         {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}} alt="" /></div>}
@@ -716,8 +718,8 @@ Retorne exatamente este JSON:
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:'center'}}>
                         {numLabel}
-                        {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
-                        {slide.texto && <div style={{color:'#fff',fontSize:58,fontWeight:500,lineHeight:1.5}}>{slide.texto}</div>}
+                        {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                        {slide.texto && <div style={{color:slide.textColor||'#fff',fontSize:58,fontWeight:500,lineHeight:1.5}}>{slide.texto}</div>}
                         {counter}
                       </div>
                     </div>
@@ -729,13 +731,13 @@ Retorne exatamente este JSON:
                     <div style={{height:8,background:cp,flexShrink:0}} />
                     <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36}}>
                       {numLabel}
-                      {slide.titulo && <div style={{color:'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
+                      {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:72,fontWeight:700,lineHeight:1.18}}>{slide.titulo}</div>}
                       {slide.imageData && (
                         <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
                           <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
                         </div>
                       )}
-                      {slide.texto && <div style={{color:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
+                      {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:1.65,flex:1}}>{slide.texto}</div>}
                       {counter}
                     </div>
                   </div>
@@ -774,12 +776,16 @@ Retorne exatamente este JSON:
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
-          {/* cor de fundo — disponível para capa e conteudo */}
+          {/* cores de fundo e texto — disponível para capa e conteudo */}
           {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
-            <div style={{display:'flex',alignItems:'center',gap:8,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'5px 8px'}}>
-              <span style={{fontSize:10,color:'rgba(255,255,255,0.4)',flex:1}}>Cor de fundo</span>
-              <input type="color" value={slide.bgColor||(slide.tipo==='capa'?cs:cs)} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:28,height:22,border:'1px solid rgba(255,255,255,0.15)',borderRadius:4,background:'none',cursor:'pointer',padding:2}} />
-              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:10,padding:'2px 6px',color:'rgba(255,255,255,0.35)'}}>reset</button>}
+            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'5px 8px'}}>
+              <span style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Fundo</span>
+              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid rgba(255,255,255,0.15)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>↺</button>}
+              <div style={{width:1,height:14,background:'rgba(255,255,255,0.1)',margin:'0 2px'}} />
+              <span style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Texto</span>
+              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid rgba(255,255,255,0.15)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>↺</button>}
             </div>
           )}
         </div>
