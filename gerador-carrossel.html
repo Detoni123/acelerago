@@ -182,16 +182,15 @@ Retorne exatamente este JSON:
     }
 
     /* ── CANVAS EXPORT ── */
-    function wrapText(ctx, text, x, y, maxW, lh, textAlign) {
+    function wrapText(ctx, text, x, y, maxW, lh) {
       if (!text) return y;
-      const align = textAlign || ctx.textAlign;
       const words = text.split(' ');
       let line = '';
       let cy = y;
       for (let i = 0; i < words.length; i++) {
         const test = line + words[i] + ' ';
         if (ctx.measureText(test).width > maxW && i > 0) {
-          ctx.fillText(line.trimEnd(), align === 'center' ? x : x, cy);
+          ctx.fillText(line.trimEnd(), x, cy);
           line = words[i] + ' ';
           cy += lh;
         } else { line = test; }
@@ -200,11 +199,20 @@ Retorne exatamente este JSON:
       return cy + lh;
     }
 
-    function adaptiveFontSize(text, max, min) {
+    function adaptFs(text, max, min) {
       if (!text) return max;
       if (text.length > 60) return min;
       if (text.length > 35) return Math.round((max + min) / 2);
       return max;
+    }
+
+    async function drawImage(ctx, b64) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, 0, 0, SW, SH); resolve(); };
+        img.onerror = resolve;
+        img.src = `data:image/png;base64,${b64}`;
+      });
     }
 
     async function renderToCanvas(slide, client) {
@@ -215,115 +223,148 @@ Retorne exatamente este JSON:
       const cp = client.corPrimaria || ORANGE;
       const cs = client.corSecundaria || DARK;
       const font = client.fonte || 'Sora';
-      const isCta = slide.tipo === 'cta';
-
-      ctx.fillStyle = isCta ? cp : cs;
-      ctx.fillRect(0, 0, SW, SH);
-
-      if (slide.imageData) {
-        await new Promise(resolve => {
-          const img = new Image();
-          img.onload = () => {
-            ctx.save();
-            ctx.globalAlpha = 0.30;
-            ctx.drawImage(img, 0, 0, SW, SH);
-            ctx.restore();
-            resolve();
-          };
-          img.onerror = resolve;
-          img.src = `data:image/png;base64,${slide.imageData}`;
-        });
-        ctx.fillStyle = isCta ? `${cp}99` : 'rgba(6,14,24,0.55)';
-        ctx.fillRect(0, 0, SW, SH);
-      }
-
-      const PAD = 80;
-      ctx.textAlign = 'center';
+      const PAD = 90;
 
       if (slide.tipo === 'capa') {
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.font = `400 34px ${font}`;
+        /* ── CAPA: image top, gradient overlay, text bottom ── */
+        ctx.fillStyle = cs;
+        ctx.fillRect(0, 0, SW, SH);
+        if (slide.imageData) await drawImage(ctx, slide.imageData);
+        const grad = ctx.createLinearGradient(0, 0, 0, SH);
+        grad.addColorStop(0,   'rgba(6,14,24,0.05)');
+        grad.addColorStop(0.35,'rgba(6,14,24,0.40)');
+        grad.addColorStop(0.65,'rgba(6,14,24,0.90)');
+        grad.addColorStop(1,   'rgba(6,14,24,0.98)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, SW, SH);
+
+        // slide count top-right
+        ctx.fillStyle = 'rgba(255,255,255,0.22)';
+        ctx.font = `400 30px ${font}`;
         ctx.textAlign = 'right';
-        ctx.fillText('1 →', SW - PAD, 100);
+        ctx.fillText('1 / deslize →', SW - PAD, 80);
 
-        const hSize = adaptiveFontSize(slide.headline, 84, 52);
-        ctx.fillStyle = '#fff';
-        ctx.font = `700 ${hSize}px ${font}`;
-        ctx.textAlign = 'center';
-        wrapText(ctx, slide.headline || '', SW/2, 360, SW - PAD*2, Math.round(hSize*1.25));
-
+        // destaque (small label above headline)
+        let y = SH - 520;
         if (slide.destaque) {
           ctx.fillStyle = cp;
-          ctx.font = `800 88px ${font}`;
-          ctx.textAlign = 'center';
-          ctx.fillText(slide.destaque.toUpperCase(), SW/2, 720);
+          ctx.font = `800 52px ${font}`;
+          ctx.textAlign = 'left';
+          ctx.fillText(slide.destaque.toUpperCase(), PAD, y);
+          y += 80;
         }
 
+        // headline
+        const hSize = adaptFs(slide.headline, 88, 58);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `700 ${hSize}px ${font}`;
+        ctx.textAlign = 'left';
+        y = wrapText(ctx, slide.headline || '', PAD, y, SW - PAD*2, Math.round(hSize * 1.22));
+        y += 24;
+
+        // subtitulo
         if (slide.subtitulo) {
-          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.fillStyle = 'rgba(255,255,255,0.58)';
           ctx.font = `400 38px ${font}`;
-          ctx.textAlign = 'center';
-          wrapText(ctx, slide.subtitulo, SW/2, 840, SW - PAD*2, 56);
+          ctx.textAlign = 'left';
+          y = wrapText(ctx, slide.subtitulo, PAD, y, SW - PAD*2, 56);
+          y += 16;
         }
 
+        // branding bar
+        y += 20;
         ctx.fillStyle = cp;
-        ctx.font = `700 30px ${font}`;
-        ctx.textAlign = 'center';
-        ctx.fillText('AceleraGO', SW/2, SH - 80);
+        ctx.beginPath(); ctx.arc(PAD + 8, y + 8, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = cp;
+        ctx.font = `700 28px ${font}`;
+        ctx.textAlign = 'left';
+        ctx.fillText('AceleraGO', PAD + 28, y + 16);
 
       } else if (slide.tipo === 'cta') {
-        ctx.fillStyle = '#fff';
-        ctx.font = `700 56px ${font}`;
-        ctx.textAlign = 'center';
-        wrapText(ctx, slide.texto || '', SW/2, 300, SW - PAD*2, 74);
+        /* ── CTA: solid primary color, no image ── */
+        ctx.fillStyle = cp;
+        ctx.fillRect(0, 0, SW, SH);
+        // subtle diagonal shadow
+        const grad2 = ctx.createLinearGradient(0, 0, SW, SH);
+        grad2.addColorStop(0, 'rgba(0,0,0,0.12)');
+        grad2.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad2;
+        ctx.fillRect(0, 0, SW, SH);
 
-        const gw = slide.palavra_gatilho ? Math.min(slide.palavra_gatilho.length * 70 + 120, SW - 80) : 500;
-        const gh = 140;
-        const gx = (SW - gw) / 2;
-        const gy = 600;
+        let cy = 260;
+        if (slide.texto) {
+          const tSize = adaptFs(slide.texto, 60, 44);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `700 ${tSize}px ${font}`;
+          ctx.textAlign = 'center';
+          cy = wrapText(ctx, slide.texto, SW/2, cy, SW - PAD*2, Math.round(tSize*1.3));
+          cy += 60;
+        }
+
+        // trigger word box
+        const word = (slide.palavra_gatilho || 'COMENTE').toUpperCase();
+        ctx.font = `800 100px ${font}`;
+        const wm = ctx.measureText(word);
+        const bw = wm.width + 120, bh = 150, bx = (SW - bw)/2, by = cy;
         ctx.fillStyle = cs;
-        ctx.beginPath();
-        ctx.roundRect(gx, gy, gw, gh, 20);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.font = `800 90px ${font}`;
+        ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 24); ctx.fill();
+        ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
-        ctx.fillText((slide.palavra_gatilho || 'COMENTE').toUpperCase(), SW/2, gy + 98);
+        ctx.fillText(word, SW/2, by + 108);
+        cy = by + bh + 56;
 
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
         ctx.font = `400 40px ${font}`;
         ctx.textAlign = 'center';
-        ctx.fillText('Comente esta palavra abaixo', SW/2, 820);
+        ctx.fillText('Comente esta palavra abaixo', SW/2, cy);
+        cy += 56;
 
         if (slide.beneficio) {
-          ctx.fillStyle = cs;
-          ctx.font = `600 36px ${font}`;
-          wrapText(ctx, `e receba: ${slide.beneficio}`, SW/2, 920, SW - PAD*2, 50);
+          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.font = `400 34px ${font}`;
+          ctx.textAlign = 'center';
+          wrapText(ctx, `e receba: ${slide.beneficio}`, SW/2, cy, SW - PAD*2, 50);
         }
 
       } else {
+        /* ── CONTEÚDO: dark overlay on image, text hierarchy ── */
+        ctx.fillStyle = cs;
+        ctx.fillRect(0, 0, SW, SH);
+        if (slide.imageData) await drawImage(ctx, slide.imageData);
+        ctx.fillStyle = 'rgba(6,14,24,0.78)';
+        ctx.fillRect(0, 0, SW, SH);
+
+        // orange top border
         ctx.fillStyle = cp;
-        ctx.font = `700 54px ${font}`;
+        ctx.fillRect(0, 0, SW, 6);
+
+        // number + line
+        ctx.fillStyle = cp;
+        ctx.font = `800 36px ${font}`;
         ctx.textAlign = 'left';
         ctx.fillText(`0${slide.numero}`, PAD, 120);
+        ctx.fillStyle = `${cp}44`;
+        ctx.fillRect(PAD + 90, 104, SW - PAD*2 - 90, 3);
 
-        if (slide.titulo) {
-          const tSize = adaptiveFontSize(slide.titulo, 66, 44);
-          ctx.fillStyle = '#fff';
-          ctx.font = `700 ${tSize}px ${font}`;
-          ctx.textAlign = 'left';
-          wrapText(ctx, slide.titulo, PAD, 250, SW - PAD*2, Math.round(tSize*1.3));
-        }
+        // title
+        const tSize = adaptFs(slide.titulo || '', 72, 48);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `700 ${tSize}px ${font}`;
+        ctx.textAlign = 'left';
+        let ty = wrapText(ctx, slide.titulo || '', PAD, 260, SW - PAD*2, Math.round(tSize*1.22));
+        ty += 32;
 
+        // body text
         if (slide.texto) {
-          ctx.fillStyle = 'rgba(255,255,255,0.82)';
+          ctx.fillStyle = 'rgba(255,255,255,0.74)';
           ctx.font = `400 40px ${font}`;
           ctx.textAlign = 'left';
-          wrapText(ctx, slide.texto, PAD, 550, SW - PAD*2, 62);
+          wrapText(ctx, slide.texto, PAD, ty, SW - PAD*2, 64);
         }
 
+        // slide counter bottom right
         ctx.fillStyle = 'rgba(255,255,255,0.18)';
-        ctx.font = `400 36px ${font}`;
+        ctx.font = `400 32px ${font}`;
         ctx.textAlign = 'right';
         ctx.fillText(`${slide.numero} →`, SW - PAD, SH - 80);
       }
@@ -502,60 +543,105 @@ Retorne exatamente este JSON:
     function SlideCard({ slide, idx, onEdit, onDownload, onRegen, regenning }) {
       const PW = Math.round(SW * SCALE);
       const PH = Math.round(SH * SCALE);
-      const cp = ORANGE, cs = DARK;
       const isCta = slide.tipo === 'cta';
-      const bg = isCta ? cp : cs;
+
+      const imgBg = slide.imageData ? `url(data:image/png;base64,${slide.imageData})` : null;
 
       const wrapperStyle = {
-        width: PW, height: PH, borderRadius:8, overflow:'hidden',
-        cursor:'pointer', position:'relative', flexShrink:0,
-        border:'1px solid rgba(255,255,255,0.08)',
-        transition:'border-color 0.2s'
+        width: PW, height: PH, borderRadius: 10, overflow: 'hidden',
+        cursor: 'pointer', position: 'relative', flexShrink: 0,
+        border: '1px solid rgba(255,255,255,0.1)',
       };
+
       const innerStyle = {
-        width: SW, height: SH, position:'absolute', top:0, left:0,
-        transform:`scale(${SCALE})`, transformOrigin:'top left',
-        background: bg, overflow:'hidden', fontFamily:'Sora,sans-serif',
-        display:'flex', flexDirection:'column',
-        ...(slide.imageData ? {
-          backgroundImage:`linear-gradient(rgba(6,14,24,${isCta?'0.4':'0.65'}),rgba(6,14,24,${isCta?'0.4':'0.65'})),url(data:image/png;base64,${slide.imageData})`,
-          backgroundSize:'cover', backgroundPosition:'center'
-        } : {})
+        width: SW, height: SH, position: 'absolute', top: 0, left: 0,
+        transform: `scale(${SCALE})`, transformOrigin: 'top left',
+        fontFamily: 'Sora,sans-serif', overflow: 'hidden', position: 'absolute',
       };
+
+      const PAD = 90;
 
       return (
         <div style={{display:'flex',flexDirection:'column',gap:6}}>
           <div style={wrapperStyle} onClick={()=>onEdit(slide,idx)}>
             <div style={innerStyle}>
-              {slide.tipo==='capa' && (
-                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,justifyContent:'center',alignItems:'center',textAlign:'center',gap:20}}>
-                  <div style={{color:'rgba(255,255,255,0.3)',fontSize:34,alignSelf:'flex-end',marginTop:-20}}>1 →</div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',gap:24}}>
-                    <div style={{color:'#fff',fontSize:76,fontWeight:700,lineHeight:1.2}}>{slide.headline}</div>
-                    {slide.destaque && <div style={{color:ORANGE,fontSize:84,fontWeight:800,textTransform:'uppercase'}}>{slide.destaque}</div>}
-                    {slide.subtitulo && <div style={{color:'rgba(255,255,255,0.65)',fontSize:38}}>{slide.subtitulo}</div>}
+
+              {/* ── CAPA ── */}
+              {slide.tipo === 'capa' && (
+                <div style={{width:SW,height:SH,position:'relative',background:DARK}}>
+                  {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:'cover',backgroundPosition:'center top'}} />}
+                  {/* gradient overlay: transparent top → dark bottom */}
+                  <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg, rgba(6,14,24,0.05) 0%, rgba(6,14,24,0.4) 35%, rgba(6,14,24,0.92) 70%, rgba(6,14,24,0.98) 100%)'}} />
+                  {/* content anchored to bottom */}
+                  <div style={{position:'absolute',bottom:0,left:0,right:0,padding:`0 ${PAD}px 100px`,display:'flex',flexDirection:'column',gap:24}}>
+                    {slide.destaque && (
+                      <div style={{color:ORANGE,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.destaque}</div>
+                    )}
+                    <div style={{color:'#fff',fontSize:78,fontWeight:700,lineHeight:1.18,letterSpacing:'-0.01em'}}>{slide.headline}</div>
+                    {slide.subtitulo && (
+                      <div style={{color:'rgba(255,255,255,0.6)',fontSize:36,fontWeight:400,lineHeight:1.5}}>{slide.subtitulo}</div>
+                    )}
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
+                      <div style={{display:'flex',alignItems:'center',gap:14}}>
+                        <div style={{width:8,height:8,borderRadius:'50%',background:ORANGE}} />
+                        <span style={{color:ORANGE,fontSize:26,fontWeight:700,letterSpacing:'0.05em'}}>AceleraGO</span>
+                      </div>
+                      <div style={{color:'rgba(255,255,255,0.35)',fontSize:28}}>deslize →</div>
+                    </div>
                   </div>
-                  <div style={{color:ORANGE,fontSize:30,fontWeight:700}}>AceleraGO</div>
+                  {/* slide number top right */}
+                  <div style={{position:'absolute',top:60,right:PAD,color:'rgba(255,255,255,0.25)',fontSize:30}}>1 / {idx+1}</div>
                 </div>
               )}
-              {slide.tipo==='conteudo' && (
-                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,gap:20}}>
-                  <div style={{color:ORANGE,fontSize:56,fontWeight:700}}>0{slide.numero}</div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',gap:20}}>
-                    {slide.titulo && <div style={{color:'#fff',fontSize:62,fontWeight:700,lineHeight:1.2}}>{slide.titulo}</div>}
-                    {slide.texto  && <div style={{color:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.6}}>{slide.texto}</div>}
+
+              {/* ── CONTEÚDO ── */}
+              {slide.tipo === 'conteudo' && (
+                <div style={{width:SW,height:SH,position:'relative',background:DARK}}>
+                  {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:'cover',backgroundPosition:'center'}} />}
+                  {/* strong uniform dark overlay */}
+                  <div style={{position:'absolute',inset:0,background:'rgba(6,14,24,0.78)'}} />
+                  {/* thin orange top border */}
+                  <div style={{position:'absolute',top:0,left:0,right:0,height:6,background:ORANGE}} />
+                  <div style={{position:'absolute',inset:0,padding:`80px ${PAD}px`,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+                    {/* top: number */}
+                    <div style={{display:'flex',alignItems:'center',gap:20}}>
+                      <div style={{color:ORANGE,fontSize:32,fontWeight:800,letterSpacing:'0.05em'}}>0{slide.numero}</div>
+                      <div style={{flex:1,height:2,background:'rgba(244,117,48,0.3)',borderRadius:2}} />
+                    </div>
+                    {/* middle: title + text */}
+                    <div style={{display:'flex',flexDirection:'column',gap:32,flex:1,justifyContent:'center',paddingTop:40}}>
+                      {slide.titulo && <div style={{color:'#fff',fontSize:68,fontWeight:700,lineHeight:1.2,letterSpacing:'-0.01em'}}>{slide.titulo}</div>}
+                      {slide.texto  && <div style={{color:'rgba(255,255,255,0.75)',fontSize:38,lineHeight:1.7,fontWeight:400}}>{slide.texto}</div>}
+                    </div>
+                    {/* bottom: arrow */}
+                    <div style={{display:'flex',justifyContent:'flex-end'}}>
+                      <div style={{color:'rgba(255,255,255,0.2)',fontSize:30}}>{slide.numero} →</div>
+                    </div>
                   </div>
-                  <div style={{color:'rgba(255,255,255,0.2)',fontSize:36,textAlign:'right'}}>{slide.numero} →</div>
                 </div>
               )}
-              {slide.tipo==='cta' && (
-                <div style={{flex:1,display:'flex',flexDirection:'column',padding:80,justifyContent:'center',alignItems:'center',textAlign:'center',gap:36}}>
-                  <div style={{color:'#fff',fontSize:58,fontWeight:700,lineHeight:1.3}}>{slide.texto}</div>
-                  <div style={{background:DARK,borderRadius:18,padding:'20px 60px',fontSize:88,fontWeight:800,textTransform:'uppercase',color:'#fff'}}>{slide.palavra_gatilho||'COMENTE'}</div>
-                  <div style={{color:'rgba(255,255,255,0.85)',fontSize:38}}>Comente esta palavra abaixo</div>
-                  {slide.beneficio && <div style={{color:DARK,fontSize:34,fontWeight:600}}>e receba: {slide.beneficio}</div>}
+
+              {/* ── CTA ── */}
+              {slide.tipo === 'cta' && (
+                <div style={{width:SW,height:SH,position:'relative',background:ORANGE}}>
+                  {/* subtle texture with dark diagonal */}
+                  <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 60%)'}} />
+                  <div style={{position:'absolute',inset:0,padding:`${PAD}px`,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',textAlign:'center',gap:48}}>
+                    {slide.texto && (
+                      <div style={{color:'#fff',fontSize:58,fontWeight:700,lineHeight:1.3,letterSpacing:'-0.01em'}}>{slide.texto}</div>
+                    )}
+                    {/* trigger word pill */}
+                    <div style={{background:DARK,borderRadius:20,padding:'32px 80px',display:'inline-block'}}>
+                      <div style={{color:'#fff',fontSize:96,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.04em',lineHeight:1}}>{slide.palavra_gatilho||'COMENTE'}</div>
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                      <div style={{color:'rgba(255,255,255,0.9)',fontSize:36,fontWeight:500}}>Comente esta palavra abaixo</div>
+                      {slide.beneficio && <div style={{color:'rgba(255,255,255,0.7)',fontSize:32}}>e receba: {slide.beneficio}</div>}
+                    </div>
+                  </div>
                 </div>
               )}
+
             </div>
           </div>
           <div style={{display:'flex',gap:4,width:PW}}>
