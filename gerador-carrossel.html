@@ -61,6 +61,18 @@
       set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
     };
 
+    /* ── IMAGE PROMPT COM COMPOSIÇÃO POR LAYOUT ── */
+    function buildImagePrompt(slide) {
+      const base = slide.prompt_imagem || '';
+      if (!base || slide.tipo !== 'conteudo') return base;
+      const layout = slide.layout || 'inline';
+      if (layout === 'lateral') {
+        return base + ' Composição vertical (retrato 9:16), sujeito posicionado no centro ou levemente à direita do enquadramento, com espaço livre à esquerda para texto sobreposto. Fundo limpo e desfocado à esquerda.';
+      }
+      // inline e texto — composição padrão editorial funciona bem
+      return base + ' Composição centralizada, enquadramento equilibrado, fotografia editorial de alta qualidade.';
+    }
+
     /* ── GEMINI IMAGE GENERATION ── */
     async function generateImage(prompt, key, fotoBase64 = null) {
       const model = 'gemini-3.1-flash-image-preview';
@@ -989,7 +1001,7 @@ Retorne exatamente este JSON:
         try {
           const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
             ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
-          const imgData = await generateImage(slide.prompt_imagem, gk, fotoB64);
+          const imgData = await generateImage(buildImagePrompt(slide), gk, fotoB64);
           setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
         } catch (e) { setError(e.message); }
         finally { setGenImgIdx(-1); }
@@ -1007,7 +1019,7 @@ Retorne exatamente este JSON:
             try {
               setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
               setGenImgIdx(i);
-              const imgData = await generateImage(updated[i].prompt_imagem, gk, fotoB64);
+              const imgData = await generateImage(buildImagePrompt(updated[i]), gk, fotoB64);
               updated[i] = { ...updated[i], imageData: imgData };
               setSlides([...updated]);
             } catch (e) { console.warn(`Slide ${i+1}:`, e.message); }
