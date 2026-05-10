@@ -1104,6 +1104,21 @@ Retorne exatamente este JSON:
 
       const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+      const handleManualEntry = () => {
+        if (!client) { setError('Configure seu perfil primeiro.'); return; }
+        const n = form.numSlides || 10;
+        const newSlides = Array.from({ length: n }, (_, i) => {
+          const num = i + 1;
+          if (i === 0) return { numero: num, tipo: 'capa', headline: '', destaque: '', subtitulo: '', prompt_imagem: '' };
+          if (i === n - 1) return { numero: num, tipo: 'cta', texto: '', palavra_gatilho: '', beneficio: '', prompt_imagem: '' };
+          return { numero: num, tipo: 'conteudo', texto: '', prompt_imagem: '' };
+        });
+        setSlides(newSlides);
+        setLegenda(''); setHashtags([]); setPalavraGatilho(''); setActiveCarouselId(null); setError('');
+        if (isMobile) setMobileTab('slides');
+        showToast('Slides criados. Clique em ✏ para editar cada um.');
+      };
+
       const handleGenerate = async () => {
         if (!client) { setError('Selecione ou crie uma médica primeiro.'); return; }
         if (!form.tema.trim()) { setError('Digite o tema do carrossel.'); return; }
@@ -1349,6 +1364,9 @@ Retorne exatamente:
 
               <button onClick={handleGenerate} disabled={generating||!client} style={{...S.btnP,opacity:generating||!client?0.45:1,fontSize:15,padding:'14px'}}>
                 {generating ? 'Gerando copy...' : '✦ Fase 1: Gerar Copy'}
+              </button>
+              <button onClick={handleManualEntry} disabled={!client} style={{...S.btnG,width:'100%',padding:'11px',fontSize:13,opacity:!client?0.45:1}}>
+                ✏ Entrada Manual
               </button>
 
               {slides.length > 0 && (
