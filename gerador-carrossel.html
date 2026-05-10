@@ -8,7 +8,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#060e18" />
+  <meta name="theme-color" content="#1E293B" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -17,16 +17,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sora', sans-serif; background: #060e18; color: #fff; min-height: 100vh; }
+    body { font-family: 'Sora', sans-serif; background: #F0F2F7; color: #1E293B; min-height: 100vh; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-    select option { background: #0D1928; color: #fff; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 3px; }
+    select option { background: #FFFFFF; color: #1E293B; }
     textarea { font-family: 'Sora', sans-serif; }
     input[type=color] { padding: 2px; border-radius: 6px; cursor: pointer; }
+    input[type=range] { height: 4px; }
   </style>
 </head>
 <body>
@@ -43,6 +44,13 @@
 
     const ORANGE      = '#F47530';
     const DARK        = '#0D1928';
+    const L_BG        = '#F0F2F7';
+    const L_SURF      = '#FFFFFF';
+    const L_SURF2     = '#F5F7FA';
+    const L_BORDER    = '#E2E8F0';
+    const L_T1        = '#1E293B';
+    const L_T2        = '#64748B';
+    const L_T3        = '#94A3B8';
     const ADMIN_EMAIL = 'ronaldo@detonimarketingdigital.com.br';
     const SW = 1080, SH = 1350;
     const computeScale = (w) => w < 768 ? Math.min(0.31, (w - 40) / SW) : 0.38;
@@ -83,7 +91,7 @@
       { id: 'diagnostico',label: 'Diagnóstico de Erro',      desc: '"Você está fazendo X errado" + 5 passos' },
     ];
 
-    const FONTS = ['Sora', 'Arial', 'Georgia', 'Trebuchet MS', 'Verdana'];
+    const FONTS = ['Sora', 'Montserrat', 'Poppins', 'Playfair Display', 'Cormorant', 'Raleway', 'Bebas Neue', 'Lora'];
 
     const LAYOUTS = [
       { id:'inline', label:'Imagem + Texto' },
@@ -622,13 +630,13 @@ Retorne exatamente este JSON:
 
     /* ── STYLES ── */
     const S = {
-      overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
-      modal: { background:'#0D1928', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto' },
-      input: { width:'100%', background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.14)', borderRadius:8, padding:'12px 14px', color:'#fff', fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
-      label: { display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.45)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
+      overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
+      modal: { background:L_SURF, border:`1px solid ${L_BORDER}`, borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.14)' },
+      input: { width:'100%', background:L_SURF2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'12px 14px', color:L_T1, fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
+      label: { display:'block', fontSize:11, fontWeight:600, color:L_T3, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
       btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
-      btnS: { background:'rgba(255,255,255,0.07)', color:'#fff', border:'1px solid rgba(255,255,255,0.13)', borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
-      btnG: { background:'transparent', color:'rgba(255,255,255,0.45)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
+      btnS: { background:L_SURF2, color:L_T2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
+      btnG: { background:'transparent', color:L_T3, border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
     };
 
     /* ── LOGIN SCREEN ── */
@@ -644,13 +652,13 @@ Retorne exatamente este JSON:
         setLoading(false);
       };
       return (
-        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#060e18'}}>
-          <div style={{background:'#0D1928',border:'1px solid rgba(255,255,255,0.1)',borderRadius:16,padding:40,width:'100%',maxWidth:380}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG}}>
+          <div style={{background:L_SURF,border:`1px solid ${L_BORDER}`,borderRadius:16,padding:40,width:'100%',maxWidth:380,boxShadow:'0 8px 40px rgba(0,0,0,0.1)'}}>
             <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
               <div style={{width:36,height:36,background:ORANGE,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16}}>A</div>
               <div>
                 <div style={{fontWeight:700,fontSize:17}}>AceleraGO</div>
-                <div style={{fontSize:12,color:'rgba(255,255,255,0.4)'}}>Gerador de Carrossel</div>
+                <div style={{fontSize:12,color:L_T3}}>Gerador de Carrossel</div>
               </div>
             </div>
             <form onSubmit={handle} style={{display:'flex',flexDirection:'column',gap:16}}>
@@ -710,14 +718,14 @@ Retorne exatamente este JSON:
                 ? <div style={{display:'flex',gap:12,alignItems:'center'}}>
                     <img src={f.fotoRostoUrl} style={{width:56,height:56,borderRadius:'50%',objectFit:'cover',border:`2px solid ${ORANGE}`}} alt="foto" />
                     <button style={{...S.btnS,width:'auto',fontSize:12}} onClick={()=>set('fotoRostoUrl','')}>Remover</button>
-                    <span style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>Foto carregada</span>
+                    <span style={{fontSize:11,color:L_T3}}>Foto carregada</span>
                   </div>
                 : <input type="file" accept="image/*" style={{...S.input,padding:'7px 14px',cursor:'pointer'}} onChange={e=>{
                     const file=e.target.files[0]; if(!file) return;
                     const r=new FileReader(); r.onload=ev=>set('fotoRostoUrl',ev.target.result); r.readAsDataURL(file);
                   }} />
               }
-              <p style={{fontSize:11,color:'rgba(255,255,255,0.3)',marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
+              <p style={{fontSize:11,color:L_T3,marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
             </div>
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
@@ -788,7 +796,7 @@ Retorne exatamente este JSON:
                 <label style={S.label}>Posição do Texto</label>
                 <div style={{display:'flex',gap:6}}>
                   {[['bottom','Abaixo (padrão)'],['middle','Centro']].map(([v,l])=>(
-                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'13px 9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.textPosition||'bottom')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'13px 9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.textPosition||'bottom')===v?ORANGE:L_BORDER}}>
                       {l}
                     </button>
                   ))}
@@ -803,7 +811,7 @@ Retorne exatamente este JSON:
                 <label style={S.label}>Layout do Slide</label>
                 <div style={{display:'flex',gap:6}}>
                   {LAYOUTS.map(l=>(
-                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.layout||'inline')===l.id?ORANGE:'rgba(255,255,255,0.1)'}}>
+                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.layout||'inline')===l.id?ORANGE:L_BORDER}}>
                       {l.label}
                     </button>
                   ))}
@@ -814,7 +822,7 @@ Retorne exatamente este JSON:
                   <label style={S.label}>Posição da Imagem</label>
                   <div style={{display:'flex',gap:6}}>
                     {[['top','Topo'],['middle','Meio (padrão)'],['bottom','Fundo']].map(([v,l])=>(
-                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.imagePosition||'middle')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.imagePosition||'middle')===v?ORANGE:L_BORDER}}>
                         {l}
                       </button>
                     ))}
@@ -827,7 +835,7 @@ Retorne exatamente este JSON:
                   {[['top','Topo'],['center','Centro'],['bottom','Fundo']].map(([v,l])=>{
                     const def = (s.layout||'inline')==='texto' ? 'center' : 'top';
                     return (
-                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.contentVAlign||def)===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.contentVAlign||def)===v?ORANGE:L_BORDER}}>
                         {l}
                       </button>
                     );
@@ -875,7 +883,7 @@ Retorne exatamente este JSON:
       const wrapperStyle = {
         width: PW, height: PH, borderRadius: 10, overflow: 'hidden',
         cursor: 'pointer', position: 'relative', flexShrink: 0,
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: `1px solid ${L_BORDER}`,
       };
 
       const innerStyle = {
@@ -1007,85 +1015,85 @@ Retorne exatamente este JSON:
             </div>
           </div>
           {/* Gemini — linha dedicada e destacada */}
-          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?'rgba(255,255,255,0.04)':'rgba(244,117,48,0.1)',border:`1px solid ${regenning?'rgba(255,255,255,0.08)':'rgba(244,117,48,0.35)'}`,borderRadius:7,padding:'12px 8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?'rgba(255,255,255,0.2)':cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
+          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?L_SURF2:'rgba(244,117,48,0.08)',border:`1px solid ${regenning?L_BORDER:'rgba(244,117,48,0.3)'}`,borderRadius:7,padding:'12px 8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?L_T3:cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
             {regenning ? '⟳ Gerando imagem...' : '⟳ Gerar Imagem com Gemini'}
           </button>
           {/* ações secundárias */}
-          <div style={{display:'flex',gap:1,width:PW,background:'rgba(255,255,255,0.04)',borderRadius:6,overflow:'hidden'}}>
-            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
-            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
-            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
+          <div style={{display:'flex',gap:1,width:PW,background:L_SURF2,borderRadius:6,overflow:'hidden',border:`1px solid ${L_BORDER}`}}>
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
+            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
             {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕ Limpar</button>}
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
           {/* cores de fundo e texto — disponível para capa e conteudo */}
           {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
-            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'5px 8px'}}>
-              <span style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Fundo</span>
-              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid rgba(255,255,255,0.15)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>↺</button>}
-              <div style={{width:1,height:14,background:'rgba(255,255,255,0.1)',margin:'0 2px'}} />
-              <span style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Texto</span>
-              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid rgba(255,255,255,0.15)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>↺</button>}
-              <div style={{width:1,height:14,background:'rgba(255,255,255,0.1)',margin:'0 2px'}} />
-              <span style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Acento</span>
-              <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid rgba(255,255,255,0.15)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'rgba(255,255,255,0.3)'}}>↺</button>}
+            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'5px 8px'}}>
+              <span style={{fontSize:10,color:L_T3}}>Fundo</span>
+              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
+              <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
+              <span style={{fontSize:10,color:L_T3}}>Texto</span>
+              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
+              <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
+              <span style={{fontSize:10,color:L_T3}}>Acento</span>
+              <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
             </div>
           )}
           {/* overlay escuro + zoom + posição da imagem + posição do texto — só para capa */}
           {slide.tipo === 'capa' && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'7px 8px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
               {slide.imageData && <>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Escuro</span>
+                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Escuro</span>
                   <input type="range" min={0} max={0.8} step={0.05} value={slide.overlayOpacity||0} onChange={e=>onEdit({...slide,overlayOpacity:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
+                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Zoom</span>
+                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Zoom</span>
                   <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Img ↕</span>
+                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Img ↕</span>
                   <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
                 </div>
-                <div style={{height:1,background:'rgba(255,255,255,0.08)',margin:'2px 0'}} />
+                <div style={{height:1,background:L_BORDER,margin:'2px 0'}} />
               </>}
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Texto ↕</span>
+                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
               </div>
             </div>
           )}
           {/* ajustes de imagem — brilho, contraste, saturação, matiz */}
           {slide.imageData && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'7px 8px'}}>
-              <span style={{fontSize:9,color:'rgba(255,255,255,0.22)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
+            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
+              <span style={{fontSize:9,color:L_T3,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Brilho</span>
+                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Brilho</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgBrightness??100} onChange={e=>onEdit({...slide,imgBrightness:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
+                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Contraste</span>
+                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Contraste</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgContrast??100} onChange={e=>onEdit({...slide,imgContrast:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
+                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Saturação</span>
+                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Saturação</span>
                 <input type="range" min={0} max={300} step={5} value={slide.imgSaturate??100} onChange={e=>onEdit({...slide,imgSaturate:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
+                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Matiz</span>
+                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Matiz</span>
                 <input type="range" min={-180} max={180} step={5} value={slide.imgHue??0} onChange={e=>onEdit({...slide,imgHue:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
+                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
               </div>
             </div>
           )}
@@ -1099,9 +1107,9 @@ Retorne exatamente este JSON:
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,opacity:disabled?0.4:1}}>
           <div>
             <div style={{fontSize:13,fontWeight:500}}>{label}</div>
-            {sub && <div style={{fontSize:11,color:'rgba(255,255,255,0.38)',marginTop:2}}>{sub}</div>}
+            {sub && <div style={{fontSize:11,color:L_T3,marginTop:2}}>{sub}</div>}
           </div>
-          <div onClick={()=>!disabled&&onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?ORANGE:'rgba(255,255,255,0.14)',position:'relative',cursor:disabled?'default':'pointer',transition:'background 0.2s',flexShrink:0}}>
+          <div onClick={()=>!disabled&&onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?ORANGE:'#CBD5E1',position:'relative',cursor:disabled?'default':'pointer',transition:'background 0.2s',flexShrink:0}}>
             <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:checked?23:3,transition:'left 0.2s'}} />
           </div>
         </div>
@@ -1490,24 +1498,24 @@ Retorne exatamente:
         finally { setGeneratingPauta(false); }
       };
 
-      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#060e18',color:'rgba(255,255,255,0.35)',fontSize:14}}>Carregando...</div>;
+      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG,color:L_T3,fontSize:14}}>Carregando...</div>;
       if (!session) return <LoginScreen />;
 
       return (
         <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
 
           {/* TOP BAR */}
-          <div style={{background:'#0D1928',borderBottom:'1px solid rgba(255,255,255,0.07)',padding:isMobile?'0 12px':'0 20px',height:isMobile?50:58,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
+          <div style={{background:L_T1,borderBottom:'1px solid rgba(255,255,255,0.08)',padding:isMobile?'0 12px':'0 20px',height:isMobile?50:58,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <div style={{width:28,height:28,background:ORANGE,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:12}}>A</div>
               <span style={{fontWeight:700,fontSize:isMobile?13:15}}>Gerador de Carrossel</span>
-              {!isMobile && <span style={{color:'rgba(255,255,255,0.25)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>}
+              {!isMobile && <span style={{color:'rgba(255,255,255,0.45)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>}
             </div>
             <div style={{flex:1}} />
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'nowrap'}}>
               {isAdmin && !isMobile && allProfiles.length > 0 && (
                 <div style={{display:'flex',alignItems:'center',gap:5,background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'0 8px',height:32}}>
-                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',flexShrink:0}}>Como:</span>
+                  <span style={{fontSize:10,color:'rgba(255,255,255,0.5)',flexShrink:0}}>Como:</span>
                   <select
                     value={activeClientId || ''}
                     onChange={e => handleSelectClient(e.target.value)}
@@ -1520,9 +1528,9 @@ Retorne exatamente:
                   </select>
                 </div>
               )}
-              {!isMobile && !isAdmin && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
+              {!isMobile && !isAdmin && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.7)'}}>{profile.nome}</span>}
               <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
-              <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
+              <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.7)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
             </div>
           </div>
 
@@ -1530,24 +1538,24 @@ Retorne exatamente:
           <div style={{display:'flex',flex:1,minHeight:0}}>
 
             {/* LEFT PANEL */}
-            <div style={{width:isMobile?'100%':290,background:'#080f1c',borderRight:isMobile?'none':'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
+            <div style={{width:isMobile?'100%':290,background:L_SURF,borderRight:isMobile?'none':`1px solid ${L_BORDER}`,overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Configurar</div>
 
               {isAdmin && isMobile && (
                 <div style={{background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:10,padding:'12px 14px'}}>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
+                  <div style={{fontSize:10,color:L_T3,marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
                   {adminError ? (
                     <div style={{fontSize:11,color:'#fca5a5',background:'rgba(220,38,38,0.1)',borderRadius:6,padding:'8px 10px'}}>{adminError}</div>
                   ) : allProfiles.length === 0 ? (
-                    <div style={{fontSize:11,color:'rgba(255,255,255,0.3)'}}>Carregando perfis...</div>
+                    <div style={{fontSize:11,color:L_T3}}>Carregando perfis...</div>
                   ) : (
                     <select
                       value={activeClientId || ''}
                       onChange={e => handleSelectClient(e.target.value)}
-                      style={{width:'100%',background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.3)',borderRadius:7,color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,padding:'10px 12px',cursor:'pointer',outline:'none'}}>
+                      style={{width:'100%',background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.3)',borderRadius:7,color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,padding:'10px 12px',cursor:'pointer',outline:'none'}}>
                       {allProfiles.map(p => (
-                        <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
+                        <option key={p.user_id} value={p.user_id} style={{background:'#1E293B',color:'#fff'}}>
                           {p.nome || 'Sem nome'}
                         </option>
                       ))}
@@ -1560,9 +1568,9 @@ Retorne exatamente:
                 <label style={S.label}>Formato</label>
                 <div style={{display:'flex',flexDirection:'column',gap:5}}>
                   {FORMATS.map(f => (
-                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.12)':'rgba(255,255,255,0.03)',border:`1px solid ${form.formato===f.id?ORANGE:'rgba(255,255,255,0.07)'}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?'#fff':'rgba(255,255,255,0.55)',cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
+                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':L_SURF2,border:`1px solid ${form.formato===f.id?ORANGE:L_BORDER}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:L_T2,cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
                       <div style={{fontSize:12,fontWeight:600}}>{f.label}</div>
-                      <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginTop:2}}>{f.desc}</div>
+                      <div style={{fontSize:10,color:L_T3,marginTop:2}}>{f.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -1577,7 +1585,7 @@ Retorne exatamente:
                 <label style={S.label}>Número de Slides</label>
                 <div style={{display:'flex',gap:6}}>
                   {[5,8,10].map(n => (
-                    <button key={n} onClick={()=>setF('numSlides',n)} style={{flex:1,background:form.numSlides===n?ORANGE:'rgba(255,255,255,0.06)',border:'none',borderRadius:7,padding:'9px',color:'#fff',cursor:'pointer',fontFamily:'Sora,sans-serif',fontWeight:700,fontSize:14}}>{n}</button>
+                    <button key={n} onClick={()=>setF('numSlides',n)} style={{flex:1,background:form.numSlides===n?ORANGE:L_SURF2,border:`1px solid ${form.numSlides===n?ORANGE:L_BORDER}`,borderRadius:7,padding:'9px',color:form.numSlides===n?'#fff':L_T2,cursor:'pointer',fontFamily:'Sora,sans-serif',fontWeight:700,fontSize:14}}>{n}</button>
                   ))}
                 </div>
               </div>
@@ -1587,11 +1595,11 @@ Retorne exatamente:
                 <Toggle label="Usar foto da médica" sub="Insere o rosto nos prompts (Beta)" checked={form.usarFotoMedica} onChange={v=>setF('usarFotoMedica',v)} disabled={!client?.fotoRostoUrl} />
               </div>
 
-              <div style={{height:1,background:'rgba(255,255,255,0.06)'}} />
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Ações</div>
+              <div style={{height:1,background:L_BORDER}} />
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Ações</div>
 
               {error && (
-                <div style={{background:'rgba(220,38,38,0.1)',border:'1px solid rgba(220,38,38,0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#fca5a5',lineHeight:1.5}}>
+                <div style={{background:'rgba(220,38,38,0.07)',border:'1px solid rgba(220,38,38,0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#DC2626',lineHeight:1.5}}>
                   <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
                     <span style={{flexShrink:0,fontSize:14}}>⚠</span>
                     <span>{error}</span>
@@ -1620,7 +1628,7 @@ Retorne exatamente:
                         <span>Gerando imagens...</span>
                         <span style={{fontWeight:700}}>{genImgIdx+1}/{slides.length}</span>
                       </div>
-                      <div style={{height:3,background:'rgba(255,255,255,0.08)',borderRadius:2,overflow:'hidden'}}>
+                      <div style={{height:3,background:L_BORDER,borderRadius:2,overflow:'hidden'}}>
                         <div style={{width:`${((genImgIdx+1)/slides.length)*100}%`,height:3,background:ORANGE,borderRadius:2,transition:'width 0.4s ease'}} />
                       </div>
                     </div>
@@ -1629,14 +1637,14 @@ Retorne exatamente:
                       ⟳ Fase 2: Gerar Todas as Imagens
                     </button>
                   )}
-                  <button onClick={handleSaveCarousel} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'rgba(100,200,100,0.4)',color:'rgba(100,220,100,0.9)'}}>
+                  <button onClick={handleSaveCarousel} style={{...S.btnS,width:'100%',padding:'11px',fontSize:13,borderColor:'#86EFAC',color:'#16A34A'}}>
                     {activeCarouselId ? '💾 Salvar alterações' : '💾 Salvar Carrossel (para editar depois)'}
                   </button>
                   <div style={{display:'flex',gap:6}}>
                     <button onClick={handleDownloadAll} disabled={downloading} style={{...S.btnS,flex:1,padding:'10px',fontSize:12,opacity:downloading?0.5:1}}>
                       {downloading ? 'Preparando...' : `↓ Baixar ZIP`}
                     </button>
-                    <button onClick={handleSaveViral} style={{...S.btnS,padding:'10px 12px',fontSize:12,borderColor:'rgba(255,215,0,0.3)',color:'rgba(255,215,0,0.8)'}} title="Salvar apenas a estrutura (formato, nº slides)">
+                    <button onClick={handleSaveViral} style={{...S.btnS,padding:'10px 12px',fontSize:12,borderColor:'#FDE68A',color:'#D97706'}} title="Salvar apenas a estrutura (formato, nº slides)">
                       ⚡ Estrutura
                     </button>
                   </div>
@@ -1645,14 +1653,14 @@ Retorne exatamente:
 
               {(savedCarousels.length > 0 || viralStructures.length > 0) && (
                 <>
-                  <div style={{height:1,background:'rgba(255,255,255,0.06)'}} />
-                  <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Histórico</div>
+                  <div style={{height:1,background:L_BORDER}} />
+                  <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Histórico</div>
                 </>
               )}
 
               {/* Pauta do Mês — primeiro no histórico */}
               <div>
-                <button onClick={()=>setPautaOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,180,255,0.25)',color:'rgba(100,180,255,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <button onClick={()=>setPautaOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'#BFDBFE',color:'#2563EB',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                   <span>📅 Pauta do Mês</span>
                   <span style={{fontSize:10}}>{pautaOpen?'▲':'▼'}</span>
                 </button>
@@ -1665,11 +1673,11 @@ Retorne exatamente:
                     {pautaSuggestions.length > 0 && (
                       <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:260,overflowY:'auto'}}>
                         {pautaSuggestions.map((p,i) => (
-                          <div key={i} style={{background:'rgba(100,180,255,0.05)',border:'1px solid rgba(100,180,255,0.12)',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
+                          <div key={i} style={{background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
                             onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
-                            <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)'}}>{p.tema}</div>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.4)',marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
+                            <div style={{fontSize:11,color:L_T2,marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
+                            <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{p.tema}</div>
+                            <div style={{fontSize:11,color:L_T3,marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
                           </div>
                         ))}
                       </div>
@@ -1681,20 +1689,20 @@ Retorne exatamente:
               {/* Carrosseis Salvos */}
               {savedCarousels.length > 0 && (
                 <div>
-                  <button onClick={()=>setSavedOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,220,100,0.25)',color:'rgba(100,220,100,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <button onClick={()=>setSavedOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'#86EFAC',color:'#16A34A',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                     <span>💾 Carrosseis Salvos ({savedCarousels.length})</span>
                     <span style={{fontSize:10}}>{savedOpen?'▲':'▼'}</span>
                   </button>
                   {savedOpen && (
                     <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:4}}>
                       {savedCarousels.map(c => (
-                        <div key={c.id} style={{background:'rgba(100,220,100,0.05)',border:'1px solid rgba(100,220,100,0.15)',borderRadius:7,padding:'8px 10px'}}>
+                        <div key={c.id} style={{background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:7,padding:'8px 10px'}}>
                           <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
                             <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleLoadCarousel(c)}>
-                              <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.85)',lineHeight:1.3}}>{c.nome}</div>
-                              <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
+                              <div style={{fontSize:12,fontWeight:600,color:L_T1,lineHeight:1.3}}>{c.nome}</div>
+                              <div style={{fontSize:10,color:L_T3,marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
                             </div>
-                            <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:'rgba(255,255,255,0.2)',flexShrink:0}}>×</button>
+                            <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:L_T3,flexShrink:0}}>×</button>
                           </div>
                         </div>
                       ))}
@@ -1706,15 +1714,15 @@ Retorne exatamente:
               {/* Estruturas Virais */}
               {viralStructures.length > 0 && (
                 <div>
-                  <label style={{...S.label,color:'rgba(255,215,0,0.5)'}}>Estruturas Virais Salvas</label>
+                  <label style={{...S.label,color:'#D97706'}}>Estruturas Virais Salvas</label>
                   <div style={{display:'flex',flexDirection:'column',gap:4}}>
                     {viralStructures.map(v => (
-                      <div key={v.id} style={{background:'rgba(255,215,0,0.05)',border:'1px solid rgba(255,215,0,0.12)',borderRadius:7,padding:'7px 10px',display:'flex',alignItems:'center',gap:6}}>
+                      <div key={v.id} style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:7,padding:'7px 10px',display:'flex',alignItems:'center',gap:6}}>
                         <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleApplyViral(v)}>
-                          <div style={{fontSize:12,fontWeight:600,color:'rgba(255,255,255,0.8)'}}>{v.nome}</div>
-                          <div style={{fontSize:10,color:'rgba(255,255,255,0.3)',marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
+                          <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{v.nome}</div>
+                          <div style={{fontSize:10,color:L_T3,marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
                         </div>
-                        <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:'rgba(255,255,255,0.2)'}}>×</button>
+                        <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:L_T3}}>×</button>
                       </div>
                     ))}
                   </div>
@@ -1723,15 +1731,15 @@ Retorne exatamente:
             </div>
 
             {/* SLIDES AREA */}
-            <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,display:isMobile&&mobileTab==='config'?'none':'block'}}>
+            <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,display:isMobile&&mobileTab==='config'?'none':'block',background:L_BG}}>
               {slides.length === 0 ? (
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:14,color:'rgba(255,255,255,0.18)'}}>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:14,color:'#CBD5E1'}}>
                   <div style={{fontSize:52}}>◈</div>
                   <div style={{fontSize:15,textAlign:'center'}}>
                     {client ? `Pronto para gerar carrossel${isMobile?'':` para ${client.nome}`}` : 'Configure o carrossel e clique em Gerar Copy'}
                   </div>
                   {isMobile && client && (
-                    <div style={{fontSize:12,color:'rgba(255,255,255,0.25)',textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
+                    <div style={{fontSize:12,color:L_T3,textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
                   )}
                 </div>
               ) : (
@@ -1750,12 +1758,12 @@ Retorne exatamente:
                     ))}
                   </div>
                   {legenda && (
-                    <div style={{marginTop:28,maxWidth:660,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:10,padding:'16px 20px'}}>
+                    <div style={{marginTop:28,maxWidth:660,background:L_SURF,border:`1px solid ${L_BORDER}`,borderRadius:10,padding:'16px 20px',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                        <span style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
+                        <span style={{fontSize:11,fontWeight:600,color:L_T3,textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
                         <button onClick={()=>{navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''));showToast('Legenda copiada!');}} style={{...S.btnG,fontSize:11,color:ORANGE}}>Copiar tudo</button>
                       </div>
-                      <div style={{fontSize:13,color:'rgba(255,255,255,0.65)',lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
+                      <div style={{fontSize:13,color:L_T2,lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
                       {hashtags.length > 0 && <div style={{fontSize:12,color:ORANGE,lineHeight:1.9,marginBottom:8}}>{hashtags.join(' ')}</div>}
                       {palavraGatilho && (
                         <div style={{background:'rgba(244,117,48,0.1)',borderRadius:6,padding:'7px 12px',fontSize:12}}>
@@ -1771,13 +1779,13 @@ Retorne exatamente:
 
           {/* MOBILE BOTTOM TAB BAR */}
           {isMobile && (
-            <div style={{height:56,display:'flex',borderTop:'1px solid rgba(255,255,255,0.08)',background:'#080f1c',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
-              <button onClick={()=>setMobileTab('config')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='config'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='config'?ORANGE:'rgba(255,255,255,0.4)',fontWeight:mobileTab==='config'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+            <div style={{height:56,display:'flex',borderTop:`1px solid ${L_BORDER}`,background:L_SURF,flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+              <button onClick={()=>setMobileTab('config')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='config'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='config'?ORANGE:L_T3,fontWeight:mobileTab==='config'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
                 <span style={{fontSize:17}}>⚙</span>
                 <span>Configurar</span>
               </button>
-              <div style={{width:1,background:'rgba(255,255,255,0.08)',margin:'8px 0'}} />
-              <button onClick={()=>setMobileTab('slides')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='slides'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='slides'?ORANGE:'rgba(255,255,255,0.4)',fontWeight:mobileTab==='slides'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+              <div style={{width:1,background:L_BORDER,margin:'8px 0'}} />
+              <button onClick={()=>setMobileTab('slides')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='slides'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='slides'?ORANGE:L_T3,fontWeight:mobileTab==='slides'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
                 <span style={{fontSize:17}}>◈</span>
                 <span>Slides{slides.length>0?` (${slides.length})`:''}</span>
               </button>
