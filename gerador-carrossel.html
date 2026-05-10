@@ -37,7 +37,7 @@
     select option { background: var(--l-surf); color: var(--l-t1); }
     textarea { font-family: 'Sora', sans-serif; }
     input[type=color] { padding: 2px; border-radius: 6px; cursor: pointer; }
-    input[type=range] { height: 4px; }
+    input[type=range] { height: 6px; touch-action: manipulation; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -1009,6 +1009,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const slideBg = slide.bgColor || (isCta ? cp : cs);
 
       const fileRef = useRef(null);
+      const [imgOpen, setImgOpen] = useState(false);
       const handleUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1160,72 +1161,74 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
           {/* cores de fundo e texto — disponível para capa e conteudo */}
           {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
-            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'5px 8px'}}>
-              <span style={{fontSize:10,color:'var(--l-label)'}}>Fundo</span>
-              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
-              <div style={{width:1,height:14,background:'var(--l-border)',margin:'0 2px'}} />
-              <span style={{fontSize:10,color:'var(--l-label)'}}>Texto</span>
-              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
-              <div style={{width:1,height:14,background:'var(--l-border)',margin:'0 2px'}} />
-              <span style={{fontSize:10,color:'var(--l-label)'}}>Acento</span>
-              <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'8px 8px'}}>
+              {[
+                {label:'Fundo',  val:slide.bgColor||cs,         set:v=>onEdit({...slide,bgColor:v},idx,true),      dirty:slide.bgColor,      reset:()=>onEdit({...slide,bgColor:null},idx,true)},
+                {label:'Texto',  val:slide.textColor||'#ffffff', set:v=>onEdit({...slide,textColor:v},idx,true),   dirty:slide.textColor,    reset:()=>onEdit({...slide,textColor:null},idx,true)},
+                {label:'Acento', val:slide.accentColor||cs,     set:v=>onEdit({...slide,accentColor:v},idx,true), dirty:slide.accentColor,  reset:()=>onEdit({...slide,accentColor:null},idx,true)},
+              ].map(c=>(
+                <div key={c.label} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',fontWeight:500}}>{c.label}</span>
+                  <div style={{position:'relative',width:'100%'}}>
+                    <div style={{height:40,borderRadius:6,background:c.val,border:'2px solid var(--l-border)'}} />
+                    <input type="color" value={c.val} onChange={e=>c.set(e.target.value)} style={{position:'absolute',inset:0,opacity:0,width:'100%',height:'100%',cursor:'pointer'}} />
+                    {c.dirty && <button onClick={e=>{e.stopPropagation();c.reset();}} style={{position:'absolute',top:3,right:3,background:'rgba(0,0,0,0.55)',border:'none',borderRadius:3,color:'#fff',fontSize:9,padding:'2px 4px',cursor:'pointer',zIndex:2,touchAction:'manipulation'}}>↺</button>}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {/* overlay escuro + zoom + posição da imagem + posição do texto — só para capa */}
           {slide.tipo === 'capa' && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'7px 8px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
               {slide.imageData && <>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Escuro</span>
+                <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Escuro</span>
                   <input type="range" min={0} max={0.8} step={0.05} value={slide.overlayOpacity||0} onChange={e=>onEdit({...slide,overlayOpacity:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
                 </div>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Zoom</span>
+                <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Zoom</span>
                   <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
                 </div>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Img ↕</span>
+                <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Img ↕</span>
                   <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
                 </div>
-                <div style={{height:1,background:'var(--l-border)',margin:'2px 0'}} />
+                <div style={{height:1,background:'var(--l-border)',margin:'0'}} />
               </>}
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Texto ↕</span>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
               </div>
             </div>
           )}
-          {/* ajustes de imagem — brilho, contraste, saturação, matiz */}
+          {/* ajustes de imagem — brilho, contraste, saturação, matiz — colapsável */}
           {slide.imageData && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'7px 8px'}}>
-              <span style={{fontSize:9,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Brilho</span>
-                <input type="range" min={0} max={200} step={2} value={slide.imgBrightness??100} onChange={e=>onEdit({...slide,imgBrightness:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Contraste</span>
-                <input type="range" min={0} max={200} step={2} value={slide.imgContrast??100} onChange={e=>onEdit({...slide,imgContrast:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Saturação</span>
-                <input type="range" min={0} max={300} step={5} value={slide.imgSaturate??100} onChange={e=>onEdit({...slide,imgSaturate:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Matiz</span>
-                <input type="range" min={-180} max={180} step={5} value={slide.imgHue??0} onChange={e=>onEdit({...slide,imgHue:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
-              </div>
+            <div style={{width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,overflow:'hidden'}}>
+              <button onClick={()=>setImgOpen(o=>!o)} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'10px 10px',background:'none',border:'none',cursor:'pointer',touchAction:'manipulation',minHeight:40}}>
+                <span style={{fontSize:11,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:600}}>Filtros de Imagem</span>
+                <span style={{fontSize:13,color:'var(--l-label)',display:'inline-block',transform:imgOpen?'rotate(180deg)':'rotate(0deg)',transition:'transform 0.2s'}}>▾</span>
+              </button>
+              {imgOpen && (
+                <div style={{display:'flex',flexDirection:'column',gap:8,padding:'0 10px 12px'}}>
+                  {[
+                    {label:'Brilho',    min:0,   max:200, step:2,  val:slide.imgBrightness??100, set:v=>onEdit({...slide,imgBrightness:v},idx,true), fmt:v=>`${v}%`},
+                    {label:'Contraste', min:0,   max:200, step:2,  val:slide.imgContrast??100,   set:v=>onEdit({...slide,imgContrast:v},idx,true),   fmt:v=>`${v}%`},
+                    {label:'Saturação', min:0,   max:300, step:5,  val:slide.imgSaturate??100,   set:v=>onEdit({...slide,imgSaturate:v},idx,true),   fmt:v=>`${v}%`},
+                    {label:'Matiz',     min:-180,max:180, step:5,  val:slide.imgHue??0,          set:v=>onEdit({...slide,imgHue:v},idx,true),        fmt:v=>`${v>0?'+':''}${v}°`},
+                  ].map(r=>(
+                    <div key={r.label} style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:60,flexShrink:0}}>{r.label}</span>
+                      <input type="range" min={r.min} max={r.max} step={r.step} value={r.val} onChange={e=>r.set(parseInt(e.target.value))} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{r.fmt(r.val)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
