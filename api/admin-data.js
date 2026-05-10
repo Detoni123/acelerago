@@ -1,4 +1,4 @@
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL = 'https://ozxjjvtrlmeiveioblci.supabase.co';
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_ID     = '97feaa37-41c7-4fa4-a8b8-0e9b265cd7cb';
 
