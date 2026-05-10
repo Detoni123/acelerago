@@ -1,4 +1,4 @@
-const CACHE = 'carrossel-v1';
+const CACHE = 'carrossel-v3';
 const STATIC = [
   '/gerador-carrossel',
   '/manifest.json',

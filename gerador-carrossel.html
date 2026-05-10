@@ -1045,6 +1045,7 @@ Retorne exatamente este JSON:
       const [dynScale, setDynScale]               = useState(computeScale(window.innerWidth));
       const [allProfiles, setAllProfiles]         = useState([]);
       const [activeClientId, setActiveClientId]   = useState(null);
+      const [adminError, setAdminError]           = useState('');
 
       const isAdmin           = session?.user?.email === ADMIN_EMAIL;
       const activeClientProf  = isAdmin && activeClientId ? allProfiles.find(p => p.user_id === activeClientId) : null;
@@ -1098,17 +1099,20 @@ Retorne exatamente este JSON:
         if (userEmail === ADMIN_EMAIL) {
           try {
             const { data: { session: fresh } } = await sb.auth.getSession();
+            const token = fresh?.access_token;
+            if (!token) { setAdminError('Token ausente — tente reabrir o app.'); return; }
             const res = await fetch('/api/admin-data', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${fresh?.access_token}` },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
               body: JSON.stringify({ action: 'loadProfiles' })
             });
             const json = await res.json();
+            if (!res.ok) { setAdminError(`Admin API ${res.status}: ${json.error}`); return; }
             if (json.data) {
               setAllProfiles(json.data.map(profileFromDB).filter(Boolean));
               setActiveClientId(userId);
             }
-          } catch(e) { console.warn('Admin profiles load failed:', e); }
+          } catch(e) { setAdminError(`Erro: ${e.message}`); }
         }
       };
 
@@ -1427,19 +1431,25 @@ Retorne exatamente:
 
               <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
 
-              {isAdmin && isMobile && allProfiles.length > 0 && (
+              {isAdmin && isMobile && (
                 <div style={{background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:10,padding:'12px 14px'}}>
                   <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
-                  <select
-                    value={activeClientId || ''}
-                    onChange={e => handleSelectClient(e.target.value)}
-                    style={{width:'100%',background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.3)',borderRadius:7,color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,padding:'10px 12px',cursor:'pointer',outline:'none'}}>
-                    {allProfiles.map(p => (
-                      <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
-                        {p.nome || 'Sem nome'}
-                      </option>
-                    ))}
-                  </select>
+                  {adminError ? (
+                    <div style={{fontSize:11,color:'#fca5a5',background:'rgba(220,38,38,0.1)',borderRadius:6,padding:'8px 10px'}}>{adminError}</div>
+                  ) : allProfiles.length === 0 ? (
+                    <div style={{fontSize:11,color:'rgba(255,255,255,0.3)'}}>Carregando perfis...</div>
+                  ) : (
+                    <select
+                      value={activeClientId || ''}
+                      onChange={e => handleSelectClient(e.target.value)}
+                      style={{width:'100%',background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.3)',borderRadius:7,color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,padding:'10px 12px',cursor:'pointer',outline:'none'}}>
+                      {allProfiles.map(p => (
+                        <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
+                          {p.nome || 'Sem nome'}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               )}
 
