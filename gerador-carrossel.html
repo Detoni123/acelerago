@@ -526,11 +526,11 @@ Retorne exatamente este JSON:
     const S = {
       overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
       modal: { background:'#0D1928', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto' },
-      input: { width:'100%', background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.14)', borderRadius:8, padding:'10px 14px', color:'#fff', fontFamily:'Sora,sans-serif', fontSize:14, outline:'none' },
+      input: { width:'100%', background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.14)', borderRadius:8, padding:'12px 14px', color:'#fff', fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
       label: { display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.45)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
       btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
       btnS: { background:'rgba(255,255,255,0.07)', color:'#fff', border:'1px solid rgba(255,255,255,0.13)', borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
-      btnG: { background:'transparent', color:'rgba(255,255,255,0.45)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'4px 8px' },
+      btnG: { background:'transparent', color:'rgba(255,255,255,0.45)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
     };
 
     /* ── LOGIN SCREEN ── */
@@ -575,7 +575,7 @@ Retorne exatamente este JSON:
     }
 
     /* ── CLIENT MODAL ── */
-    function ClientModal({ client, onSave, onClose }) {
+    function ClientModal({ client, onSave, onClose, isMobile }) {
       const [f, setF] = useState(client || {
         id: Date.now().toString(), nome:'', especialidade:'', instagram:'',
         nicho:'', tomVoz:'Acolhedor, científico, direto',
@@ -594,7 +594,7 @@ Retorne exatamente este JSON:
         <div style={S.overlay} onClick={onClose}>
           <div style={{...S.modal,maxWidth:620}} onClick={e => e.stopPropagation()}>
             <h2 style={{fontSize:19,fontWeight:700,marginBottom:22}}>{client ? 'Editar Perfil' : 'Nova Médica'}</h2>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:14,marginBottom:14}}>
               {[['nome','Nome da Médica','Dra. Nome Sobrenome'],['especialidade','Especialidade','Ginecologia e Obstetrícia'],['instagram','@ Instagram','@draexemplo'],['nicho','Nicho','Menopausa e saúde hormonal 40+']].map(([k,l,p]) => (
                 <div key={k}>
                   <label style={S.label}>{l}</label>
@@ -621,12 +621,12 @@ Retorne exatamente este JSON:
               }
               <p style={{fontSize:11,color:'rgba(255,255,255,0.3)',marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14,marginBottom:14}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
                 <div key={k}>
                   <label style={S.label}>{l}</label>
                   <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                    <input type="color" value={f[k]} onChange={e => set(k, e.target.value)} style={{width:38,height:34,border:'none',background:'none'}} />
+                    <input type="color" value={f[k]} onChange={e => set(k, e.target.value)} style={{width:44,height:44,border:'none',background:'none',cursor:'pointer'}} />
                     <input style={{...S.input,flex:1}} value={f[k]} onChange={e => set(k, e.target.value)} />
                   </div>
                 </div>
@@ -683,14 +683,14 @@ Retorne exatamente este JSON:
           <div style={{...S.modal,maxWidth:480}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
               <h2 style={{fontSize:17,fontWeight:700}}>Editar Slide {s.numero}</h2>
-              <button onClick={onClose} style={S.btnG}>✕</button>
+              <button onClick={onClose} style={{...S.btnG,minWidth:44,minHeight:44,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>✕</button>
             </div>
             {s.tipo==='capa' && <>
               <div style={{marginBottom:14}}>
                 <label style={S.label}>Posição do Texto</label>
                 <div style={{display:'flex',gap:6}}>
                   {[['bottom','Abaixo (padrão)'],['middle','Centro']].map(([v,l])=>(
-                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.textPosition||'bottom')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'13px 9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.textPosition||'bottom')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
                       {l}
                     </button>
                   ))}
@@ -705,7 +705,7 @@ Retorne exatamente este JSON:
                 <label style={S.label}>Layout do Slide</label>
                 <div style={{display:'flex',gap:6}}>
                   {LAYOUTS.map(l=>(
-                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'7px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.layout||'inline')===l.id?ORANGE:'rgba(255,255,255,0.1)'}}>
+                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.layout||'inline')===l.id?ORANGE:'rgba(255,255,255,0.1)'}}>
                       {l.label}
                     </button>
                   ))}
@@ -716,7 +716,7 @@ Retorne exatamente este JSON:
                   <label style={S.label}>Posição da Imagem</label>
                   <div style={{display:'flex',gap:6}}>
                     {[['top','Topo'],['middle','Meio (padrão)'],['bottom','Fundo']].map(([v,l])=>(
-                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'7px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.imagePosition||'middle')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.imagePosition||'middle')===v?ORANGE:'rgba(255,255,255,0.1)'}}>
                         {l}
                       </button>
                     ))}
@@ -729,7 +729,7 @@ Retorne exatamente este JSON:
                   {[['top','Topo'],['center','Centro'],['bottom','Fundo']].map(([v,l])=>{
                     const def = (s.layout||'inline')==='texto' ? 'center' : 'top';
                     return (
-                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'7px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.contentVAlign||def)===v?ORANGE:'rgba(255,255,255,0.1)'}}>
+                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.15)':'rgba(255,255,255,0.05)',borderColor:(s.contentVAlign||def)===v?ORANGE:'rgba(255,255,255,0.1)'}}>
                         {l}
                       </button>
                     );
@@ -907,15 +907,15 @@ Retorne exatamente este JSON:
             </div>
           </div>
           {/* Gemini — linha dedicada e destacada */}
-          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?'rgba(255,255,255,0.04)':'rgba(244,117,48,0.1)',border:`1px solid ${regenning?'rgba(255,255,255,0.08)':'rgba(244,117,48,0.35)'}`,borderRadius:7,padding:'8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?'rgba(255,255,255,0.2)':cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
+          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?'rgba(255,255,255,0.04)':'rgba(244,117,48,0.1)',border:`1px solid ${regenning?'rgba(255,255,255,0.08)':'rgba(244,117,48,0.35)'}`,borderRadius:7,padding:'12px 8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?'rgba(255,255,255,0.2)':cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
             {regenning ? '⟳ Gerando imagem...' : '⟳ Gerar Imagem com Gemini'}
           </button>
           {/* ações secundárias */}
           <div style={{display:'flex',gap:1,width:PW,background:'rgba(255,255,255,0.04)',borderRadius:6,overflow:'hidden'}}>
-            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
-            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
-            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁</button>
-            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕</button>}
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
+            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.6)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
+            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕ Limpar</button>}
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
@@ -951,9 +951,9 @@ Retorne exatamente este JSON:
     }
 
     /* ── TOAST ── */
-    function Toast({ msg }) {
+    function Toast({ msg, isMobile }) {
       return (
-        <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'rgba(13,25,40,0.97)',border:'1px solid rgba(255,255,255,0.13)',borderRadius:10,padding:'12px 22px',fontSize:13,fontWeight:500,color:'#fff',zIndex:9999,pointerEvents:'none',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+        <div style={{position:'fixed',bottom:isMobile?84:28,left:'50%',transform:'translateX(-50%)',background:'rgba(13,25,40,0.97)',border:'1px solid rgba(255,255,255,0.13)',borderRadius:10,padding:'12px 22px',fontSize:13,fontWeight:500,color:'#fff',zIndex:9999,pointerEvents:'none',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
           {msg}
         </div>
       );
@@ -1464,9 +1464,9 @@ Retorne exatamente:
           )}
 
           {/* MODALS */}
-          {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} />}
+          {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} isMobile={isMobile} />}
           {editSlide && <EditModal slide={editSlide.slide} onSave={s=>{setSlides(prev=>prev.map((sl,i)=>i===editSlide.idx?s:sl));setEditSlide(null);}} onClose={()=>setEditSlide(null)} />}
-          {toast && <Toast msg={toast} />}
+          {toast && <Toast msg={toast} isMobile={isMobile} />}
         </div>
       );
     }
