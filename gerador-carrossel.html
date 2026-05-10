@@ -26,6 +26,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
@@ -34,6 +35,34 @@
     const DARK   = '#0D1928';
     const SW = 1080, SH = 1350;
     const SCALE = 0.38;
+
+    /* ── SUPABASE ── */
+    const SUPA_URL = 'https://ozxjjvtrlmeiveioblci.supabase.co';
+    const SUPA_KEY = 'sb_publishable_Dvo_jfcgUJS6hXRtc8sIHA_jcJLs6dG';
+    const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+    const profileFromDB = (r) => r ? ({
+      id: r.id, user_id: r.user_id,
+      nome: r.nome || '', especialidade: r.especialidade || '',
+      instagram: r.instagram || '', nicho: r.nicho || '',
+      tomVoz: r.tom_voz || 'Acolhedor, científico, direto',
+      corPrimaria: r.cor_primaria || ORANGE, corSecundaria: r.cor_secundaria || DARK,
+      fonte: r.fonte || 'Sora',
+      palavrasProibidas: r.palavras_proibidas || [...DEFAULT_FORBIDDEN],
+      fotoRostoUrl: r.foto_rosto_url || '',
+    }) : null;
+
+    const profileToDB = (p, userId) => ({
+      user_id: userId,
+      nome: p.nome || '', especialidade: p.especialidade || '',
+      instagram: p.instagram || '', nicho: p.nicho || '',
+      tom_voz: p.tomVoz || 'Acolhedor, científico, direto',
+      cor_primaria: p.corPrimaria || ORANGE, cor_secundaria: p.corSecundaria || DARK,
+      fonte: p.fonte || 'Sora',
+      palavras_proibidas: p.palavrasProibidas || [...DEFAULT_FORBIDDEN],
+      foto_rosto_url: p.fotoRostoUrl || '',
+      updated_at: new Date().toISOString(),
+    });
 
     const FORMATS = [
       { id: 'alerta',     label: 'Alerta de Indústria',      desc: '"A morte de / O fim de..." — FOMO profissional' },
@@ -74,7 +103,7 @@
     }
 
     /* ── GEMINI IMAGE GENERATION ── */
-    async function generateImage(prompt, key, fotoBase64 = null) {
+    async function generateImage(prompt, fotoBase64 = null) {
       const model = 'gemini-3.1-flash-image-preview';
       const parts = fotoBase64
         ? [{ inlineData: { mimeType: 'image/jpeg', data: fotoBase64 } },
@@ -82,7 +111,7 @@
         : [{ text: prompt }];
       const res = await fetch('/api/gemini', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-gemini-key': key },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model,
           payload: {
@@ -99,7 +128,7 @@
     }
 
     /* ── CLAUDE COPY GENERATION ── */
-    async function generateCopy(form, client, claudeKey) {
+    async function generateCopy(form, client) {
       const fmt = FORMATS.find(f => f.id === form.formato);
       const forbidden = (client.palavrasProibidas || DEFAULT_FORBIDDEN).join(', ');
       const n = form.numSlides;
@@ -184,10 +213,7 @@ Retorne exatamente este JSON:
 
       const res = await fetch('/api/claude', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-claude-key': claudeKey
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4096,
@@ -507,29 +533,42 @@ Retorne exatamente este JSON:
       btnG: { background:'transparent', color:'rgba(255,255,255,0.45)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'4px 8px' },
     };
 
-    /* ── SETTINGS MODAL ── */
-    function SettingsModal({ onClose }) {
-      const [ck, setCk] = useState(LS.get('claudeKey', ''));
-      const [gk, setGk] = useState(LS.get('geminiKey', ''));
-      const save = () => { LS.set('claudeKey', ck); LS.set('geminiKey', gk); onClose(); };
+    /* ── LOGIN SCREEN ── */
+    function LoginScreen() {
+      const [email, setEmail] = useState('');
+      const [pass, setPass] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [err, setErr] = useState('');
+      const handle = async (e) => {
+        e.preventDefault(); setLoading(true); setErr('');
+        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) setErr('Email ou senha incorretos.');
+        setLoading(false);
+      };
       return (
-        <div style={S.overlay} onClick={onClose}>
-          <div style={S.modal} onClick={e => e.stopPropagation()}>
-            <h2 style={{fontSize:19,fontWeight:700,marginBottom:24}}>Configurações de API</h2>
-            <div style={{marginBottom:18}}>
-              <label style={S.label}>Chave API Claude (Anthropic) — copy dos slides</label>
-              <input style={S.input} type="password" value={ck} onChange={e => setCk(e.target.value)} placeholder="sk-ant-..." />
-              <p style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginTop:5}}>Modelo: claude-haiku-4-5 · custo por carrossel: ~R$0,05</p>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#060e18'}}>
+          <div style={{background:'#0D1928',border:'1px solid rgba(255,255,255,0.1)',borderRadius:16,padding:40,width:'100%',maxWidth:380}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
+              <div style={{width:36,height:36,background:ORANGE,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16}}>A</div>
+              <div>
+                <div style={{fontWeight:700,fontSize:17}}>AceleraGO</div>
+                <div style={{fontSize:12,color:'rgba(255,255,255,0.4)'}}>Gerador de Carrossel</div>
+              </div>
             </div>
-            <div style={{marginBottom:24}}>
-              <label style={S.label}>Chave API Gemini (Google AI Studio) — imagens</label>
-              <input style={S.input} type="password" value={gk} onChange={e => setGk(e.target.value)} placeholder="AIza..." />
-              <p style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginTop:5}}>Modelo: gemini-2.0-flash · Obtenha em aistudio.google.com · US$300 grátis em contas novas</p>
-            </div>
-            <div style={{display:'flex',gap:10}}>
-              <button style={S.btnP} onClick={save}>Salvar</button>
-              <button style={{...S.btnS,width:'auto'}} onClick={onClose}>Cancelar</button>
-            </div>
+            <form onSubmit={handle} style={{display:'flex',flexDirection:'column',gap:16}}>
+              <div>
+                <label style={S.label}>Email</label>
+                <input style={S.input} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="seu@email.com" required />
+              </div>
+              <div>
+                <label style={S.label}>Senha</label>
+                <input style={S.input} type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" required />
+              </div>
+              {err && <div style={{fontSize:12,color:'#fca5a5',background:'rgba(220,38,38,0.1)',borderRadius:7,padding:'8px 12px'}}>{err}</div>}
+              <button type="submit" disabled={loading} style={{...S.btnP,opacity:loading?0.6:1,marginTop:4}}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </button>
+            </form>
           </div>
         </div>
       );
@@ -922,8 +961,9 @@ Retorne exatamente este JSON:
 
     /* ── APP ── */
     function App() {
-      const [clients, setClients]               = useState(() => LS.get('clients', []));
-      const [selId, setSelId]                   = useState(() => LS.get('selId', null));
+      const [session, setSession]               = useState(null);
+      const [authLoading, setAuthLoading]       = useState(true);
+      const [profile, setProfile]               = useState(null);
       const [form, setForm]                     = useState({ tema:'', formato:'alerta', numSlides:10, gerarImagens:true, usarFotoMedica:false });
       const [slides, setSlides]                 = useState([]);
       const [legenda, setLegenda]               = useState('');
@@ -948,39 +988,46 @@ Retorne exatamente este JSON:
       const [toast, setToast]                     = useState(null);
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-      const client = clients.find(c => c.id === selId);
+      const client = profile;
 
-      const saveClients = (arr) => { setClients(arr); LS.set('clients', arr); };
-      const selectClient = (id) => { setSelId(id); LS.set('selId', id); };
+      useEffect(() => {
+        sb.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          if (session) loadProfile(session.user.id);
+          else setAuthLoading(false);
+        });
+        const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => {
+          setSession(session);
+          if (session) loadProfile(session.user.id);
+          else { setProfile(null); setAuthLoading(false); }
+        });
+        return () => subscription.unsubscribe();
+      }, []);
 
-      const handleSaveClient = (data) => {
-        const idx = clients.findIndex(c => c.id === data.id);
-        const arr = idx >= 0 ? clients.map(c => c.id===data.id ? data : c) : [...clients, data];
-        saveClients(arr);
-        selectClient(data.id);
+      const loadProfile = async (userId) => {
+        const { data } = await sb.from('doctor_profiles').select('*').eq('user_id', userId).single();
+        setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'' });
+        setAuthLoading(false);
+      };
+
+      const handleSaveClient = async (data) => {
+        const { error } = await sb.from('doctor_profiles').upsert(profileToDB(data, session.user.id), { onConflict: 'user_id' });
+        if (!error) { setProfile({ ...data, user_id: session.user.id }); showToast('Perfil salvo!'); }
         setModal(null); setEditClient(null);
       };
 
-      const handleDelClient = (id) => {
-        if (!confirm('Remover este perfil?')) return;
-        const arr = clients.filter(c => c.id !== id);
-        saveClients(arr);
-        if (selId === id) { const nid = arr[0]?.id||null; selectClient(nid); }
-      };
+      const handleLogout = async () => { await sb.auth.signOut(); };
 
       const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
       const handleGenerate = async () => {
         if (!client) { setError('Selecione ou crie uma médica primeiro.'); return; }
         if (!form.tema.trim()) { setError('Digite o tema do carrossel.'); return; }
-        const ck = LS.get('claudeKey','');
-        const gk = LS.get('geminiKey','');
-        if (!ck) { setError('Configure a chave API do Claude nas Configurações (⚙).'); return; }
         setError(''); setGenerating(true); setSlides([]); setLegenda(''); setHashtags([]); setPalavraGatilho(''); setActiveCarouselId(null);
 
         try {
           setProgress('Gerando copy com Claude...');
-          const result = await generateCopy(form, client, ck);
+          const result = await generateCopy(form, client);
           setSlides(result.slides || []);
           setLegenda(result.legenda || '');
           setHashtags(result.hashtags || []);
@@ -994,22 +1041,18 @@ Retorne exatamente este JSON:
       };
 
       const handleRegen = async (slide, idx) => {
-        const gk = LS.get('geminiKey','');
-        if (!gk) { setError('Configure a chave API Gemini nas Configurações.'); return; }
         if (!slide.prompt_imagem) { setError('Slide sem prompt de imagem. Edite o slide para adicionar um.'); return; }
         setGenImgIdx(idx); setError('');
         try {
           const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
             ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
-          const imgData = await generateImage(buildImagePrompt(slide), gk, fotoB64);
+          const imgData = await generateImage(buildImagePrompt(slide), fotoB64);
           setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
         } catch (e) { setError(e.message); }
         finally { setGenImgIdx(-1); }
       };
 
       const handleGenerateAllImages = async () => {
-        const gk = LS.get('geminiKey','');
-        if (!gk) { setError('Configure a chave API Gemini nas Configurações (⚙).'); return; }
         setError('');
         const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
           ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
@@ -1019,7 +1062,7 @@ Retorne exatamente este JSON:
             try {
               setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
               setGenImgIdx(i);
-              const imgData = await generateImage(buildImagePrompt(updated[i]), gk, fotoB64);
+              const imgData = await generateImage(buildImagePrompt(updated[i]), fotoB64);
               updated[i] = { ...updated[i], imageData: imgData };
               setSlides([...updated]);
             } catch (e) { console.warn(`Slide ${i+1}:`, e.message); }
@@ -1112,7 +1155,6 @@ Retorne exatamente este JSON:
 
       const handleLoadCarousel = (entry) => {
         if (!confirm(`Carregar "${entry.nome}"? O carrossel atual será substituído.`)) return;
-        if (entry.clientId) selectClient(entry.clientId);
         setForm(entry.form);
         setSlides(entry.slides);
         setLegenda(entry.legenda);
@@ -1129,8 +1171,6 @@ Retorne exatamente este JSON:
       };
 
       const handleGeneratePauta = async () => {
-        const ck = LS.get('claudeKey','');
-        if (!ck) { setError('Configure a chave Claude nas Configurações.'); return; }
         if (!client) { setError('Selecione uma médica primeiro.'); return; }
         if (!pautaForm.temas.trim()) { setError('Informe os temas do mês.'); return; }
         setGeneratingPauta(true); setPautaSuggestions([]);
@@ -1141,7 +1181,7 @@ Temas principais do mês: ${pautaForm.temas}
 Retorne exatamente:
 {"posts":[{"semana":1,"tema":"tema curto","formato":"alerta|analogia|noticia|serie|diagnostico","gancho":"uma frase de gancho","palavraGatilho":"PALAVRA"},...12 posts]}`;
         try {
-          const res = await fetch('/api/claude', { method:'POST', headers:{'Content-Type':'application/json','x-claude-key':ck},
+          const res = await fetch('/api/claude', { method:'POST', headers:{'Content-Type':'application/json'},
             body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:2048, system:systemPauta, messages:[{role:'user',content:userPauta}] }) });
           const data = await res.json();
           const txt = data.content[0].text.trim();
@@ -1150,6 +1190,9 @@ Retorne exatamente:
         } catch(e) { setError(e.message); }
         finally { setGeneratingPauta(false); }
       };
+
+      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#060e18',color:'rgba(255,255,255,0.35)',fontSize:14}}>Carregando...</div>;
+      if (!session) return <LoginScreen />;
 
       return (
         <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
@@ -1163,16 +1206,10 @@ Retorne exatamente:
             </div>
             <div style={{flex:1}} />
             <div style={{display:'flex',alignItems:'center',gap:8}}>
-              {clients.length > 0 && (
-                <select value={selId||''} onChange={e=>selectClient(e.target.value)} style={{...S.input,width:'auto',minWidth:190,height:34,padding:'0 10px',fontSize:13}}>
-                  <option value="">— Selecionar médica —</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                </select>
-              )}
-              <button onClick={()=>{setEditClient(null);setModal('client');}} style={{...S.btnS,height:34,padding:'0 12px',fontSize:12,whiteSpace:'nowrap'}}>+ Nova Médica</button>
-              {client && <button onClick={()=>{setEditClient(client);setModal('client');}} style={{...S.btnS,height:34,padding:'0 10px',fontSize:13}}>✏</button>}
+              {profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
+              <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:34,padding:'0 12px',fontSize:12,whiteSpace:'nowrap'}}>✏ Meu Perfil</button>
+              <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,height:34,padding:'0 12px',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:12}}>Sair</button>
             </div>
-            <button onClick={()=>setModal('settings')} style={{background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,width:34,height:34,color:'#fff',cursor:'pointer',fontSize:15}}>⚙</button>
           </div>
 
           {/* LAYOUT */}
@@ -1395,7 +1432,6 @@ Retorne exatamente:
           </div>
 
           {/* MODALS */}
-          {modal==='settings' && <SettingsModal onClose={()=>setModal(null)} />}
           {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} />}
           {editSlide && <EditModal slide={editSlide.slide} onSave={s=>{setSlides(prev=>prev.map((sl,i)=>i===editSlide.idx?s:sl));setEditSlide(null);}} onClose={()=>setEditSlide(null)} />}
           {toast && <Toast msg={toast} />}
