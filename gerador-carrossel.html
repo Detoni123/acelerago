@@ -564,14 +564,6 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         ctx.fillStyle = cp;
         ctx.fillRect(0, 0, SW, 8);
 
-        // number + line
-        ctx.fillStyle = cp;
-        ctx.font = `800 40px ${font}`;
-        ctx.textAlign = 'left';
-        ctx.fillText(`0${slide.numero}`, PAD, 130);
-        ctx.fillStyle = `${cp}40`;
-        ctx.fillRect(PAD + 100, 112, SW - PAD*2 - 100, 3);
-
         const stc = slide.textColor || '#ffffff';
         const coTA = slide.textAlign || 'left';
         const coTX = coTA === 'center' ? SW/2 : coTA === 'right' ? SW - PAD : PAD;
@@ -598,15 +590,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           ctx.letterSpacing = '0px';
           return ny;
         };
-        const drawCounter = () => {
-          ctx.fillStyle = 'rgba(255,255,255,0.18)';
-          ctx.font = `400 32px ${font}`;
-          ctx.textAlign = 'right';
-          ctx.fillText(`${slide.numero} →`, SW - PAD, SH - 80);
-        };
-
         const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
-        const startYByVAlign = vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 200;
+        const startYByVAlign = vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 140;
 
         if (layout === 'lateral') {
           let ty = startYByVAlign;
@@ -626,13 +611,13 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               img.src = `data:image/png;base64,${slide.imageData}`;
             });
           }
-          drawCounter();
+
 
         } else if (layout === 'texto') {
           let ty = startYByVAlign;
           ty = await drawTitle(ty);
           drawBody(ty, '#ffffff', 58, 88);
-          drawCounter();
+
 
         } else {
           // inline (default) — respeita imagePosition: top | middle | bottom
@@ -671,7 +656,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             ty = await drawImg(ty);
             drawBody(ty, 'rgba(255,255,255,0.72)', 44, 68);
           }
-          drawCounter();
+
         }
       }
 
@@ -1089,8 +1074,6 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               {/* ── CONTEÚDO ── */}
               {slide.tipo === 'conteudo' && (() => {
                 const layout = slide.layout || 'inline';
-                const numLabel = <div style={{display:'flex',alignItems:'center',gap:24,flexShrink:0}}><span style={{color:cp,fontSize:36,fontWeight:800}}>0{slide.numero}</span><div style={{flex:1,height:2,background:`${cp}30`}} /></div>;
-                const counter = <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right',flexShrink:0}}>{slide.numero} →</div>;
                 const imgEl = slide.imageData ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" /></div> : null;
 
                 const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
@@ -1102,10 +1085,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,display:'flex',minHeight:0}}>
                         <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent}}>
-                          {numLabel}
                           {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
                           {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
-                          {counter}
                         </div>
                         {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
                       </div>
@@ -1117,10 +1098,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                     <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent}}>
-                        {numLabel}
                         {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
                         {slide.texto && <div style={{color:slide.textColor||'#fff',fontSize:58,fontWeight:500,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
-                        {counter}
                       </div>
                     </div>
                   );
@@ -1137,13 +1116,11 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                     <div style={{height:8,background:cp,flexShrink:0}} />
                     <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:inlineJustify}}>
-                      {numLabel}
                       {imgPos==='top' && imgBlock}
                       {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
                       {imgPos==='middle' && imgBlock}
                       {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:44,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',flex:imgPos==='bottom'?1:undefined}}>{slide.texto}</div>}
                       {imgPos==='bottom' && imgBlock}
-                      {counter}
                     </div>
                   </div>
                 );
