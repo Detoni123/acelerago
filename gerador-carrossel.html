@@ -19,12 +19,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --l-bg:     #F0F2F7;
+      --l-surf:   #FFFFFF;
+      --l-surf2:  #F5F7FA;
+      --l-border: #E2E8F0;
+      --l-t1:     #1E293B;
+      --l-t2:     #64748B;
+      --l-t3:     #94A3B8;
+      --l-label:  #566879;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sora', sans-serif; background: #F0F2F7; color: #1E293B; min-height: 100vh; }
+    body { font-family: 'Sora', sans-serif; background: var(--l-bg); color: var(--l-t1); min-height: 100vh; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 3px; }
-    select option { background: #FFFFFF; color: #1E293B; }
+    select option { background: var(--l-surf); color: var(--l-t1); }
     textarea { font-family: 'Sora', sans-serif; }
     input[type=color] { padding: 2px; border-radius: 6px; cursor: pointer; }
     input[type=range] { height: 4px; }
@@ -52,6 +62,35 @@
     const L_T2        = '#64748B';
     const L_T3        = '#94A3B8';
     const L_LABEL     = '#566879'; /* 5.1:1 on white — WCAG AA ✓ */
+
+    /* ── THEME ── */
+    const DARK_VARS = {
+      '--l-bg':     '#0B1623',
+      '--l-surf':   '#0F1E32',
+      '--l-surf2':  '#111D2E',
+      '--l-border': 'rgba(255,255,255,0.09)',
+      '--l-t1':     '#F1F5F9',
+      '--l-t2':     '#8FA3B8',
+      '--l-t3':     'rgba(255,255,255,0.32)',
+      '--l-label':  '#8FA3B8',
+    };
+    const LIGHT_VARS = {
+      '--l-bg':     '#F0F2F7',
+      '--l-surf':   '#FFFFFF',
+      '--l-surf2':  '#F5F7FA',
+      '--l-border': '#E2E8F0',
+      '--l-t1':     '#1E293B',
+      '--l-t2':     '#64748B',
+      '--l-t3':     '#94A3B8',
+      '--l-label':  '#566879',
+    };
+    function applyTheme(dark) {
+      const vars = dark ? DARK_VARS : LIGHT_VARS;
+      for (const [k,v] of Object.entries(vars)) document.documentElement.style.setProperty(k, v);
+      localStorage.setItem('acg-theme', dark ? 'dark' : 'light');
+    }
+    applyTheme(localStorage.getItem('acg-theme') === 'dark');
+
     const ADMIN_EMAIL = 'ronaldo@detonimarketingdigital.com.br';
     const SW = 1080, SH = 1350;
     const computeScale = (w) => w < 768 ? Math.min(0.31, (w - 40) / SW) : 0.38;
@@ -632,12 +671,12 @@ Retorne exatamente este JSON:
     /* ── STYLES ── */
     const S = {
       overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
-      modal: { background:L_SURF, border:`1px solid ${L_BORDER}`, borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.14)' },
-      input: { width:'100%', background:L_SURF2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'12px 14px', color:L_T1, fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
-      label: { display:'block', fontSize:11, fontWeight:600, color:L_LABEL, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
+      modal: { background:'var(--l-surf)', border:'1px solid var(--l-border)', borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.14)' },
+      input: { width:'100%', background:'var(--l-surf2)', border:'1px solid var(--l-border)', borderRadius:8, padding:'12px 14px', color:'var(--l-t1)', fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
+      label: { display:'block', fontSize:11, fontWeight:600, color:'var(--l-label)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
       btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
-      btnS: { background:L_SURF2, color:L_T2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
-      btnG: { background:'transparent', color:L_T3, border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
+      btnS: { background:'var(--l-surf2)', color:'var(--l-t2)', border:'1px solid var(--l-border)', borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
+      btnG: { background:'transparent', color:'var(--l-t3)', border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
     };
 
     /* ── FONT PICKER ── */
@@ -653,17 +692,17 @@ Retorne exatamente este JSON:
         <div ref={ref} style={{position:'relative'}}>
           <div onClick={() => setOpen(o => !o)} style={{
             display:'flex', alignItems:'center', justifyContent:'space-between',
-            background:L_SURF2, border:`1px solid ${open ? ORANGE : L_BORDER}`,
+            background:'var(--l-surf2)', border:`1px solid ${open ? ORANGE : 'var(--l-border)'}`,
             borderRadius:8, padding:'10px 14px', cursor:'pointer',
             transition:'border-color 0.15s',
           }}>
-            <span style={{fontFamily:`'${value}',sans-serif`, fontSize:17, color:L_T1, fontWeight:500}}>{value}</span>
-            <span style={{color:L_T3, fontSize:11, marginLeft:8}}>{open ? '▲' : '▼'}</span>
+            <span style={{fontFamily:`'${value}',sans-serif`, fontSize:17, color:'var(--l-t1)', fontWeight:500}}>{value}</span>
+            <span style={{color:'var(--l-t3)', fontSize:11, marginLeft:8}}>{open ? '▲' : '▼'}</span>
           </div>
           {open && (
             <div style={{
               position:'absolute', top:'calc(100% + 4px)', left:0, right:0, zIndex:200,
-              background:L_SURF, border:`1px solid ${L_BORDER}`, borderRadius:10,
+              background:'var(--l-surf)', border:'1px solid var(--l-border)', borderRadius:10,
               boxShadow:'0 8px 32px rgba(0,0,0,0.12)', overflow:'hidden',
             }}>
               {FONTS.map(fn => (
@@ -674,8 +713,8 @@ Retorne exatamente este JSON:
                   transition:'background 0.1s',
                   display:'flex', alignItems:'baseline', gap:10,
                 }}>
-                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:18, color:L_T1, fontWeight:500, minWidth:160}}>{fn}</span>
-                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:13, color:L_T3}}>Saúde da mulher</span>
+                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:18, color:'var(--l-t1)', fontWeight:500, minWidth:160}}>{fn}</span>
+                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:13, color:'var(--l-t3)'}}>Saúde da mulher</span>
                 </div>
               ))}
             </div>
@@ -697,13 +736,13 @@ Retorne exatamente este JSON:
         setLoading(false);
       };
       return (
-        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG}}>
-          <div style={{background:L_SURF,border:`1px solid ${L_BORDER}`,borderRadius:16,padding:40,width:'100%',maxWidth:380,boxShadow:'0 8px 40px rgba(0,0,0,0.1)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--l-bg)'}}>
+          <div style={{background:'var(--l-surf)',border:'1px solid var(--l-border)',borderRadius:16,padding:40,width:'100%',maxWidth:380,boxShadow:'0 8px 40px rgba(0,0,0,0.1)'}}>
             <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
               <div style={{width:36,height:36,background:ORANGE,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16}}>A</div>
               <div>
                 <div style={{fontWeight:700,fontSize:17}}>AceleraGO</div>
-                <div style={{fontSize:12,color:L_T3}}>Gerador de Carrossel</div>
+                <div style={{fontSize:12,color:'var(--l-t3)'}}>Gerador de Carrossel</div>
               </div>
             </div>
             <form onSubmit={handle} style={{display:'flex',flexDirection:'column',gap:16}}>
@@ -763,14 +802,14 @@ Retorne exatamente este JSON:
                 ? <div style={{display:'flex',gap:12,alignItems:'center'}}>
                     <img src={f.fotoRostoUrl} style={{width:56,height:56,borderRadius:'50%',objectFit:'cover',border:`2px solid ${ORANGE}`}} alt="foto" />
                     <button style={{...S.btnS,width:'auto',fontSize:12}} onClick={()=>set('fotoRostoUrl','')}>Remover</button>
-                    <span style={{fontSize:11,color:L_LABEL}}>Foto carregada</span>
+                    <span style={{fontSize:11,color:'var(--l-label)'}}>Foto carregada</span>
                   </div>
                 : <input type="file" accept="image/*" style={{...S.input,padding:'7px 14px',cursor:'pointer'}} onChange={e=>{
                     const file=e.target.files[0]; if(!file) return;
                     const r=new FileReader(); r.onload=ev=>set('fotoRostoUrl',ev.target.result); r.readAsDataURL(file);
                   }} />
               }
-              <p style={{fontSize:11,color:L_LABEL,marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
+              <p style={{fontSize:11,color:'var(--l-label)',marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
             </div>
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
@@ -839,7 +878,7 @@ Retorne exatamente este JSON:
                 <label style={S.label}>Posição do Texto</label>
                 <div style={{display:'flex',gap:6}}>
                   {[['bottom','Abaixo (padrão)'],['middle','Centro']].map(([v,l])=>(
-                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'13px 9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.textPosition||'bottom')===v?ORANGE:L_BORDER}}>
+                    <button key={v} onClick={()=>set('textPosition',v)} style={{...S.btnS,flex:1,fontSize:12,padding:'13px 9px',background:(s.textPosition||'bottom')===v?'rgba(244,117,48,0.1)':'var(--l-surf2)',borderColor:(s.textPosition||'bottom')===v?ORANGE:'var(--l-border)'}}>
                       {l}
                     </button>
                   ))}
@@ -854,7 +893,7 @@ Retorne exatamente este JSON:
                 <label style={S.label}>Layout do Slide</label>
                 <div style={{display:'flex',gap:6}}>
                   {LAYOUTS.map(l=>(
-                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.layout||'inline')===l.id?ORANGE:L_BORDER}}>
+                    <button key={l.id} onClick={()=>set('layout',l.id)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.layout||'inline')===l.id?'rgba(244,117,48,0.1)':'var(--l-surf2)',borderColor:(s.layout||'inline')===l.id?ORANGE:'var(--l-border)'}}>
                       {l.label}
                     </button>
                   ))}
@@ -865,7 +904,7 @@ Retorne exatamente este JSON:
                   <label style={S.label}>Posição da Imagem</label>
                   <div style={{display:'flex',gap:6}}>
                     {[['top','Topo'],['middle','Meio (padrão)'],['bottom','Fundo']].map(([v,l])=>(
-                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.imagePosition||'middle')===v?ORANGE:L_BORDER}}>
+                      <button key={v} onClick={()=>set('imagePosition',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.imagePosition||'middle')===v?'rgba(244,117,48,0.1)':'var(--l-surf2)',borderColor:(s.imagePosition||'middle')===v?ORANGE:'var(--l-border)'}}>
                         {l}
                       </button>
                     ))}
@@ -878,7 +917,7 @@ Retorne exatamente este JSON:
                   {[['top','Topo'],['center','Centro'],['bottom','Fundo']].map(([v,l])=>{
                     const def = (s.layout||'inline')==='texto' ? 'center' : 'top';
                     return (
-                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.1)':L_SURF2,borderColor:(s.contentVAlign||def)===v?ORANGE:L_BORDER}}>
+                      <button key={v} onClick={()=>set('contentVAlign',v)} style={{...S.btnS,flex:1,fontSize:11,padding:'13px 4px',background:(s.contentVAlign||def)===v?'rgba(244,117,48,0.1)':'var(--l-surf2)',borderColor:(s.contentVAlign||def)===v?ORANGE:'var(--l-border)'}}>
                         {l}
                       </button>
                     );
@@ -926,7 +965,7 @@ Retorne exatamente este JSON:
       const wrapperStyle = {
         width: PW, height: PH, borderRadius: 10, overflow: 'hidden',
         cursor: 'pointer', position: 'relative', flexShrink: 0,
-        border: `1px solid ${L_BORDER}`,
+        border: '1px solid var(--l-border)',
       };
 
       const innerStyle = {
@@ -1058,85 +1097,85 @@ Retorne exatamente este JSON:
             </div>
           </div>
           {/* Gemini — linha dedicada e destacada */}
-          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?L_SURF2:'rgba(244,117,48,0.08)',border:`1px solid ${regenning?L_BORDER:'rgba(244,117,48,0.3)'}`,borderRadius:7,padding:'12px 8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?L_T3:cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
+          <button onClick={()=>onRegen(slide,idx)} disabled={regenning} style={{width:PW,background:regenning?'var(--l-surf2)':'rgba(244,117,48,0.08)',border:`1px solid ${regenning?'var(--l-border)':'rgba(244,117,48,0.3)'}`,borderRadius:7,padding:'12px 8px',fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,color:regenning?'var(--l-t3)':cp,cursor:regenning?'default':'pointer',textAlign:'center'}}>
             {regenning ? '⟳ Gerando imagem...' : '⟳ Gerar Imagem com Gemini'}
           </button>
           {/* ações secundárias */}
-          <div style={{display:'flex',gap:1,width:PW,background:L_SURF2,borderRadius:6,overflow:'hidden',border:`1px solid ${L_BORDER}`}}>
-            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
-            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
-            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:L_T2,minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
+          <div style={{display:'flex',gap:1,width:PW,background:'var(--l-surf2)',borderRadius:6,overflow:'hidden',border:'1px solid var(--l-border)'}}>
+            <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
+            <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
+            <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
             {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕ Limpar</button>}
           </div>
           {/* hidden file input */}
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
           {/* cores de fundo e texto — disponível para capa e conteudo */}
           {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
-            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'5px 8px'}}>
-              <span style={{fontSize:10,color:L_LABEL}}>Fundo</span>
-              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
-              <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
-              <span style={{fontSize:10,color:L_LABEL}}>Texto</span>
-              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
-              <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
-              <span style={{fontSize:10,color:L_LABEL}}>Acento</span>
-              <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
+            <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'5px 8px'}}>
+              <span style={{fontSize:10,color:'var(--l-label)'}}>Fundo</span>
+              <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
+              <div style={{width:1,height:14,background:'var(--l-border)',margin:'0 2px'}} />
+              <span style={{fontSize:10,color:'var(--l-label)'}}>Texto</span>
+              <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
+              <div style={{width:1,height:14,background:'var(--l-border)',margin:'0 2px'}} />
+              <span style={{fontSize:10,color:'var(--l-label)'}}>Acento</span>
+              <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:'1px solid var(--l-border)',borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
+              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:'var(--l-label)'}}>↺</button>}
             </div>
           )}
           {/* overlay escuro + zoom + posição da imagem + posição do texto — só para capa */}
           {slide.tipo === 'capa' && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'7px 8px'}}>
               {slide.imageData && <>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Escuro</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Escuro</span>
                   <input type="range" min={0} max={0.8} step={0.05} value={slide.overlayOpacity||0} onChange={e=>onEdit({...slide,overlayOpacity:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Zoom</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Zoom</span>
                   <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Img ↕</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Img ↕</span>
                   <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+                  <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
                 </div>
-                <div style={{height:1,background:L_BORDER,margin:'2px 0'}} />
+                <div style={{height:1,background:'var(--l-border)',margin:'2px 0'}} />
               </>}
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Texto ↕</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
               </div>
             </div>
           )}
           {/* ajustes de imagem — brilho, contraste, saturação, matiz */}
           {slide.imageData && (
-            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
-              <span style={{fontSize:9,color:L_LABEL,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
+            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'7px 8px'}}>
+              <span style={{fontSize:9,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Brilho</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Brilho</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgBrightness??100} onChange={e=>onEdit({...slide,imgBrightness:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Contraste</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Contraste</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgContrast??100} onChange={e=>onEdit({...slide,imgContrast:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Saturação</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Saturação</span>
                 <input type="range" min={0} max={300} step={5} value={slide.imgSaturate??100} onChange={e=>onEdit({...slide,imgSaturate:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Matiz</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:48,flexShrink:0}}>Matiz</span>
                 <input type="range" min={-180} max={180} step={5} value={slide.imgHue??0} onChange={e=>onEdit({...slide,imgHue:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
+                <span style={{fontSize:10,color:'var(--l-label)',width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
               </div>
             </div>
           )}
@@ -1150,7 +1189,7 @@ Retorne exatamente este JSON:
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,opacity:disabled?0.4:1}}>
           <div>
             <div style={{fontSize:13,fontWeight:500}}>{label}</div>
-            {sub && <div style={{fontSize:11,color:L_LABEL,marginTop:2}}>{sub}</div>}
+            {sub && <div style={{fontSize:11,color:'var(--l-label)',marginTop:2}}>{sub}</div>}
           </div>
           <div onClick={()=>!disabled&&onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?ORANGE:'#CBD5E1',position:'relative',cursor:disabled?'default':'pointer',transition:'background 0.2s',flexShrink:0}}>
             <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:checked?23:3,transition:'left 0.2s'}} />
@@ -1202,6 +1241,7 @@ Retorne exatamente este JSON:
       const [allProfiles, setAllProfiles]         = useState([]);
       const [activeClientId, setActiveClientId]   = useState(null);
       const [adminError, setAdminError]           = useState('');
+      const [dark, setDark]                       = useState(() => localStorage.getItem('acg-theme') === 'dark');
 
       const isAdmin           = session?.user?.email === ADMIN_EMAIL;
       const activeClientProf  = isAdmin && activeClientId ? allProfiles.find(p => p.user_id === activeClientId) : null;
@@ -1541,14 +1581,14 @@ Retorne exatamente:
         finally { setGeneratingPauta(false); }
       };
 
-      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG,color:L_LABEL,fontSize:14}}>Carregando...</div>;
+      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--l-bg)',color:'var(--l-label)',fontSize:14}}>Carregando...</div>;
       if (!session) return <LoginScreen />;
 
       return (
         <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
 
           {/* TOP BAR */}
-          <div style={{background:L_T1,borderBottom:'1px solid rgba(255,255,255,0.08)',padding:isMobile?'0 12px':'0 20px',height:isMobile?50:58,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
+          <div style={{background:'#1E293B',borderBottom:'1px solid rgba(255,255,255,0.08)',padding:isMobile?'0 12px':'0 20px',height:isMobile?50:58,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <div style={{width:28,height:28,background:ORANGE,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:12}}>A</div>
               <span style={{fontWeight:700,fontSize:isMobile?13:15}}>Gerador de Carrossel</span>
@@ -1573,6 +1613,7 @@ Retorne exatamente:
               )}
               {!isMobile && !isAdmin && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.7)'}}>{profile.nome}</span>}
               <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
+              <button onClick={()=>{ applyTheme(!dark); setDark(!dark); }} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:7,height:32,width:32,color:'rgba(255,255,255,0.8)',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}} title={dark?'Modo claro':'Modo escuro'}>{dark ? '☀' : '☾'}</button>
               <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.7)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
             </div>
           </div>
@@ -1581,17 +1622,17 @@ Retorne exatamente:
           <div style={{display:'flex',flex:1,minHeight:0}}>
 
             {/* LEFT PANEL */}
-            <div style={{width:isMobile?'100%':290,background:L_SURF,borderRight:isMobile?'none':`1px solid ${L_BORDER}`,overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
+            <div style={{width:isMobile?'100%':290,background:'var(--l-surf)',borderRight:isMobile?'none':'1px solid var(--l-border)',overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Configurar</div>
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:'var(--l-label)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
 
               {isAdmin && isMobile && (
                 <div style={{background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:10,padding:'12px 14px'}}>
-                  <div style={{fontSize:10,color:L_LABEL,marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
+                  <div style={{fontSize:10,color:'var(--l-label)',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
                   {adminError ? (
                     <div style={{fontSize:11,color:'#fca5a5',background:'rgba(220,38,38,0.1)',borderRadius:6,padding:'8px 10px'}}>{adminError}</div>
                   ) : allProfiles.length === 0 ? (
-                    <div style={{fontSize:11,color:L_LABEL}}>Carregando perfis...</div>
+                    <div style={{fontSize:11,color:'var(--l-label)'}}>Carregando perfis...</div>
                   ) : (
                     <select
                       value={activeClientId || ''}
@@ -1611,9 +1652,9 @@ Retorne exatamente:
                 <label style={S.label}>Formato</label>
                 <div style={{display:'flex',flexDirection:'column',gap:5}}>
                   {FORMATS.map(f => (
-                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':L_SURF2,border:`1px solid ${form.formato===f.id?ORANGE:L_BORDER}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:L_T2,cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
+                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':'var(--l-surf2)',border:`1px solid ${form.formato===f.id?ORANGE:'var(--l-border)'}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:'var(--l-t2)',cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
                       <div style={{fontSize:12,fontWeight:600}}>{f.label}</div>
-                      <div style={{fontSize:10,color:L_LABEL,marginTop:2}}>{f.desc}</div>
+                      <div style={{fontSize:10,color:'var(--l-label)',marginTop:2}}>{f.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -1628,7 +1669,7 @@ Retorne exatamente:
                 <label style={S.label}>Número de Slides</label>
                 <div style={{display:'flex',gap:6}}>
                   {[5,8,10].map(n => (
-                    <button key={n} onClick={()=>setF('numSlides',n)} style={{flex:1,background:form.numSlides===n?ORANGE:L_SURF2,border:`1px solid ${form.numSlides===n?ORANGE:L_BORDER}`,borderRadius:7,padding:'9px',color:form.numSlides===n?'#fff':L_T2,cursor:'pointer',fontFamily:'Sora,sans-serif',fontWeight:700,fontSize:14}}>{n}</button>
+                    <button key={n} onClick={()=>setF('numSlides',n)} style={{flex:1,background:form.numSlides===n?ORANGE:'var(--l-surf2)',border:`1px solid ${form.numSlides===n?ORANGE:'var(--l-border)'}`,borderRadius:7,padding:'9px',color:form.numSlides===n?'#fff':'var(--l-t2)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontWeight:700,fontSize:14}}>{n}</button>
                   ))}
                 </div>
               </div>
@@ -1638,8 +1679,8 @@ Retorne exatamente:
                 <Toggle label="Usar foto da médica" sub="Insere o rosto nos prompts (Beta)" checked={form.usarFotoMedica} onChange={v=>setF('usarFotoMedica',v)} disabled={!client?.fotoRostoUrl} />
               </div>
 
-              <div style={{height:1,background:L_BORDER}} />
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Ações</div>
+              <div style={{height:1,background:'var(--l-border)'}} />
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:'var(--l-label)',textTransform:'uppercase',fontWeight:600}}>Ações</div>
 
               {error && (
                 <div style={{background:'rgba(220,38,38,0.07)',border:'1px solid rgba(220,38,38,0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#DC2626',lineHeight:1.5}}>
@@ -1671,7 +1712,7 @@ Retorne exatamente:
                         <span>Gerando imagens...</span>
                         <span style={{fontWeight:700}}>{genImgIdx+1}/{slides.length}</span>
                       </div>
-                      <div style={{height:3,background:L_BORDER,borderRadius:2,overflow:'hidden'}}>
+                      <div style={{height:3,background:'var(--l-border)',borderRadius:2,overflow:'hidden'}}>
                         <div style={{width:`${((genImgIdx+1)/slides.length)*100}%`,height:3,background:ORANGE,borderRadius:2,transition:'width 0.4s ease'}} />
                       </div>
                     </div>
@@ -1696,8 +1737,8 @@ Retorne exatamente:
 
               {(savedCarousels.length > 0 || viralStructures.length > 0) && (
                 <>
-                  <div style={{height:1,background:L_BORDER}} />
-                  <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Histórico</div>
+                  <div style={{height:1,background:'var(--l-border)'}} />
+                  <div style={{fontSize:9,letterSpacing:'0.1em',color:'var(--l-label)',textTransform:'uppercase',fontWeight:600}}>Histórico</div>
                 </>
               )}
 
@@ -1718,9 +1759,9 @@ Retorne exatamente:
                         {pautaSuggestions.map((p,i) => (
                           <div key={i} style={{background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:7,padding:'7px 10px',cursor:'pointer'}}
                             onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
-                            <div style={{fontSize:11,color:L_T2,marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
-                            <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{p.tema}</div>
-                            <div style={{fontSize:11,color:L_LABEL,marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
+                            <div style={{fontSize:11,color:'var(--l-t2)',marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
+                            <div style={{fontSize:12,fontWeight:600,color:'var(--l-t1)'}}>{p.tema}</div>
+                            <div style={{fontSize:11,color:'var(--l-label)',marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
                           </div>
                         ))}
                       </div>
@@ -1742,10 +1783,10 @@ Retorne exatamente:
                         <div key={c.id} style={{background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:7,padding:'8px 10px'}}>
                           <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
                             <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleLoadCarousel(c)}>
-                              <div style={{fontSize:12,fontWeight:600,color:L_T1,lineHeight:1.3}}>{c.nome}</div>
-                              <div style={{fontSize:10,color:L_LABEL,marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
+                              <div style={{fontSize:12,fontWeight:600,color:'var(--l-t1)',lineHeight:1.3}}>{c.nome}</div>
+                              <div style={{fontSize:10,color:'var(--l-label)',marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
                             </div>
-                            <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:L_T3,flexShrink:0}}>×</button>
+                            <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:'var(--l-t3)',flexShrink:0}}>×</button>
                           </div>
                         </div>
                       ))}
@@ -1762,10 +1803,10 @@ Retorne exatamente:
                     {viralStructures.map(v => (
                       <div key={v.id} style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:7,padding:'7px 10px',display:'flex',alignItems:'center',gap:6}}>
                         <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleApplyViral(v)}>
-                          <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{v.nome}</div>
-                          <div style={{fontSize:10,color:L_LABEL,marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
+                          <div style={{fontSize:12,fontWeight:600,color:'var(--l-t1)'}}>{v.nome}</div>
+                          <div style={{fontSize:10,color:'var(--l-label)',marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
                         </div>
-                        <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:L_T3}}>×</button>
+                        <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:'var(--l-t3)'}}>×</button>
                       </div>
                     ))}
                   </div>
@@ -1774,7 +1815,7 @@ Retorne exatamente:
             </div>
 
             {/* SLIDES AREA */}
-            <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,display:isMobile&&mobileTab==='config'?'none':'block',background:L_BG}}>
+            <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,display:isMobile&&mobileTab==='config'?'none':'block',background:'var(--l-bg)'}}>
               {slides.length === 0 ? (
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:14,color:'#CBD5E1'}}>
                   <div style={{fontSize:52}}>◈</div>
@@ -1782,7 +1823,7 @@ Retorne exatamente:
                     {client ? `Pronto para gerar carrossel${isMobile?'':` para ${client.nome}`}` : 'Configure o carrossel e clique em Gerar Copy'}
                   </div>
                   {isMobile && client && (
-                    <div style={{fontSize:12,color:L_LABEL,textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
+                    <div style={{fontSize:12,color:'var(--l-label)',textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
                   )}
                 </div>
               ) : (
@@ -1801,12 +1842,12 @@ Retorne exatamente:
                     ))}
                   </div>
                   {legenda && (
-                    <div style={{marginTop:28,maxWidth:660,background:L_SURF,border:`1px solid ${L_BORDER}`,borderRadius:10,padding:'16px 20px',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
+                    <div style={{marginTop:28,maxWidth:660,background:'var(--l-surf)',border:'1px solid var(--l-border)',borderRadius:10,padding:'16px 20px',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                        <span style={{fontSize:11,fontWeight:600,color:L_LABEL,textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
+                        <span style={{fontSize:11,fontWeight:600,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
                         <button onClick={()=>{navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''));showToast('Legenda copiada!');}} style={{...S.btnG,fontSize:11,color:ORANGE}}>Copiar tudo</button>
                       </div>
-                      <div style={{fontSize:13,color:L_T2,lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
+                      <div style={{fontSize:13,color:'var(--l-t2)',lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
                       {hashtags.length > 0 && <div style={{fontSize:12,color:ORANGE,lineHeight:1.9,marginBottom:8}}>{hashtags.join(' ')}</div>}
                       {palavraGatilho && (
                         <div style={{background:'rgba(244,117,48,0.1)',borderRadius:6,padding:'7px 12px',fontSize:12}}>
@@ -1822,13 +1863,13 @@ Retorne exatamente:
 
           {/* MOBILE BOTTOM TAB BAR */}
           {isMobile && (
-            <div style={{height:56,display:'flex',borderTop:`1px solid ${L_BORDER}`,background:L_SURF,flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
-              <button onClick={()=>setMobileTab('config')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='config'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='config'?ORANGE:L_T3,fontWeight:mobileTab==='config'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+            <div style={{height:56,display:'flex',borderTop:'1px solid var(--l-border)',background:'var(--l-surf)',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+              <button onClick={()=>setMobileTab('config')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='config'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='config'?ORANGE:'var(--l-t3)',fontWeight:mobileTab==='config'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
                 <span style={{fontSize:17}}>⚙</span>
                 <span>Configurar</span>
               </button>
-              <div style={{width:1,background:L_BORDER,margin:'8px 0'}} />
-              <button onClick={()=>setMobileTab('slides')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='slides'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='slides'?ORANGE:L_T3,fontWeight:mobileTab==='slides'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+              <div style={{width:1,background:'var(--l-border)',margin:'8px 0'}} />
+              <button onClick={()=>setMobileTab('slides')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='slides'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='slides'?ORANGE:'var(--l-t3)',fontWeight:mobileTab==='slides'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
                 <span style={{fontSize:17}}>◈</span>
                 <span>Slides{slides.length>0?` (${slides.length})`:''}</span>
               </button>
