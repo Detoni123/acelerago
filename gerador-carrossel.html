@@ -34,7 +34,7 @@
     const ORANGE = '#F47530';
     const DARK   = '#0D1928';
     const SW = 1080, SH = 1350;
-    const SCALE = 0.38;
+    const computeScale = (w) => w < 768 ? Math.min(0.31, (w - 40) / SW) : 0.38;
 
     /* ── SUPABASE ── */
     const SUPA_URL = 'https://ozxjjvtrlmeiveioblci.supabase.co';
@@ -524,8 +524,8 @@ Retorne exatamente este JSON:
 
     /* ── STYLES ── */
     const S = {
-      overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999 },
-      modal: { background:'#0D1928', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:32, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto' },
+      overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
+      modal: { background:'#0D1928', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto' },
       input: { width:'100%', background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.14)', borderRadius:8, padding:'10px 14px', color:'#fff', fontFamily:'Sora,sans-serif', fontSize:14, outline:'none' },
       label: { display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.45)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
       btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
@@ -755,9 +755,9 @@ Retorne exatamente este JSON:
     }
 
     /* ── SLIDE CARD PREVIEW ── */
-    function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage }) {
-      const PW = Math.round(SW * SCALE);
-      const PH = Math.round(SH * SCALE);
+    function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage, scale }) {
+      const PW = Math.round(SW * scale);
+      const PH = Math.round(SH * scale);
       const isCta = slide.tipo === 'cta';
       const cp = client?.corPrimaria || ORANGE;
       const cs = client?.corSecundaria || DARK;
@@ -782,7 +782,7 @@ Retorne exatamente este JSON:
 
       const innerStyle = {
         width: SW, height: SH, position: 'absolute', top: 0, left: 0,
-        transform: `scale(${SCALE})`, transformOrigin: 'top left',
+        transform: `scale(${scale})`, transformOrigin: 'top left',
         fontFamily: 'Sora,sans-serif', overflow: 'hidden', position: 'absolute',
       };
 
@@ -987,8 +987,25 @@ Retorne exatamente este JSON:
       const [generatingPauta, setGeneratingPauta] = useState(false);
       const [toast, setToast]                     = useState(null);
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+      const [isMobile, setIsMobile]               = useState(window.innerWidth < 768);
+      const [mobileTab, setMobileTab]             = useState('config');
+      const [dynScale, setDynScale]               = useState(computeScale(window.innerWidth));
 
       const client = profile;
+
+      useEffect(() => {
+        const onResize = () => {
+          const w = window.innerWidth;
+          setIsMobile(w < 768);
+          setDynScale(computeScale(w));
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+      }, []);
+
+      useEffect(() => {
+        if (slides.length > 0 && isMobile) setMobileTab('slides');
+      }, [slides.length]);
 
       useEffect(() => {
         sb.auth.getSession().then(({ data: { session } }) => {
@@ -1198,17 +1215,17 @@ Retorne exatamente:
         <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
 
           {/* TOP BAR */}
-          <div style={{background:'#0D1928',borderBottom:'1px solid rgba(255,255,255,0.07)',padding:'0 20px',height:58,display:'flex',alignItems:'center',gap:14,flexShrink:0}}>
+          <div style={{background:'#0D1928',borderBottom:'1px solid rgba(255,255,255,0.07)',padding:isMobile?'0 12px':'0 20px',height:isMobile?50:58,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <div style={{width:30,height:30,background:ORANGE,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:13}}>A</div>
-              <span style={{fontWeight:700,fontSize:15}}>Gerador de Carrossel</span>
-              <span style={{color:'rgba(255,255,255,0.25)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>
+              <div style={{width:28,height:28,background:ORANGE,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:12}}>A</div>
+              <span style={{fontWeight:700,fontSize:isMobile?13:15}}>Gerador de Carrossel</span>
+              {!isMobile && <span style={{color:'rgba(255,255,255,0.25)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>}
             </div>
             <div style={{flex:1}} />
             <div style={{display:'flex',alignItems:'center',gap:8}}>
-              {profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
-              <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:34,padding:'0 12px',fontSize:12,whiteSpace:'nowrap'}}>✏ Meu Perfil</button>
-              <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,height:34,padding:'0 12px',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:12}}>Sair</button>
+              {!isMobile && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
+              <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
+              <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
             </div>
           </div>
 
@@ -1216,7 +1233,7 @@ Retorne exatamente:
           <div style={{display:'flex',flex:1,minHeight:0}}>
 
             {/* LEFT PANEL */}
-            <div style={{width:290,background:'#080f1c',borderRight:'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:18,flexShrink:0}}>
+            <div style={{width:isMobile?'100%':290,background:'#080f1c',borderRight:isMobile?'none':'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
               <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
 
@@ -1385,22 +1402,22 @@ Retorne exatamente:
             </div>
 
             {/* SLIDES AREA */}
-            <div style={{flex:1,overflowY:'auto',padding:24}}>
+            <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,display:isMobile&&mobileTab==='config'?'none':'block'}}>
               {slides.length === 0 ? (
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:14,color:'rgba(255,255,255,0.18)'}}>
                   <div style={{fontSize:52}}>◈</div>
                   <div style={{fontSize:15,textAlign:'center'}}>
-                    {client ? `Pronto para gerar carrossel para ${client.nome}` : 'Selecione ou crie uma médica para começar'}
+                    {client ? `Pronto para gerar carrossel${isMobile?'':` para ${client.nome}`}` : 'Configure o carrossel e clique em Gerar Copy'}
                   </div>
-                  {!client && (
-                    <button onClick={()=>setModal('client')} style={{...S.btnP,width:'auto',padding:'11px 22px',marginTop:8,fontSize:13}}>+ Criar primeira médica</button>
+                  {isMobile && client && (
+                    <div style={{fontSize:12,color:'rgba(255,255,255,0.25)',textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
                   )}
                 </div>
               ) : (
                 <>
-                  <div style={{display:'flex',flexWrap:'wrap',gap:18,alignContent:'flex-start'}}>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:isMobile?12:18,alignContent:'flex-start',justifyContent:isMobile?'center':'flex-start'}}>
                     {slides.map((slide,i) => (
-                      <SlideCard key={i} slide={slide} idx={i}
+                      <SlideCard key={i} slide={slide} idx={i} scale={dynScale}
                         client={client}
                         onEdit={(sl,ix,silent) => { if(silent){setSlides(prev=>prev.map((s,j)=>j===ix?sl:s));}else{setEditSlide({slide:sl,idx:ix});}}}
                         onDownload={handleDownloadOne}
@@ -1430,6 +1447,21 @@ Retorne exatamente:
               )}
             </div>
           </div>
+
+          {/* MOBILE BOTTOM TAB BAR */}
+          {isMobile && (
+            <div style={{height:56,display:'flex',borderTop:'1px solid rgba(255,255,255,0.08)',background:'#080f1c',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+              <button onClick={()=>setMobileTab('config')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='config'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='config'?ORANGE:'rgba(255,255,255,0.4)',fontWeight:mobileTab==='config'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+                <span style={{fontSize:17}}>⚙</span>
+                <span>Configurar</span>
+              </button>
+              <div style={{width:1,background:'rgba(255,255,255,0.08)',margin:'8px 0'}} />
+              <button onClick={()=>setMobileTab('slides')} style={{flex:1,background:'transparent',border:'none',borderTop:mobileTab==='slides'?`2px solid ${ORANGE}`:'2px solid transparent',cursor:'pointer',fontFamily:'Sora,sans-serif',color:mobileTab==='slides'?ORANGE:'rgba(255,255,255,0.4)',fontWeight:mobileTab==='slides'?700:400,fontSize:11,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+                <span style={{fontSize:17}}>◈</span>
+                <span>Slides{slides.length>0?` (${slides.length})`:''}</span>
+              </button>
+            </div>
+          )}
 
           {/* MODALS */}
           {modal==='client'   && <ClientModal client={editClient} onSave={handleSaveClient} onClose={()=>{setModal(null);setEditClient(null);}} />}
