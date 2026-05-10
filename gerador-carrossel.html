@@ -51,6 +51,7 @@
     const L_T1        = '#1E293B';
     const L_T2        = '#64748B';
     const L_T3        = '#94A3B8';
+    const L_LABEL     = '#566879'; /* 5.1:1 on white — WCAG AA ✓ */
     const ADMIN_EMAIL = 'ronaldo@detonimarketingdigital.com.br';
     const SW = 1080, SH = 1350;
     const computeScale = (w) => w < 768 ? Math.min(0.31, (w - 40) / SW) : 0.38;
@@ -633,11 +634,55 @@ Retorne exatamente este JSON:
       overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:'0 12px' },
       modal: { background:L_SURF, border:`1px solid ${L_BORDER}`, borderRadius:16, padding:24, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.14)' },
       input: { width:'100%', background:L_SURF2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'12px 14px', color:L_T1, fontFamily:'Sora,sans-serif', fontSize:16, outline:'none' },
-      label: { display:'block', fontSize:11, fontWeight:600, color:L_T3, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
+      label: { display:'block', fontSize:11, fontWeight:600, color:L_LABEL, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' },
       btnP: { background:ORANGE, color:'#fff', border:'none', borderRadius:10, padding:'13px 22px', fontFamily:'Sora,sans-serif', fontWeight:700, fontSize:15, cursor:'pointer', width:'100%' },
       btnS: { background:L_SURF2, color:L_T2, border:`1px solid ${L_BORDER}`, borderRadius:8, padding:'10px 18px', fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:13, cursor:'pointer' },
       btnG: { background:'transparent', color:L_T3, border:'none', fontFamily:'Sora,sans-serif', fontSize:12, cursor:'pointer', padding:'8px 12px' },
     };
+
+    /* ── FONT PICKER ── */
+    function FontPicker({ value, onChange }) {
+      const [open, setOpen] = useState(false);
+      const ref = React.useRef(null);
+      React.useEffect(() => {
+        function close(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+        document.addEventListener('mousedown', close);
+        return () => document.removeEventListener('mousedown', close);
+      }, []);
+      return (
+        <div ref={ref} style={{position:'relative'}}>
+          <div onClick={() => setOpen(o => !o)} style={{
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+            background:L_SURF2, border:`1px solid ${open ? ORANGE : L_BORDER}`,
+            borderRadius:8, padding:'10px 14px', cursor:'pointer',
+            transition:'border-color 0.15s',
+          }}>
+            <span style={{fontFamily:`'${value}',sans-serif`, fontSize:17, color:L_T1, fontWeight:500}}>{value}</span>
+            <span style={{color:L_T3, fontSize:11, marginLeft:8}}>{open ? '▲' : '▼'}</span>
+          </div>
+          {open && (
+            <div style={{
+              position:'absolute', top:'calc(100% + 4px)', left:0, right:0, zIndex:200,
+              background:L_SURF, border:`1px solid ${L_BORDER}`, borderRadius:10,
+              boxShadow:'0 8px 32px rgba(0,0,0,0.12)', overflow:'hidden',
+            }}>
+              {FONTS.map(fn => (
+                <div key={fn} onClick={() => { onChange(fn); setOpen(false); }} style={{
+                  padding:'11px 16px', cursor:'pointer',
+                  background: fn === value ? 'rgba(244,117,48,0.07)' : 'transparent',
+                  borderLeft: fn === value ? `3px solid ${ORANGE}` : '3px solid transparent',
+                  transition:'background 0.1s',
+                  display:'flex', alignItems:'baseline', gap:10,
+                }}>
+                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:18, color:L_T1, fontWeight:500, minWidth:160}}>{fn}</span>
+                  <span style={{fontFamily:`'${fn}',sans-serif`, fontSize:13, color:L_T3}}>Saúde da mulher</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     /* ── LOGIN SCREEN ── */
     function LoginScreen() {
@@ -718,14 +763,14 @@ Retorne exatamente este JSON:
                 ? <div style={{display:'flex',gap:12,alignItems:'center'}}>
                     <img src={f.fotoRostoUrl} style={{width:56,height:56,borderRadius:'50%',objectFit:'cover',border:`2px solid ${ORANGE}`}} alt="foto" />
                     <button style={{...S.btnS,width:'auto',fontSize:12}} onClick={()=>set('fotoRostoUrl','')}>Remover</button>
-                    <span style={{fontSize:11,color:L_T3}}>Foto carregada</span>
+                    <span style={{fontSize:11,color:L_LABEL}}>Foto carregada</span>
                   </div>
                 : <input type="file" accept="image/*" style={{...S.input,padding:'7px 14px',cursor:'pointer'}} onChange={e=>{
                     const file=e.target.files[0]; if(!file) return;
                     const r=new FileReader(); r.onload=ev=>set('fotoRostoUrl',ev.target.result); r.readAsDataURL(file);
                   }} />
               }
-              <p style={{fontSize:11,color:L_T3,marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
+              <p style={{fontSize:11,color:L_LABEL,marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
             </div>
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
@@ -739,9 +784,7 @@ Retorne exatamente este JSON:
               ))}
               <div>
                 <label style={S.label}>Fonte</label>
-                <select style={S.input} value={f.fonte} onChange={e => set('fonte', e.target.value)}>
-                  {FONTS.map(fn => <option key={fn} value={fn}>{fn}</option>)}
-                </select>
+                <FontPicker value={f.fonte} onChange={v => set('fonte', v)} />
               </div>
             </div>
             <div style={{marginBottom:18}}>
@@ -1030,17 +1073,17 @@ Retorne exatamente este JSON:
           {/* cores de fundo e texto — disponível para capa e conteudo */}
           {(slide.tipo === 'conteudo' || slide.tipo === 'capa') && (
             <div style={{display:'flex',alignItems:'center',gap:6,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'5px 8px'}}>
-              <span style={{fontSize:10,color:L_T3}}>Fundo</span>
+              <span style={{fontSize:10,color:L_LABEL}}>Fundo</span>
               <input type="color" value={slide.bgColor||cs} onChange={e=>onEdit({...slide,bgColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
+              {slide.bgColor && <button onClick={()=>onEdit({...slide,bgColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
               <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
-              <span style={{fontSize:10,color:L_T3}}>Texto</span>
+              <span style={{fontSize:10,color:L_LABEL}}>Texto</span>
               <input type="color" value={slide.textColor||'#ffffff'} onChange={e=>onEdit({...slide,textColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
+              {slide.textColor && <button onClick={()=>onEdit({...slide,textColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
               <div style={{width:1,height:14,background:L_BORDER,margin:'0 2px'}} />
-              <span style={{fontSize:10,color:L_T3}}>Acento</span>
+              <span style={{fontSize:10,color:L_LABEL}}>Acento</span>
               <input type="color" value={slide.accentColor||cs} onChange={e=>onEdit({...slide,accentColor:e.target.value},idx,true)} style={{width:24,height:20,border:`1px solid ${L_BORDER}`,borderRadius:3,background:'none',cursor:'pointer',padding:1}} />
-              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_T3}}>↺</button>}
+              {slide.accentColor && <button onClick={()=>onEdit({...slide,accentColor:null},idx,true)} style={{...S.btnG,fontSize:9,padding:'1px 4px',color:L_LABEL}}>↺</button>}
             </div>
           )}
           {/* overlay escuro + zoom + posição da imagem + posição do texto — só para capa */}
@@ -1048,52 +1091,52 @@ Retorne exatamente este JSON:
             <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
               {slide.imageData && <>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Escuro</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Escuro</span>
                   <input type="range" min={0} max={0.8} step={0.05} value={slide.overlayOpacity||0} onChange={e=>onEdit({...slide,overlayOpacity:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Zoom</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Zoom</span>
                   <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Img ↕</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Img ↕</span>
                   <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                  <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+                  <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
                 </div>
                 <div style={{height:1,background:L_BORDER,margin:'2px 0'}} />
               </>}
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Texto ↕</span>
+                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
               </div>
             </div>
           )}
           {/* ajustes de imagem — brilho, contraste, saturação, matiz */}
           {slide.imageData && (
             <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:L_SURF2,border:`1px solid ${L_BORDER}`,borderRadius:6,padding:'7px 8px'}}>
-              <span style={{fontSize:9,color:L_T3,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
+              <span style={{fontSize:9,color:L_LABEL,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Brilho</span>
+                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Brilho</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgBrightness??100} onChange={e=>onEdit({...slide,imgBrightness:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
+                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Contraste</span>
+                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Contraste</span>
                 <input type="range" min={0} max={200} step={2} value={slide.imgContrast??100} onChange={e=>onEdit({...slide,imgContrast:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
+                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Saturação</span>
+                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Saturação</span>
                 <input type="range" min={0} max={300} step={5} value={slide.imgSaturate??100} onChange={e=>onEdit({...slide,imgSaturate:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
+                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:10,color:L_T3,width:48,flexShrink:0}}>Matiz</span>
+                <span style={{fontSize:10,color:L_LABEL,width:48,flexShrink:0}}>Matiz</span>
                 <input type="range" min={-180} max={180} step={5} value={slide.imgHue??0} onChange={e=>onEdit({...slide,imgHue:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:10,color:L_T3,width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
+                <span style={{fontSize:10,color:L_LABEL,width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
               </div>
             </div>
           )}
@@ -1107,7 +1150,7 @@ Retorne exatamente este JSON:
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,opacity:disabled?0.4:1}}>
           <div>
             <div style={{fontSize:13,fontWeight:500}}>{label}</div>
-            {sub && <div style={{fontSize:11,color:L_T3,marginTop:2}}>{sub}</div>}
+            {sub && <div style={{fontSize:11,color:L_LABEL,marginTop:2}}>{sub}</div>}
           </div>
           <div onClick={()=>!disabled&&onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?ORANGE:'#CBD5E1',position:'relative',cursor:disabled?'default':'pointer',transition:'background 0.2s',flexShrink:0}}>
             <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:checked?23:3,transition:'left 0.2s'}} />
@@ -1498,7 +1541,7 @@ Retorne exatamente:
         finally { setGeneratingPauta(false); }
       };
 
-      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG,color:L_T3,fontSize:14}}>Carregando...</div>;
+      if (authLoading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:L_BG,color:L_LABEL,fontSize:14}}>Carregando...</div>;
       if (!session) return <LoginScreen />;
 
       return (
@@ -1540,15 +1583,15 @@ Retorne exatamente:
             {/* LEFT PANEL */}
             <div style={{width:isMobile?'100%':290,background:L_SURF,borderRight:isMobile?'none':`1px solid ${L_BORDER}`,overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Configurar</div>
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Configurar</div>
 
               {isAdmin && isMobile && (
                 <div style={{background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:10,padding:'12px 14px'}}>
-                  <div style={{fontSize:10,color:L_T3,marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
+                  <div style={{fontSize:10,color:L_LABEL,marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
                   {adminError ? (
                     <div style={{fontSize:11,color:'#fca5a5',background:'rgba(220,38,38,0.1)',borderRadius:6,padding:'8px 10px'}}>{adminError}</div>
                   ) : allProfiles.length === 0 ? (
-                    <div style={{fontSize:11,color:L_T3}}>Carregando perfis...</div>
+                    <div style={{fontSize:11,color:L_LABEL}}>Carregando perfis...</div>
                   ) : (
                     <select
                       value={activeClientId || ''}
@@ -1570,7 +1613,7 @@ Retorne exatamente:
                   {FORMATS.map(f => (
                     <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':L_SURF2,border:`1px solid ${form.formato===f.id?ORANGE:L_BORDER}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:L_T2,cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
                       <div style={{fontSize:12,fontWeight:600}}>{f.label}</div>
-                      <div style={{fontSize:10,color:L_T3,marginTop:2}}>{f.desc}</div>
+                      <div style={{fontSize:10,color:L_LABEL,marginTop:2}}>{f.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -1596,7 +1639,7 @@ Retorne exatamente:
               </div>
 
               <div style={{height:1,background:L_BORDER}} />
-              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Ações</div>
+              <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Ações</div>
 
               {error && (
                 <div style={{background:'rgba(220,38,38,0.07)',border:'1px solid rgba(220,38,38,0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#DC2626',lineHeight:1.5}}>
@@ -1654,7 +1697,7 @@ Retorne exatamente:
               {(savedCarousels.length > 0 || viralStructures.length > 0) && (
                 <>
                   <div style={{height:1,background:L_BORDER}} />
-                  <div style={{fontSize:9,letterSpacing:'0.1em',color:L_T3,textTransform:'uppercase',fontWeight:600}}>Histórico</div>
+                  <div style={{fontSize:9,letterSpacing:'0.1em',color:L_LABEL,textTransform:'uppercase',fontWeight:600}}>Histórico</div>
                 </>
               )}
 
@@ -1677,7 +1720,7 @@ Retorne exatamente:
                             onClick={()=>{ setF('tema', p.tema); setF('formato', p.formato||'alerta'); setPautaOpen(false); }}>
                             <div style={{fontSize:11,color:L_T2,marginBottom:2}}>Sem {p.semana} · {FORMATS.find(f=>f.id===p.formato)?.label||p.formato}</div>
                             <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{p.tema}</div>
-                            <div style={{fontSize:11,color:L_T3,marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
+                            <div style={{fontSize:11,color:L_LABEL,marginTop:2,fontStyle:'italic'}}>{p.gancho}</div>
                           </div>
                         ))}
                       </div>
@@ -1700,7 +1743,7 @@ Retorne exatamente:
                           <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
                             <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleLoadCarousel(c)}>
                               <div style={{fontSize:12,fontWeight:600,color:L_T1,lineHeight:1.3}}>{c.nome}</div>
-                              <div style={{fontSize:10,color:L_T3,marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
+                              <div style={{fontSize:10,color:L_LABEL,marginTop:3}}>{c.clientNome} · {c.slides.length} slides · {c.savedAt}</div>
                             </div>
                             <button onClick={()=>handleDeleteCarousel(c.id)} style={{...S.btnG,fontSize:14,padding:'0 4px',color:L_T3,flexShrink:0}}>×</button>
                           </div>
@@ -1720,7 +1763,7 @@ Retorne exatamente:
                       <div key={v.id} style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:7,padding:'7px 10px',display:'flex',alignItems:'center',gap:6}}>
                         <div style={{flex:1,cursor:'pointer'}} onClick={()=>handleApplyViral(v)}>
                           <div style={{fontSize:12,fontWeight:600,color:L_T1}}>{v.nome}</div>
-                          <div style={{fontSize:10,color:L_T3,marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
+                          <div style={{fontSize:10,color:L_LABEL,marginTop:2}}>{v.numSlides} slides · {v.criado}</div>
                         </div>
                         <button onClick={()=>handleDeleteViral(v.id)} style={{...S.btnG,fontSize:13,padding:'2px 5px',color:L_T3}}>×</button>
                       </div>
@@ -1739,7 +1782,7 @@ Retorne exatamente:
                     {client ? `Pronto para gerar carrossel${isMobile?'':` para ${client.nome}`}` : 'Configure o carrossel e clique em Gerar Copy'}
                   </div>
                   {isMobile && client && (
-                    <div style={{fontSize:12,color:L_T3,textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
+                    <div style={{fontSize:12,color:L_LABEL,textAlign:'center'}}>Use a aba Configurar para escolher o tema</div>
                   )}
                 </div>
               ) : (
@@ -1760,7 +1803,7 @@ Retorne exatamente:
                   {legenda && (
                     <div style={{marginTop:28,maxWidth:660,background:L_SURF,border:`1px solid ${L_BORDER}`,borderRadius:10,padding:'16px 20px',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                        <span style={{fontSize:11,fontWeight:600,color:L_T3,textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
+                        <span style={{fontSize:11,fontWeight:600,color:L_LABEL,textTransform:'uppercase',letterSpacing:'0.07em'}}>Legenda gerada</span>
                         <button onClick={()=>{navigator.clipboard.writeText(legenda+(hashtags.length?'\n\n'+hashtags.join(' '):''));showToast('Legenda copiada!');}} style={{...S.btnG,fontSize:11,color:ORANGE}}>Copiar tudo</button>
                       </div>
                       <div style={{fontSize:13,color:L_T2,lineHeight:1.7,marginBottom:10,whiteSpace:'pre-wrap'}}>{legenda}</div>
