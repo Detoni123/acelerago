@@ -129,6 +129,7 @@
       { id: 'noticia',    label: 'Notícia Urgente',          desc: 'Estudo recente como gancho de credibilidade' },
       { id: 'serie',      label: 'Celebridade + Você',       desc: 'Famosa com o mesmo problema da paciente' },
       { id: 'diagnostico',label: 'Diagnóstico de Erro',      desc: '"Você está fazendo X errado" + 5 passos' },
+      { id: 'virada',     label: 'Evento de Virada + Passos',desc: '"Deu positivo. E agora?" — 5 ações imediatas para o momento de choque' },
     ];
 
     const FONTS = ['Sora', 'Montserrat', 'Poppins', 'Playfair Display', 'Cormorant', 'Raleway', 'Bebas Neue', 'Lora'];
@@ -265,7 +266,7 @@ Slides de carrossel são visuais. Menos texto = mais impacto. Seja cirúrgico.
 
 Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`;
 
-      const slideGuide = buildSlideGuide(n);
+      const slideGuide = buildSlideGuide(n, form.formato);
 
       const imagePersona = isAgency
         ? `profissional de marketing ou médica brasileira de 30 a 45 anos em contexto de negócios, consultório ou reunião estratégica`
@@ -297,7 +298,7 @@ Retorne exatamente este JSON:
       "texto": "uma frase de impacto OU 2-3 frases curtas, máximo 45 palavras no total",
       "prompt_imagem": "..."
     },
-    ...slides intermediários com tipo conteudo (título é OPCIONAL — omita quando o texto já for auto-suficiente)...
+    ...slides intermediários com tipo conteudo (título é OPCIONAL nos formatos gerais — omita quando o texto já for auto-suficiente. NO FORMATO VIRADA: slides 3 a 9 DEVEM ter titulo)...
     {
       "numero": ${n},
       "tipo": "cta",
@@ -331,7 +332,16 @@ Retorne exatamente este JSON:
       return JSON.parse(match[0]);
     }
 
-    function buildSlideGuide(n) {
+    function buildSlideGuide(n, formato) {
+      if (formato === 'virada') {
+        return `ESTRUTURA FIXA — siga exatamente, não altere a ordem:
+Slide 1 (CAPA): headline que nomeia o EVENTO emocional específico do tema (ex: "Deu positivo. E agora?"). destaque = palavra do evento em caixa alta (ex: POSITIVO, DIAGNÓSTICO, ATRASOU). subtitulo = promessa do carrossel em até 8 palavras.
+Slide 2: validação emocional pura. A paciente não está sozinha nesse sentimento. Sem conselho ainda. Máx 40 palavras.
+Slide 3 (título obrigatório): dado científico real que mostra urgência de agir. Estatística ou estudo. Máx 50 palavras.
+Slides 4, 5, 6, 7, 8: PASSO 1 a PASSO 5. Cada slide = título curto "Passo N: [ação]" + texto explicando o passo. As ações devem ser CONCRETAS e IMEDIATAS (o que fazer nas próximas 48-72h após o evento). Não são dicas genéricas de saúde. São ordens diretas do momento. Máx 45 palavras por slide.
+Slide 9 (título obrigatório "Quem te guia nessa jornada" ou similar): apresentação da médica como guia específico para esse evento. Credenciais relevantes ao tema. Máx 50 palavras.
+Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado ao evento (ex: "guia do primeiro trimestre", "protocolo de ácido fólico", "checklist do diagnóstico"). Máx 12 palavras no texto.`;
+      }
       const lines = ['ESTRUTURA DOS SLIDES:'];
       lines.push('Slide 1 (CAPA): gancho emocional forte, headline de impacto, palavra destaque em caixa alta');
       lines.push('Slide 2: validar a dor da paciente ("você não está sozinha")');
@@ -1569,7 +1579,7 @@ Retorne exatamente este JSON:
 Temas principais do mês: ${pautaForm.temas}
 
 Retorne exatamente:
-{"posts":[{"semana":1,"tema":"tema curto","formato":"alerta|analogia|noticia|serie|diagnostico","gancho":"uma frase de gancho","palavraGatilho":"PALAVRA"},...12 posts]}`;
+{"posts":[{"semana":1,"tema":"tema curto","formato":"alerta|analogia|noticia|serie|diagnostico|virada","gancho":"uma frase de gancho","palavraGatilho":"PALAVRA"},...12 posts]}`;
         try {
           const res = await fetch('/api/claude', { method:'POST', headers:{'Content-Type':'application/json'},
             body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:2048, system:systemPauta, messages:[{role:'user',content:userPauta}] }) });
@@ -1652,7 +1662,7 @@ Retorne exatamente:
                 <label style={S.label}>Formato</label>
                 <div style={{display:'flex',flexDirection:'column',gap:5}}>
                   {FORMATS.map(f => (
-                    <button key={f.id} onClick={()=>setF('formato',f.id)} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':'var(--l-surf2)',border:`1px solid ${form.formato===f.id?ORANGE:'var(--l-border)'}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:'var(--l-t2)',cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
+                    <button key={f.id} onClick={()=>{ setF('formato',f.id); if(f.id==='virada') setF('numSlides',10); }} style={{background:form.formato===f.id?'rgba(244,117,48,0.1)':'var(--l-surf2)',border:`1px solid ${form.formato===f.id?ORANGE:'var(--l-border)'}`,borderRadius:7,padding:'9px 12px',color:form.formato===f.id?ORANGE:'var(--l-t2)',cursor:'pointer',textAlign:'left',fontFamily:'Sora,sans-serif'}}>
                       <div style={{fontSize:12,fontWeight:600}}>{f.label}</div>
                       <div style={{fontSize:10,color:'var(--l-label)',marginTop:2}}>{f.desc}</div>
                     </button>
