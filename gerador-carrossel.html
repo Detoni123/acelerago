@@ -138,12 +138,50 @@
     }
 
     /* ── CLAUDE COPY GENERATION ── */
-    async function generateCopy(form, client) {
+    async function generateCopy(form, client, userEmail) {
       const fmt = FORMATS.find(f => f.id === form.formato);
       const forbidden = (client.palavrasProibidas || DEFAULT_FORBIDDEN).join(', ');
       const n = form.numSlides;
+      const isAgency = userEmail === 'ronaldo@detonimarketingdigital.com.br';
 
-      const system = `Você é especialista em criação de carrosseis de Instagram para médicas especialistas em saúde da mulher no Brasil.
+      const system = isAgency
+        ? `Você é estrategista de marketing da AceleraGO, agência especializada em marketing digital para saúde da mulher no Brasil.
+
+CONTEXTO:
+A AceleraGO atende médicas especialistas em saúde da mulher (ginecologistas, endocrinologistas, especialistas em reprodução assistida, nutrologia feminina, medicina vascular feminina) que querem atrair mais pacientes qualificadas e construir autoridade digital.
+
+O público deste carrossel são MÉDICAS, não pacientes. O objetivo é posicionar a AceleraGO como referência em marketing médico e gerar interesse de novas médicas clientes.
+
+REGRAS ABSOLUTAS:
+1. NUNCA prometer resultado garantido ou número específico de pacientes
+2. NUNCA comparar com outras agências
+3. NUNCA usar travessão (—) em nenhum texto
+4. Conteúdo educativo e estratégico, não propaganda direta
+
+PALAVRAS PROIBIDAS: ${forbidden}
+
+PERFIL DA MARCA:
+- Nome: ${client.nome || 'AceleraGO'}
+- Segmento: ${client.especialidade || 'Marketing para saúde da mulher'}
+- Público-alvo: ${client.nicho || 'Médicas especialistas que querem lotar a agenda com pacientes qualificadas'}
+- Tom de voz: ${client.tomVoz || 'Estratégico, direto, orientado a resultado, sem enrolação'}
+
+ESTRUTURA DOS SLIDES DE CONTEÚDO:
+- Slides de conteúdo NÃO precisam de título. O texto é o protagonista.
+- Cada slide traz UMA ideia estratégica. Uma frase forte OU 2-3 frases curtas.
+- Quando usar título: apenas quando o slide apresenta um conceito que precisa ser nomeado. Nos demais, omita.
+
+LIMITES OBRIGATÓRIOS DE TEXTO (respeite sem exceção):
+- Texto de slide de conteúdo: MÁXIMO 45 PALAVRAS
+- Título de slide (quando usar): MÁXIMO 6 PALAVRAS
+- Texto de CTA: MÁXIMO 12 PALAVRAS
+- Headline de capa: MÁXIMO 8 PALAVRAS
+- Subtítulo de capa: MÁXIMO 8 PALAVRAS
+- Hashtags: EXATAMENTE 5. Não mais, não menos.
+Slides de carrossel são visuais. Menos texto = mais impacto. Seja cirúrgico.
+
+Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`
+        : `Você é especialista em criação de carrosseis de Instagram para médicas especialistas em saúde da mulher no Brasil.
 
 REGRAS ABSOLUTAS DO CFM:
 1. NUNCA prometer cura, resultado garantido ou tempo específico
@@ -180,6 +218,10 @@ Retorne APENAS JSON válido. Sem markdown, sem texto antes ou depois do JSON.`;
 
       const slideGuide = buildSlideGuide(n);
 
+      const imagePersona = isAgency
+        ? `profissional de marketing ou médica brasileira de 30 a 45 anos em contexto de negócios, consultório ou reunião estratégica`
+        : `mulher brasileira de 25 a 35 anos, contexto de ${client.especialidade || 'saúde'}`;
+
       const user = `Crie ${n} slides de carrossel para o seguinte tema:
 
 TEMA: ${form.tema}
@@ -187,7 +229,7 @@ FORMATO: ${fmt.label} — ${fmt.desc}
 
 ${slideGuide}
 
-Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata e emoção relacionada ao conteúdo do slide, (2) o perfil da pessoa (mulher brasileira de 25 a 35 anos, contexto de ${client.especialidade || 'saúde'}), (3) iluminação e ambiente, (4) estilo fotográfico. Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 30 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
+Para cada slide, crie um prompt_imagem em PORTUGUÊS, específico e detalhado para o Gemini gerar uma foto editorial de alta qualidade. O prompt deve descrever: (1) a cena exata e emoção relacionada ao conteúdo do slide, (2) o perfil da pessoa (${imagePersona}), (3) iluminação e ambiente, (4) estilo fotográfico. Nunca inclua texto na imagem. Exemplo de bom prompt: "Fotografia editorial de uma mulher brasileira de 30 anos sentada em consultório médico, expressão serena e esperançosa, luz natural suave pela janela, médica ao fundo desfocada, estilo fotojornalismo médico, cores quentes".
 
 Retorne exatamente este JSON:
 {
@@ -212,7 +254,7 @@ Retorne exatamente este JSON:
       "tipo": "cta",
       "texto": "chamada para ação direta (MÁXIMO 12 PALAVRAS)",
       "palavra_gatilho": "PALAVRA",
-      "beneficio": "o que a paciente recebe ao comentar",
+      "beneficio": "${isAgency ? 'o que a médica recebe ao entrar em contato' : 'o que a paciente recebe ao comentar'}",
       "prompt_imagem": "..."
     }
   ],
@@ -1054,7 +1096,7 @@ Retorne exatamente este JSON:
 
         try {
           setProgress('Gerando copy com Claude...');
-          const result = await generateCopy(form, client);
+          const result = await generateCopy(form, client, session?.user?.email);
           setSlides(result.slides || []);
           setLegenda(result.legenda || '');
           setHashtags(result.hashtags || []);
