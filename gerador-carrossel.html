@@ -317,6 +317,19 @@ Retorne exatamente este JSON:
       return cy;
     }
 
+    function buildImgFilter(slide) {
+      const b = slide.imgBrightness ?? 100;
+      const c = slide.imgContrast   ?? 100;
+      const s = slide.imgSaturate   ?? 100;
+      const h = slide.imgHue        ?? 0;
+      const parts = [];
+      if (b !== 100) parts.push(`brightness(${b/100})`);
+      if (c !== 100) parts.push(`contrast(${c/100})`);
+      if (s !== 100) parts.push(`saturate(${s/100})`);
+      if (h !== 0)   parts.push(`hue-rotate(${h}deg)`);
+      return parts.join(' ');
+    }
+
     function adaptFs(text, max, min) {
       if (!text) return max;
       if (text.length > 60) return min;
@@ -324,10 +337,11 @@ Retorne exatamente este JSON:
       return max;
     }
 
-    async function drawImage(ctx, b64, scale, offsetY) {
+    async function drawImage(ctx, b64, scale, offsetY, filter) {
       return new Promise(resolve => {
         const img = new Image();
         img.onload = () => {
+          if (filter) ctx.filter = filter;
           const s = scale || 1;
           const oy = offsetY || 0;
           if (s !== 1 || oy !== 0) {
@@ -340,6 +354,7 @@ Retorne exatamente este JSON:
           } else {
             ctx.drawImage(img, 0, 0, SW, SH);
           }
+          if (filter) ctx.filter = 'none';
           resolve();
         };
         img.onerror = resolve;
@@ -361,7 +376,7 @@ Retorne exatamente este JSON:
         /* ── CAPA: image top, gradient overlay, text bottom ── */
         ctx.fillStyle = slide.bgColor || cs;
         ctx.fillRect(0, 0, SW, SH);
-        if (slide.imageData) await drawImage(ctx, slide.imageData, slide.imageScale || 1, slide.imageOffsetY || 0);
+        if (slide.imageData) await drawImage(ctx, slide.imageData, slide.imageScale || 1, slide.imageOffsetY || 0, buildImgFilter(slide));
 
         const textPos = slide.textPosition || 'bottom';
         if (textPos === 'middle') {
@@ -520,7 +535,13 @@ Retorne exatamente este JSON:
           if (slide.imageData) {
             const img = new Image();
             await new Promise(r => {
-              img.onload = () => { ctx.drawImage(img, SW/2 + 20, 8, SW/2 - 20, SH - 8); r(); };
+              img.onload = () => {
+                const f = buildImgFilter(slide);
+                if (f) ctx.filter = f;
+                ctx.drawImage(img, SW/2 + 20, 8, SW/2 - 20, SH - 8);
+                if (f) ctx.filter = 'none';
+                r();
+              };
               img.onerror = r;
               img.src = `data:image/png;base64,${slide.imageData}`;
             });
@@ -540,6 +561,8 @@ Retorne exatamente este JSON:
           const drawImg = async (y) => {
             if (!slide.imageData) return y;
             ctx.save();
+            const f = buildImgFilter(slide);
+            if (f) ctx.filter = f;
             ctx.beginPath();
             ctx.roundRect(PAD, y, SW - PAD*2, imgH, 18);
             ctx.clip();
@@ -880,7 +903,7 @@ Retorne exatamente este JSON:
                   : 'linear-gradient(180deg,rgba(6,14,24,0.05) 0%,rgba(6,14,24,0.4) 35%,rgba(6,14,24,0.92) 70%,rgba(6,14,24,0.98) 100%)';
                 return (
                 <div style={{width:SW,height:SH,position:'relative',background:cs}}>
-                  {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:slide.imageScale&&slide.imageScale>1?`${slide.imageScale*100}%`:'cover',backgroundPosition:`center ${50+(slide.imageOffsetY||0)}%`,backgroundRepeat:'no-repeat'}} />}
+                  {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:slide.imageScale&&slide.imageScale>1?`${slide.imageScale*100}%`:'cover',backgroundPosition:`center ${50+(slide.imageOffsetY||0)}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />}
                   <div style={{position:'absolute',inset:0,background:gradStyle}} />
                   {(slide.overlayOpacity||0)>0 && <div style={{position:'absolute',inset:0,background:`rgba(0,0,0,${slide.overlayOpacity})`,pointerEvents:'none'}} />}
                   <div style={textStyle}>
@@ -906,7 +929,7 @@ Retorne exatamente este JSON:
                 const layout = slide.layout || 'inline';
                 const numLabel = <div style={{display:'flex',alignItems:'center',gap:24,flexShrink:0}}><span style={{color:cp,fontSize:36,fontWeight:800}}>0{slide.numero}</span><div style={{flex:1,height:2,background:`${cp}30`}} /></div>;
                 const counter = <div style={{color:'rgba(255,255,255,0.18)',fontSize:30,textAlign:'right',flexShrink:0}}>{slide.numero} →</div>;
-                const imgEl = slide.imageData ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" /></div> : null;
+                const imgEl = slide.imageData ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" /></div> : null;
 
                 const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
                 const justifyContent = vAlign === 'bottom' ? 'flex-end' : vAlign === 'center' ? 'center' : 'flex-start';
@@ -922,7 +945,7 @@ Retorne exatamente este JSON:
                           {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:40,lineHeight:1.65}}>{slide.texto}</div>}
                           {counter}
                         </div>
-                        {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}} alt="" /></div>}
+                        {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
                       </div>
                     </div>
                   );
@@ -945,7 +968,7 @@ Retorne exatamente este JSON:
                 const inlineJustify = vAlign === 'bottom' ? 'flex-end' : vAlign === 'center' ? 'center' : 'flex-start';
                 const imgBlock = slide.imageData ? (
                   <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
-                    <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}} alt="" />
+                    <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" />
                   </div>
                 ) : null;
                 return (
@@ -1037,6 +1060,32 @@ Retorne exatamente este JSON:
                 <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
                 <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+              </div>
+            </div>
+          )}
+          {/* ajustes de imagem — brilho, contraste, saturação, matiz */}
+          {slide.imageData && (
+            <div style={{display:'flex',flexDirection:'column',gap:5,width:PW,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:6,padding:'7px 8px'}}>
+              <span style={{fontSize:9,color:'rgba(255,255,255,0.22)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:1}}>Imagem</span>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Brilho</span>
+                <input type="range" min={0} max={200} step={2} value={slide.imgBrightness??100} onChange={e=>onEdit({...slide,imgBrightness:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgBrightness??100}%</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Contraste</span>
+                <input type="range" min={0} max={200} step={2} value={slide.imgContrast??100} onChange={e=>onEdit({...slide,imgContrast:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgContrast??100}%</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Saturação</span>
+                <input type="range" min={0} max={300} step={5} value={slide.imgSaturate??100} onChange={e=>onEdit({...slide,imgSaturate:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{slide.imgSaturate??100}%</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:48,flexShrink:0}}>Matiz</span>
+                <input type="range" min={-180} max={180} step={5} value={slide.imgHue??0} onChange={e=>onEdit({...slide,imgHue:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',width:30,textAlign:'right'}}>{(slide.imgHue??0)>0?'+':''}{slide.imgHue??0}°</span>
               </div>
             </div>
           )}
