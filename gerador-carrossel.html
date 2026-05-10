@@ -41,8 +41,9 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    const ORANGE = '#F47530';
-    const DARK   = '#0D1928';
+    const ORANGE      = '#F47530';
+    const DARK        = '#0D1928';
+    const ADMIN_EMAIL = 'ronaldo@detonimarketingdigital.com.br';
     const SW = 1080, SH = 1350;
     const computeScale = (w) => w < 768 ? Math.min(0.31, (w - 40) / SW) : 0.38;
 
@@ -1042,8 +1043,13 @@ Retorne exatamente este JSON:
       const [isMobile, setIsMobile]               = useState(window.innerWidth < 768);
       const [mobileTab, setMobileTab]             = useState('config');
       const [dynScale, setDynScale]               = useState(computeScale(window.innerWidth));
+      const [allProfiles, setAllProfiles]         = useState([]);
+      const [activeClientId, setActiveClientId]   = useState(null);
 
-      const client = profile;
+      const isAdmin           = session?.user?.email === ADMIN_EMAIL;
+      const activeClientProf  = isAdmin && activeClientId ? allProfiles.find(p => p.user_id === activeClientId) : null;
+      const client            = activeClientProf || profile;
+      const effectiveUserId   = (isAdmin && activeClientId) ? activeClientId : session?.user?.id;
 
       useEffect(() => {
         const onResize = () => {
@@ -1062,22 +1068,48 @@ Retorne exatamente este JSON:
       useEffect(() => {
         sb.auth.getSession().then(({ data: { session } }) => {
           setSession(session);
-          if (session) loadProfile(session.user.id);
+          if (session) loadProfile(session.user.id, session.user.email);
           else setAuthLoading(false);
         });
         const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => {
           setSession(session);
-          if (session) loadProfile(session.user.id);
+          if (session) loadProfile(session.user.id, session.user.email);
           else { setProfile(null); setAuthLoading(false); }
         });
         return () => subscription.unsubscribe();
       }, []);
 
-      const loadProfile = async (userId) => {
+      const adminCall = async (action, targetUserId, payload = {}) => {
+        const res = await fetch('/api/admin-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ action, targetUserId, payload })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Admin API error');
+        return json;
+      };
+
+      const loadProfile = async (userId, userEmail) => {
         const { data } = await sb.from('doctor_profiles').select('*').eq('user_id', userId).single();
         setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'' });
         setAuthLoading(false);
         loadSavedData(userId);
+        if (userEmail === ADMIN_EMAIL) {
+          try {
+            const { data: { session: fresh } } = await sb.auth.getSession();
+            const res = await fetch('/api/admin-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${fresh?.access_token}` },
+              body: JSON.stringify({ action: 'loadProfiles' })
+            });
+            const json = await res.json();
+            if (json.data) {
+              setAllProfiles(json.data.map(profileFromDB).filter(Boolean));
+              setActiveClientId(userId);
+            }
+          } catch(e) { console.warn('Admin profiles load failed:', e); }
+        }
       };
 
       const loadSavedData = async (userId) => {
@@ -1092,6 +1124,34 @@ Retorne exatamente este JSON:
         if (virals) setViralStructures(virals.map(v => ({
           id: v.id, nome: v.nome, formato: v.formato, numSlides: v.num_slides, criado: v.criado, slides: v.slides
         })));
+      };
+
+      const loadSavedDataAdmin = async (userId) => {
+        try {
+          const [carRes, virRes] = await Promise.all([
+            adminCall('loadCarousels', userId),
+            adminCall('loadVirals', userId)
+          ]);
+          if (carRes.data) setSavedCarousels(carRes.data.map(c => ({
+            id: c.id, nome: c.nome, clientNome: c.client_nome, savedAt: c.saved_at,
+            form: c.form, slides: c.slides, legenda: c.legenda, hashtags: c.hashtags, palavraGatilho: c.palavra_gatilho
+          })));
+          if (virRes.data) setViralStructures(virRes.data.map(v => ({
+            id: v.id, nome: v.nome, formato: v.formato, numSlides: v.num_slides, criado: v.criado, slides: v.slides
+          })));
+        } catch(e) { console.warn('loadSavedDataAdmin error:', e); }
+      };
+
+      const handleSelectClient = async (userId) => {
+        setActiveClientId(userId);
+        setActiveCarouselId(null);
+        setSavedCarousels([]);
+        setViralStructures([]);
+        if (userId === session?.user?.id) {
+          loadSavedData(userId);
+        } else {
+          await loadSavedDataAdmin(userId);
+        }
       };
 
       const handleSaveClient = async (data) => {
@@ -1188,8 +1248,16 @@ Retorne exatamente este JSON:
         const nome = prompt('Nome para esta estrutura viral:');
         if (!nome?.trim()) return;
         const slideMeta = slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:!!s.imageData }));
-        const row = { user_id: session.user.id, nome: nome.trim(), formato: form.formato, num_slides: slides.length, criado: new Date().toLocaleDateString('pt-BR'), slides: slideMeta };
-        const { data, error } = await sb.from('viral_structures').insert(row).select().single();
+        const row = { nome: nome.trim(), formato: form.formato, num_slides: slides.length, criado: new Date().toLocaleDateString('pt-BR'), slides: slideMeta };
+        const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
+        let data, error;
+        if (useAdmin) {
+          const res = await adminCall('saveViral', effectiveUserId, { row });
+          data = res.data;
+        } else {
+          const res = await sb.from('viral_structures').insert({ ...row, user_id: session.user.id }).select().single();
+          data = res.data; error = res.error;
+        }
         if (!error && data) {
           const entry = { id: data.id, nome: data.nome, formato: data.formato, numSlides: data.num_slides, criado: data.criado, slides: data.slides };
           setViralStructures(prev => [entry, ...prev]);
@@ -1207,38 +1275,65 @@ Retorne exatamente este JSON:
       };
 
       const handleDeleteViral = async (id) => {
-        await sb.from('viral_structures').delete().eq('id', id);
+        if (isAdmin && effectiveUserId !== session?.user?.id) {
+          await adminCall('deleteViral', effectiveUserId, { id });
+        } else {
+          await sb.from('viral_structures').delete().eq('id', id);
+        }
         setViralStructures(prev => prev.filter(v => v.id !== id));
       };
 
       const handleSaveCarousel = async () => {
         if (!slides.length) return;
         const savedAt = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-        // imagens base64 ficam apenas no localStorage, indexadas pelo id do carrossel
         const slidesForDB = slides.map(({ imageData, ...rest }) => rest);
-        const row = { user_id: session.user.id, client_nome: client?.nome || '', saved_at: savedAt, form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
+        const row = { client_nome: client?.nome || '', saved_at: savedAt, form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
+        const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
+
+        const saveImages = (id) => {
+          const images = {};
+          slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
+          LS.set(`carouselImg_${id}`, images);
+        };
 
         if (activeCarouselId) {
-          const { error } = await sb.from('saved_carousels').update(row).eq('id', activeCarouselId);
-          if (!error) {
-            const images = {};
-            slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
-            LS.set(`carouselImg_${activeCarouselId}`, images);
-            setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
-            showToast('💾 Carrossel atualizado!');
+          if (useAdmin) {
+            const { data } = await adminCall('saveCarousel', effectiveUserId, { id: activeCarouselId, row });
+            if (data) {
+              saveImages(activeCarouselId);
+              setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
+              showToast('💾 Carrossel atualizado!');
+            }
+          } else {
+            const { error } = await sb.from('saved_carousels').update({ ...row, user_id: session.user.id }).eq('id', activeCarouselId);
+            if (!error) {
+              saveImages(activeCarouselId);
+              setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
+              showToast('💾 Carrossel atualizado!');
+            }
           }
         } else {
           const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
           if (nome === null) return;
-          const { data, error } = await sb.from('saved_carousels').insert({ ...row, nome: nome.trim() || form.tema || 'Carrossel' }).select().single();
-          if (!error && data) {
-            const images = {};
-            slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
-            LS.set(`carouselImg_${data.id}`, images);
-            const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
-            setSavedCarousels(prev => [entry, ...prev]);
-            setActiveCarouselId(data.id);
-            showToast('💾 Carrossel salvo!');
+          const nomeVal = nome.trim() || form.tema || 'Carrossel';
+          if (useAdmin) {
+            const { data } = await adminCall('saveCarousel', effectiveUserId, { id: null, row: { ...row, nome: nomeVal } });
+            if (data) {
+              saveImages(data.id);
+              const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
+              setSavedCarousels(prev => [entry, ...prev]);
+              setActiveCarouselId(data.id);
+              showToast('💾 Carrossel salvo!');
+            }
+          } else {
+            const { data, error } = await sb.from('saved_carousels').insert({ ...row, user_id: session.user.id, nome: nomeVal }).select().single();
+            if (!error && data) {
+              saveImages(data.id);
+              const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
+              setSavedCarousels(prev => [entry, ...prev]);
+              setActiveCarouselId(data.id);
+              showToast('💾 Carrossel salvo!');
+            }
           }
         }
         setSavedOpen(true);
@@ -1258,7 +1353,11 @@ Retorne exatamente este JSON:
       };
 
       const handleDeleteCarousel = async (id) => {
-        await sb.from('saved_carousels').delete().eq('id', id);
+        if (isAdmin && effectiveUserId !== session?.user?.id) {
+          await adminCall('deleteCarousel', effectiveUserId, { id });
+        } else {
+          await sb.from('saved_carousels').delete().eq('id', id);
+        }
         localStorage.removeItem(`carouselImg_${id}`);
         setSavedCarousels(prev => prev.filter(c => c.id !== id));
       };
@@ -1298,8 +1397,23 @@ Retorne exatamente:
               {!isMobile && <span style={{color:'rgba(255,255,255,0.25)',fontSize:11,fontWeight:400}}>AceleraGO · uso interno</span>}
             </div>
             <div style={{flex:1}} />
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              {!isMobile && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'nowrap'}}>
+              {isAdmin && allProfiles.length > 0 && (
+                <div style={{display:'flex',alignItems:'center',gap:5,background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'0 8px',height:32}}>
+                  {!isMobile && <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',flexShrink:0}}>Como:</span>}
+                  <select
+                    value={activeClientId || ''}
+                    onChange={e => handleSelectClient(e.target.value)}
+                    style={{background:'transparent',border:'none',color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,cursor:'pointer',outline:'none',maxWidth:isMobile?110:160}}>
+                    {allProfiles.map(p => (
+                      <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
+                        {p.nome || 'Sem nome'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {!isMobile && !isAdmin && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.5)'}}>{profile.nome}</span>}
               <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
               <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
             </div>
@@ -1455,7 +1569,6 @@ Retorne exatamente:
                           </div>
                         </div>
                       ))}
-                      <p style={{fontSize:10,color:'rgba(255,255,255,0.2)',textAlign:'center',marginTop:2}}>Máx. 5 salvos. Inclui imagens.</p>
                     </div>
                   )}
                 </div>
