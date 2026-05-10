@@ -1,0 +1,26 @@
+{
+  "name": "Gerador de Carrossel",
+  "short_name": "Carrossel",
+  "description": "Gerador de carrosseis Instagram com IA — AceleraGO",
+  "start_url": "/gerador-carrossel",
+  "scope": "/gerador-carrossel",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060e18",
+  "theme_color": "#060e18",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/logo-favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logonova.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}
