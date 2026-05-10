@@ -1398,13 +1398,13 @@ Retorne exatamente:
             </div>
             <div style={{flex:1}} />
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'nowrap'}}>
-              {isAdmin && allProfiles.length > 0 && (
+              {isAdmin && !isMobile && allProfiles.length > 0 && (
                 <div style={{display:'flex',alignItems:'center',gap:5,background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:7,padding:'0 8px',height:32}}>
-                  {!isMobile && <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',flexShrink:0}}>Como:</span>}
+                  <span style={{fontSize:10,color:'rgba(255,255,255,0.35)',flexShrink:0}}>Como:</span>
                   <select
                     value={activeClientId || ''}
                     onChange={e => handleSelectClient(e.target.value)}
-                    style={{background:'transparent',border:'none',color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,cursor:'pointer',outline:'none',maxWidth:isMobile?110:160}}>
+                    style={{background:'transparent',border:'none',color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:11,fontWeight:600,cursor:'pointer',outline:'none',maxWidth:160}}>
                     {allProfiles.map(p => (
                       <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
                         {p.nome || 'Sem nome'}
@@ -1426,6 +1426,22 @@ Retorne exatamente:
             <div style={{width:isMobile?'100%':290,background:'#080f1c',borderRight:isMobile?'none':'1px solid rgba(255,255,255,0.07)',overflowY:'auto',padding:20,display:isMobile&&mobileTab==='slides'?'none':'flex',flexDirection:'column',gap:18,flexShrink:0}}>
 
               <div style={{fontSize:9,letterSpacing:'0.1em',color:'rgba(255,255,255,0.22)',textTransform:'uppercase',fontWeight:600}}>Configurar</div>
+
+              {isAdmin && isMobile && allProfiles.length > 0 && (
+                <div style={{background:'rgba(244,117,48,0.06)',border:'1px solid rgba(244,117,48,0.2)',borderRadius:10,padding:'12px 14px'}}>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.07em'}}>Gerenciando como</div>
+                  <select
+                    value={activeClientId || ''}
+                    onChange={e => handleSelectClient(e.target.value)}
+                    style={{width:'100%',background:'rgba(244,117,48,0.08)',border:'1px solid rgba(244,117,48,0.3)',borderRadius:7,color:ORANGE,fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,padding:'10px 12px',cursor:'pointer',outline:'none'}}>
+                    {allProfiles.map(p => (
+                      <option key={p.user_id} value={p.user_id} style={{background:'#0D1928',color:'#fff'}}>
+                        {p.nome || 'Sem nome'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label style={S.label}>Formato</label>
