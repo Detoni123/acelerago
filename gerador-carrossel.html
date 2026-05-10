@@ -1069,12 +1069,12 @@ Retorne exatamente este JSON:
       useEffect(() => {
         sb.auth.getSession().then(({ data: { session } }) => {
           setSession(session);
-          if (session) loadProfile(session.user.id, session.user.email);
+          if (session) loadProfile(session.user.id, session.user.email, session.access_token);
           else setAuthLoading(false);
         });
         const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => {
           setSession(session);
-          if (session) loadProfile(session.user.id, session.user.email);
+          if (session) loadProfile(session.user.id, session.user.email, session.access_token);
           else { setProfile(null); setAuthLoading(false); }
         });
         return () => subscription.unsubscribe();
@@ -1091,23 +1091,21 @@ Retorne exatamente este JSON:
         return json;
       };
 
-      const loadProfile = async (userId, userEmail) => {
+      const loadProfile = async (userId, userEmail, accessToken) => {
         const { data } = await sb.from('doctor_profiles').select('*').eq('user_id', userId).single();
         setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'' });
         setAuthLoading(false);
         loadSavedData(userId);
         if (userEmail === ADMIN_EMAIL) {
           try {
-            const { data: { session: fresh } } = await sb.auth.getSession();
-            const token = fresh?.access_token;
-            if (!token) { setAdminError('Token ausente — tente reabrir o app.'); return; }
+            if (!accessToken) { setAdminError('Token ausente — tente reabrir o app.'); return; }
             const res = await fetch('/api/admin-data', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
               body: JSON.stringify({ action: 'loadProfiles' })
             });
             const json = await res.json();
-            if (!res.ok) { setAdminError(`Admin API ${res.status}: ${json.error}`); return; }
+            if (!res.ok) { setAdminError(`Erro ${res.status}: ${json.error}`); return; }
             if (json.data) {
               setAllProfiles(json.data.map(profileFromDB).filter(Boolean));
               setActiveClientId(userId);
