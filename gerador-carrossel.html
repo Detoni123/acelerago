@@ -1029,8 +1029,8 @@ Retorne exatamente este JSON:
       const [editClient, setEditClient]         = useState(null);
       const [editSlide, setEditSlide]           = useState(null);
       const [downloading, setDownloading]       = useState(false);
-      const [viralStructures, setViralStructures] = useState(() => LS.get('viralStructures', []));
-      const [savedCarousels, setSavedCarousels] = useState(() => LS.get('savedCarousels', []));
+      const [viralStructures, setViralStructures] = useState([]);
+      const [savedCarousels, setSavedCarousels] = useState([]);
       const [activeCarouselId, setActiveCarouselId] = useState(null);
       const [savedOpen, setSavedOpen]           = useState(false);
       const [pautaOpen, setPautaOpen]           = useState(false);
@@ -1077,6 +1077,21 @@ Retorne exatamente este JSON:
         const { data } = await sb.from('doctor_profiles').select('*').eq('user_id', userId).single();
         setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'' });
         setAuthLoading(false);
+        loadSavedData(userId);
+      };
+
+      const loadSavedData = async (userId) => {
+        const [{ data: carousels }, { data: virals }] = await Promise.all([
+          sb.from('saved_carousels').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
+          sb.from('viral_structures').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+        ]);
+        if (carousels) setSavedCarousels(carousels.map(c => ({
+          id: c.id, nome: c.nome, clientNome: c.client_nome, savedAt: c.saved_at,
+          form: c.form, slides: c.slides, legenda: c.legenda, hashtags: c.hashtags, palavraGatilho: c.palavra_gatilho
+        })));
+        if (virals) setViralStructures(virals.map(v => ({
+          id: v.id, nome: v.nome, formato: v.formato, numSlides: v.num_slides, criado: v.criado, slides: v.slides
+        })));
       };
 
       const handleSaveClient = async (data) => {
@@ -1154,21 +1169,17 @@ Retorne exatamente este JSON:
         catch (e) { setError(e.message); }
       };
 
-      const handleSaveViral = () => {
+      const handleSaveViral = async () => {
         const nome = prompt('Nome para esta estrutura viral:');
         if (!nome?.trim()) return;
-        const estrutura = {
-          id: Date.now().toString(),
-          nome: nome.trim(),
-          formato: form.formato,
-          numSlides: slides.length,
-          criado: new Date().toLocaleDateString('pt-BR'),
-          slides: slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:!!s.imageData }))
-        };
-        const arr = [estrutura, ...viralStructures].slice(0, 10);
-        setViralStructures(arr);
-        LS.set('viralStructures', arr);
-        showToast('⚡ Estrutura viral salva!');
+        const slideMeta = slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:!!s.imageData }));
+        const row = { user_id: session.user.id, nome: nome.trim(), formato: form.formato, num_slides: slides.length, criado: new Date().toLocaleDateString('pt-BR'), slides: slideMeta };
+        const { data, error } = await sb.from('viral_structures').insert(row).select().single();
+        if (!error && data) {
+          const entry = { id: data.id, nome: data.nome, formato: data.formato, numSlides: data.num_slides, criado: data.criado, slides: data.slides };
+          setViralStructures(prev => [entry, ...prev]);
+          showToast('⚡ Estrutura viral salva!');
+        }
       };
 
       const handleApplyViral = (estrutura) => {
@@ -1180,52 +1191,50 @@ Retorne exatamente este JSON:
         setTimeout(() => setProgress(''), 4000);
       };
 
-      const handleDeleteViral = (id) => {
-        const arr = viralStructures.filter(v=>v.id!==id);
-        setViralStructures(arr);
-        LS.set('viralStructures', arr);
+      const handleDeleteViral = async (id) => {
+        await sb.from('viral_structures').delete().eq('id', id);
+        setViralStructures(prev => prev.filter(v => v.id !== id));
       };
 
-      const handleSaveCarousel = () => {
+      const handleSaveCarousel = async () => {
         if (!slides.length) return;
-        const data = {
-          clientId: selId,
-          clientNome: client?.nome || '',
-          savedAt: new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
-          form: { ...form },
-          slides,
-          legenda,
-          hashtags,
-          palavraGatilho,
-        };
-        try {
-          if (activeCarouselId) {
-            // atualiza o carrossel existente no lugar
-            const arr = savedCarousels.map(c => c.id === activeCarouselId ? { ...c, ...data } : c);
-            LS.set('savedCarousels', arr);
-            setSavedCarousels(arr);
+        const savedAt = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        // imagens base64 ficam apenas no localStorage, indexadas pelo id do carrossel
+        const slidesForDB = slides.map(({ imageData, ...rest }) => rest);
+        const row = { user_id: session.user.id, client_nome: client?.nome || '', saved_at: savedAt, form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
+
+        if (activeCarouselId) {
+          const { error } = await sb.from('saved_carousels').update(row).eq('id', activeCarouselId);
+          if (!error) {
+            const images = {};
+            slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
+            LS.set(`carouselImg_${activeCarouselId}`, images);
+            setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
             showToast('💾 Carrossel atualizado!');
-          } else {
-            // novo carrossel — pede nome
-            const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
-            if (nome === null) return;
-            const entry = { id: Date.now().toString(), nome: nome.trim() || form.tema || 'Carrossel', ...data };
-            const arr = [entry, ...savedCarousels].slice(0, 5);
-            LS.set('savedCarousels', arr);
-            setSavedCarousels(arr);
-            setActiveCarouselId(entry.id);
+          }
+        } else {
+          const nome = prompt('Nome para este carrossel:', form.tema || 'Carrossel sem nome');
+          if (nome === null) return;
+          const { data, error } = await sb.from('saved_carousels').insert({ ...row, nome: nome.trim() || form.tema || 'Carrossel' }).select().single();
+          if (!error && data) {
+            const images = {};
+            slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
+            LS.set(`carouselImg_${data.id}`, images);
+            const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
+            setSavedCarousels(prev => [entry, ...prev]);
+            setActiveCarouselId(data.id);
             showToast('💾 Carrossel salvo!');
           }
-          setSavedOpen(true);
-        } catch(e) {
-          setError('Sem espaço para salvar. Delete um carrossel salvo e tente novamente.');
         }
+        setSavedOpen(true);
       };
 
       const handleLoadCarousel = (entry) => {
         if (!confirm(`Carregar "${entry.nome}"? O carrossel atual será substituído.`)) return;
+        const storedImages = LS.get(`carouselImg_${entry.id}`, {});
+        const slidesWithImages = (entry.slides || []).map((s, i) => storedImages[i] ? { ...s, imageData: storedImages[i] } : s);
         setForm(entry.form);
-        setSlides(entry.slides);
+        setSlides(slidesWithImages);
         setLegenda(entry.legenda);
         setHashtags(entry.hashtags);
         setPalavraGatilho(entry.palavraGatilho);
@@ -1233,10 +1242,10 @@ Retorne exatamente este JSON:
         setSavedOpen(false);
       };
 
-      const handleDeleteCarousel = (id) => {
-        const arr = savedCarousels.filter(c=>c.id!==id);
-        setSavedCarousels(arr);
-        LS.set('savedCarousels', arr);
+      const handleDeleteCarousel = async (id) => {
+        await sb.from('saved_carousels').delete().eq('id', id);
+        localStorage.removeItem(`carouselImg_${id}`);
+        setSavedCarousels(prev => prev.filter(c => c.id !== id));
       };
 
       const handleGeneratePauta = async () => {
@@ -1412,7 +1421,7 @@ Retorne exatamente:
               {savedCarousels.length > 0 && (
                 <div>
                   <button onClick={()=>setSavedOpen(p=>!p)} style={{...S.btnS,width:'100%',padding:'10px',fontSize:12,borderColor:'rgba(100,220,100,0.25)',color:'rgba(100,220,100,0.8)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <span>💾 Carrosseis Salvos ({savedCarousels.length}/5)</span>
+                    <span>💾 Carrosseis Salvos ({savedCarousels.length})</span>
                     <span style={{fontSize:10}}>{savedOpen?'▲':'▼'}</span>
                   </button>
                   {savedOpen && (
