@@ -500,7 +500,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           ctx.font = `800 52px ${font}`;
           ctx.textAlign = caTA;
           ctx.fillText(slide.destaque.toUpperCase(), caTX, y);
-          y += Math.round(52 * caLH) + 8;
+          y += Math.round(52 * (caLH > 1 ? caLH : 1)) + 8;
         }
 
         // headline
