@@ -123,6 +123,33 @@
     const SUPA_URL = 'https://ozxjjvtrlmeiveioblci.supabase.co';
     const SUPA_KEY = 'sb_publishable_Dvo_jfcgUJS6hXRtc8sIHA_jcJLs6dG';
     const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    const STORAGE_BUCKET = 'carousel-images';
+
+    function slideImgSrc(slide) {
+      if (!slide) return null;
+      if (slide.imageData) return `data:image/png;base64,${slide.imageData}`;
+      if (slide.imageUrl) return slide.imageUrl;
+      return null;
+    }
+    function hasSlideImage(slide) {
+      return !!(slide && (slide.imageData || slide.imageUrl));
+    }
+    async function uploadSlideImage(b64, userId, carouselId, slideIdx) {
+      try {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'image/png' });
+        const path = `${userId}/${carouselId}/slide-${slideIdx}.png`;
+        const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: 'image/png', cacheControl: '3600' });
+        if (error) throw error;
+        const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        return `${data.publicUrl}?v=${Date.now()}`;
+      } catch (e) {
+        console.warn('Erro ao subir imagem para Storage:', e.message);
+        return null;
+      }
+    }
 
     const profileFromDB = (r) => r ? ({
       id: r.id, user_id: r.user_id,
@@ -419,9 +446,10 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       return max;
     }
 
-    async function drawImage(ctx, b64, scale, offsetY, filter) {
+    async function drawImage(ctx, src, scale, offsetY, filter) {
       return new Promise(resolve => {
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.onload = () => {
           if (filter) ctx.filter = filter;
           const s = scale || 1;
@@ -440,7 +468,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           resolve();
         };
         img.onerror = resolve;
-        img.src = `data:image/png;base64,${b64}`;
+        img.src = src;
       });
     }
 
@@ -458,7 +486,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         /* ── CAPA: image top, gradient overlay, text bottom ── */
         ctx.fillStyle = slide.bgColor || cs;
         ctx.fillRect(0, 0, SW, SH);
-        if (slide.imageData) await drawImage(ctx, slide.imageData, slide.imageScale || 1, slide.imageOffsetY || 0, buildImgFilter(slide));
+        if (hasSlideImage(slide)) await drawImage(ctx, slideImgSrc(slide), slide.imageScale || 1, slide.imageOffsetY || 0, buildImgFilter(slide));
 
         const textPos = slide.textPosition || 'bottom';
         const gs = slide.gradientStrength ?? 1;
@@ -659,8 +687,9 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           let ty = startYByVAlign;
           ty = await drawTitle(ty);
           drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 62);
-          if (slide.imageData) {
+          if (hasSlideImage(slide)) {
             const img = new Image();
+            img.crossOrigin = 'anonymous';
             await new Promise(r => {
               img.onload = () => {
                 const f = buildImgFilter(slide);
@@ -670,7 +699,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 r();
               };
               img.onerror = r;
-              img.src = `data:image/png;base64,${slide.imageData}`;
+              img.src = slideImgSrc(slide);
             });
           }
 
@@ -686,7 +715,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           const imgPos = slide.imagePosition || 'middle';
           const imgH = 380;
           const drawImg = async (y) => {
-            if (!slide.imageData) return y;
+            if (!hasSlideImage(slide)) return y;
             ctx.save();
             const f = buildImgFilter(slide);
             if (f) ctx.filter = f;
@@ -694,6 +723,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             ctx.roundRect(PAD, y, SW - PAD*2, imgH, 18);
             ctx.clip();
             const img = new Image();
+            img.crossOrigin = 'anonymous';
             await new Promise(r => {
               img.onload = () => {
                 const sc = slide.imageScale || 1;
@@ -714,7 +744,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 r();
               };
               img.onerror = r;
-              img.src = `data:image/png;base64,${slide.imageData}`;
+              img.src = slideImgSrc(slide);
             });
             ctx.restore();
             return y + imgH + 80;
@@ -1129,7 +1159,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         reader.readAsDataURL(file);
       };
 
-      const imgBg = slide.imageData ? `url(data:image/png;base64,${slide.imageData})` : null;
+      const imgBg = hasSlideImage(slide) ? `url(${slideImgSrc(slide)})` : null;
 
       const wrapperStyle = {
         width: PW, height: PH, borderRadius: 10, overflow: 'hidden',
@@ -1187,7 +1217,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               {/* ── CONTEÚDO ── */}
               {slide.tipo === 'conteudo' && (() => {
                 const layout = slide.layout || 'inline';
-                const imgEl = slide.imageData ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" /></div> : null;
+                const imgEl = hasSlideImage(slide) ? <div style={{borderRadius:20,overflow:'hidden',flexShrink:0}}><img src={slideImgSrc(slide)} crossOrigin="anonymous" style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" /></div> : null;
 
                 const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
                 const justifyContent = vAlign === 'bottom' ? 'flex-end' : vAlign === 'center' ? 'center' : 'flex-start';
@@ -1201,7 +1231,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                           {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
                           {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:slide.textFontSize||40,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
                         </div>
-                        {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
+                        {hasSlideImage(slide) && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={slideImgSrc(slide)} crossOrigin="anonymous" style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
                       </div>
                     </div>
                   );
@@ -1222,8 +1252,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 const inlineJustify = vAlign === 'bottom' ? 'flex-end' : vAlign === 'center' ? 'center' : 'flex-start';
                 const imgScale = slide.imageScale || 1;
                 const imgOffY = slide.imageOffsetY || 0;
-                const imgBlock = slide.imageData ? (
-                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0,backgroundImage:`url(data:image/png;base64,${slide.imageData})`,backgroundSize:imgScale>1?`${imgScale*100}%`:'cover',backgroundPosition:`center ${50+imgOffY}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />
+                const imgBlock = hasSlideImage(slide) ? (
+                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0,backgroundImage:`url(${slideImgSrc(slide)})`,backgroundSize:imgScale>1?`${imgScale*100}%`:'cover',backgroundPosition:`center ${50+imgOffY}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />
                 ) : null;
                 return (
                   <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
@@ -1281,7 +1311,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             <button onClick={()=>onEdit(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✏ Editar</button>
             <button onClick={()=>onDownload(slide,idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>↓ PNG</button>
             <button onClick={()=>fileRef.current?.click()} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'var(--l-t2)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>📁 Img</button>
-            {slide.imageData && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕ Limpar</button>}
+            {hasSlideImage(slide) && <button onClick={()=>onClearImage(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>✕ Limpar</button>}
             <button onClick={()=>onDelete(idx)} style={{...S.btnG,flex:1,textAlign:'center',fontSize:11,color:'rgba(210,60,60,0.8)',minHeight:44,padding:0,display:'flex',alignItems:'center',justifyContent:'center',gap:3}}>🗑 Del</button>
           </div>
           {/* hidden file input */}
@@ -1305,7 +1335,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           {/* overlay escuro + zoom + posição da imagem + posição do texto — só para capa */}
           {slide.tipo === 'capa' && (
             <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
-              {slide.imageData && <>
+              {hasSlideImage(slide) && <>
                 <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
                   <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Escuro</span>
                   <input type="range" min={0} max={0.8} step={0.05} value={slide.overlayOpacity||0} onChange={e=>onEdit({...slide,overlayOpacity:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
@@ -1336,7 +1366,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             </div>
           )}
           {/* zoom + offset da imagem + offset do texto — só para conteúdo */}
-          {slide.tipo === 'conteudo' && slide.imageData && (
+          {slide.tipo === 'conteudo' && hasSlideImage(slide) && (
             <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
                 <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Zoom</span>
@@ -1356,7 +1386,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               </div>
             </div>
           )}
-          {slide.tipo === 'conteudo' && !slide.imageData && (
+          {slide.tipo === 'conteudo' && !hasSlideImage(slide) && (
             <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
                 <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
@@ -1377,7 +1407,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             </div>
           )}
           {/* ajustes de imagem — brilho, contraste, saturação, matiz — colapsável */}
-          {slide.imageData && (
+          {hasSlideImage(slide) && (
             <div style={{width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,overflow:'hidden'}}>
               <button onClick={()=>setImgOpen(o=>!o)} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'10px 10px',background:'none',border:'none',cursor:'pointer',touchAction:'manipulation',minHeight:40}}>
                 <span style={{fontSize:11,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:600}}>Filtros de Imagem</span>
@@ -1626,7 +1656,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           const fotoB64 = form.usarFotoMedica && client?.fotoRostoUrl
             ? client.fotoRostoUrl.replace(/^data:image\/[^;]+;base64,/, '') : null;
           const imgData = await generateImage(buildImagePrompt(slide), fotoB64);
-          setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData} : s));
+          setSlides(prev => prev.map((s,i) => i===idx ? {...s, imageData: imgData, imageUrl: null} : s));
         } catch (e) { setError(e.message); }
         finally { setGenImgIdx(-1); }
       };
@@ -1642,7 +1672,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               setProgress(`Gerando imagem ${i+1} de ${updated.length}...`);
               setGenImgIdx(i);
               const imgData = await generateImage(buildImagePrompt(updated[i]), fotoB64);
-              updated[i] = { ...updated[i], imageData: imgData };
+              updated[i] = { ...updated[i], imageData: imgData, imageUrl: null };
               setSlides([...updated]);
             } catch (e) { console.warn(`Slide ${i+1}:`, e.message); }
           }
@@ -1667,7 +1697,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const handleSaveViral = async () => {
         const nome = prompt('Nome para esta estrutura viral:');
         if (!nome?.trim()) return;
-        const slideMeta = slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:!!s.imageData }));
+        const slideMeta = slides.map(s => ({ tipo:s.tipo, layout:s.layout||'inline', temTitulo:!!s.titulo, temImagem:hasSlideImage(s) }));
         const row = { nome: nome.trim(), formato: form.formato, num_slides: slides.length, criado: new Date().toLocaleDateString('pt-BR'), slides: slideMeta };
         const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
         let data, error;
@@ -1706,54 +1736,74 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const handleSaveCarousel = async () => {
         if (!slides.length) return;
         const savedAt = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-        const slidesForDB = slides.map(({ imageData, ...rest }) => rest);
-        const row = { client_nome: client?.nome || '', saved_at: savedAt, updated_at: new Date().toISOString(), form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
         const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
+        const ownerId = useAdmin ? effectiveUserId : session.user.id;
 
-        const saveImages = (id) => {
-          try {
-            const images = {};
-            slides.forEach((s, i) => { if (s.imageData) images[i] = s.imageData; });
-            LS.set(`carouselImg_${id}`, images);
-          } catch (e) { console.warn('Erro ao salvar imagens no localStorage:', e.message); }
-        };
+        let nomeVal = null;
+        let carouselId = activeCarouselId;
+        if (!carouselId) {
+          const nomeDefault = form.tema || 'Carrossel sem nome';
+          const nome = prompt('Nome para este carrossel:', nomeDefault);
+          if (nome === null) { showToast('Salvamento cancelado.'); return; }
+          nomeVal = nome.trim() || nomeDefault;
+          carouselId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        }
 
         try {
+          setProgress('Subindo imagens...');
+          const slidesForDB = [];
+          const slidesForState = [];
+          for (let i = 0; i < slides.length; i++) {
+            const { imageData, ...rest } = slides[i];
+            if (imageData) {
+              const url = await uploadSlideImage(imageData, ownerId, carouselId, i);
+              if (url) {
+                slidesForDB.push({ ...rest, imageUrl: url });
+                slidesForState.push({ ...slides[i], imageUrl: url });
+              } else {
+                slidesForDB.push(rest);
+                slidesForState.push(slides[i]);
+              }
+            } else {
+              slidesForDB.push(rest);
+              slidesForState.push(slides[i]);
+            }
+          }
+          setProgress('');
+
+          const row = { client_nome: client?.nome || '', saved_at: savedAt, updated_at: new Date().toISOString(), form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
+
           if (activeCarouselId) {
             if (useAdmin) {
               const { data } = await adminCall('saveCarousel', effectiveUserId, { id: activeCarouselId, row });
               if (data) {
-                saveImages(activeCarouselId);
-                setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
+                setSlides(slidesForState);
+                setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides: slidesForDB, palavraGatilho } : c));
                 showToast('💾 Carrossel atualizado!');
               }
             } else {
               const { data: updated, error } = await sb.from('saved_carousels').update({ ...row, user_id: session.user.id }).eq('id', activeCarouselId).select();
               if (error) throw new Error(error.message);
               if (!updated?.length) throw new Error('Salvar falhou: sem permissão ou ID inválido.');
-              saveImages(activeCarouselId);
-              setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
+              setSlides(slidesForState);
+              setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides: slidesForDB, palavraGatilho } : c));
               showToast('💾 Carrossel atualizado!');
             }
           } else {
-            const nomeDefault = form.tema || 'Carrossel sem nome';
-            const nome = prompt('Nome para este carrossel:', nomeDefault);
-            if (nome === null) { showToast('Salvamento cancelado.'); return; }
-            const nomeVal = nome.trim() || nomeDefault;
             if (useAdmin) {
-              const { data } = await adminCall('saveCarousel', effectiveUserId, { id: null, row: { ...row, nome: nomeVal } });
+              const { data } = await adminCall('saveCarousel', effectiveUserId, { id: null, row: { ...row, id: carouselId, nome: nomeVal } });
               if (data) {
-                saveImages(data.id);
-                const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
+                setSlides(slidesForState);
+                const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides: slidesForDB, legenda, hashtags, palavraGatilho };
                 setSavedCarousels(prev => [entry, ...prev]);
                 setActiveCarouselId(data.id);
                 showToast('💾 Carrossel salvo!');
               }
             } else {
-              const { data, error } = await sb.from('saved_carousels').insert({ ...row, user_id: session.user.id, nome: nomeVal }).select().single();
+              const { data, error } = await sb.from('saved_carousels').insert({ ...row, id: carouselId, user_id: session.user.id, nome: nomeVal }).select().single();
               if (error) throw new Error(error.message);
-              saveImages(data.id);
-              const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides, legenda, hashtags, palavraGatilho };
+              setSlides(slidesForState);
+              const entry = { id: data.id, nome: data.nome, clientNome: data.client_nome, savedAt: data.saved_at, form: data.form, slides: slidesForDB, legenda, hashtags, palavraGatilho };
               setSavedCarousels(prev => [entry, ...prev]);
               setActiveCarouselId(data.id);
               showToast('💾 Carrossel salvo!');
@@ -1761,6 +1811,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           }
           setSavedOpen(true);
         } catch (e) {
+          setProgress('');
           setError(`Erro ao salvar: ${e.message}`);
         }
       };
@@ -1768,7 +1819,11 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const handleLoadCarousel = (entry) => {
         if (!confirm(`Carregar "${entry.nome}"? O carrossel atual será substituído.`)) return;
         const storedImages = LS.get(`carouselImg_${entry.id}`, {});
-        const slidesWithImages = (entry.slides || []).map((s, i) => storedImages[i] ? { ...s, imageData: storedImages[i] } : s);
+        const slidesWithImages = (entry.slides || []).map((s, i) => {
+          if (s.imageUrl) return s;
+          if (storedImages[i]) return { ...s, imageData: storedImages[i] };
+          return s;
+        });
         setForm(entry.form);
         setSlides(slidesWithImages);
         setLegenda(entry.legenda);
@@ -2064,8 +2119,8 @@ Retorne exatamente:
                         onDownload={handleDownloadOne}
                         onRegen={handleRegen}
                         regenning={genImgIdx===i}
-                        onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64}:s))}
-                        onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null}:s))}
+                        onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64,imageUrl:null}:s))}
+                        onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null,imageUrl:null}:s))}
                         onDelete={(ix)=>{ if(window.confirm(`Deletar slide ${ix+1}?`)) setSlides(prev=>prev.filter((_,j)=>j!==ix)); }}
                       />
                     ))}
