@@ -505,7 +505,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
         // headline
         const hSize = slide.titleFontSize || adaptFs(slide.headline, 88, 58);
-        const tc = slide.titleColor || slide.textColor || '#ffffff';
+        const tc = slide.titleColor || '#ffffff';
         ctx.fillStyle = tc;
         ctx.font = `700 ${hSize}px ${font}`;
         ctx.textAlign = caTA;
@@ -1283,7 +1283,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'8px 8px'}}>
               {[
                 {label:'Fundo',  val:slide.bgColor||slideBg,                         set:v=>onEdit({...slide,bgColor:v},idx,true),      dirty:slide.bgColor,      reset:()=>onEdit({...slide,bgColor:null},idx,true)},
-                {label:'Título', val:slide.titleColor||slide.textColor||'#ffffff',    set:v=>onEdit({...slide,titleColor:v},idx,true),   dirty:slide.titleColor,   reset:()=>onEdit({...slide,titleColor:null},idx,true)},
+                {label:'Título', val:slide.titleColor||'#ffffff',                      set:v=>onEdit({...slide,titleColor:v},idx,true),   dirty:slide.titleColor,   reset:()=>onEdit({...slide,titleColor:null},idx,true)},
                 {label:'Texto',  val:slide.textColor||'#ffffff',                      set:v=>onEdit({...slide,textColor:v},idx,true),    dirty:slide.textColor,    reset:()=>onEdit({...slide,textColor:null},idx,true)},
                 {label:'Acento', val:slide.accentColor||cs,                           set:v=>onEdit({...slide,accentColor:v},idx,true),  dirty:slide.accentColor,  reset:()=>onEdit({...slide,accentColor:null},idx,true)},
               ].map(c=>(
