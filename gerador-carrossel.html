@@ -124,30 +124,66 @@
     const SUPA_KEY = 'sb_publishable_Dvo_jfcgUJS6hXRtc8sIHA_jcJLs6dG';
     const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
     const STORAGE_BUCKET = 'carousel-images';
+    const IMG_QUALITY = 0.85;
 
     function slideImgSrc(slide) {
       if (!slide) return null;
       if (slide.imageData) return `data:image/png;base64,${slide.imageData}`;
-      if (slide.imageUrl) return slide.imageUrl;
+      if (slide.imageUrl) {
+        return slide.imageVersion ? `${slide.imageUrl}?v=${slide.imageVersion}` : slide.imageUrl;
+      }
       return null;
     }
     function hasSlideImage(slide) {
       return !!(slide && (slide.imageData || slide.imageUrl));
     }
+    async function b64ToCompressedBlob(b64) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', IMG_QUALITY);
+        };
+        img.onerror = () => resolve(null);
+        img.src = `data:image/png;base64,${b64}`;
+      });
+    }
     async function uploadSlideImage(b64, userId, carouselId, slideIdx) {
       try {
-        const bin = atob(b64);
-        const bytes = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        const blob = new Blob([bytes], { type: 'image/png' });
-        const path = `${userId}/${carouselId}/slide-${slideIdx}.png`;
-        const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: 'image/png', cacheControl: '3600' });
+        const blob = await b64ToCompressedBlob(b64);
+        if (!blob) throw new Error('Falha ao comprimir imagem');
+        const path = `${userId}/${carouselId}/slide-${slideIdx}.jpg`;
+        const version = Date.now();
+        const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '31536000' });
         if (error) throw error;
         const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-        return `${data.publicUrl}?v=${Date.now()}`;
+        return { url: data.publicUrl, version };
       } catch (e) {
         console.warn('Erro ao subir imagem para Storage:', e.message);
         return null;
+      }
+    }
+    async function listCarouselFiles(userId, carouselId) {
+      try {
+        const { data, error } = await sb.storage.from(STORAGE_BUCKET).list(`${userId}/${carouselId}`, { limit: 200 });
+        if (error) throw error;
+        return (data || []).map(f => `${userId}/${carouselId}/${f.name}`);
+      } catch (e) {
+        console.warn('Erro ao listar arquivos do Storage:', e.message);
+        return [];
+      }
+    }
+    async function removeStorageFiles(paths) {
+      if (!paths || !paths.length) return;
+      try {
+        const { error } = await sb.storage.from(STORAGE_BUCKET).remove(paths);
+        if (error) throw error;
+      } catch (e) {
+        console.warn('Erro ao remover arquivos do Storage:', e.message);
       }
     }
 
@@ -1750,16 +1786,23 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         }
 
         try {
-          setProgress('Subindo imagens...');
+          const totalUploads = slides.filter(s => s.imageData).length;
+          let uploadedCount = 0;
+          if (totalUploads) setProgress(`Subindo imagem 1 de ${totalUploads}...`);
+
           const slidesForDB = [];
           const slidesForState = [];
+          const keptPaths = new Set();
           for (let i = 0; i < slides.length; i++) {
             const { imageData, ...rest } = slides[i];
             if (imageData) {
-              const url = await uploadSlideImage(imageData, ownerId, carouselId, i);
-              if (url) {
-                slidesForDB.push({ ...rest, imageUrl: url });
-                slidesForState.push({ ...slides[i], imageUrl: url });
+              uploadedCount++;
+              setProgress(`Subindo imagem ${uploadedCount} de ${totalUploads}...`);
+              const res = await uploadSlideImage(imageData, ownerId, carouselId, i);
+              if (res) {
+                slidesForDB.push({ ...rest, imageUrl: res.url, imageVersion: res.version });
+                slidesForState.push({ ...slides[i], imageUrl: res.url, imageVersion: res.version });
+                keptPaths.add(`${ownerId}/${carouselId}/slide-${i}.jpg`);
               } else {
                 slidesForDB.push(rest);
                 slidesForState.push(slides[i]);
@@ -1767,7 +1810,18 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             } else {
               slidesForDB.push(rest);
               slidesForState.push(slides[i]);
+              if (rest.imageUrl) {
+                const m = rest.imageUrl.match(/\/slide-(\d+)\.(jpg|png)/);
+                if (m) keptPaths.add(`${ownerId}/${carouselId}/slide-${m[1]}.${m[2]}`);
+              }
             }
+          }
+
+          if (activeCarouselId) {
+            setProgress('Limpando arquivos antigos...');
+            const existing = await listCarouselFiles(ownerId, carouselId);
+            const orphans = existing.filter(p => !keptPaths.has(p));
+            if (orphans.length) await removeStorageFiles(orphans);
           }
           setProgress('');
 
@@ -1831,10 +1885,55 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         setPalavraGatilho(entry.palavraGatilho);
         setActiveCarouselId(entry.id);
         setSavedOpen(false);
+
+        const needsMigration = slidesWithImages.some(s => s.imageData && !s.imageUrl);
+        if (needsMigration) migrateLegacyImages(entry, slidesWithImages);
+      };
+
+      const migrateLegacyImages = async (entry, currentSlides) => {
+        const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
+        const ownerId = useAdmin ? effectiveUserId : session.user.id;
+        try {
+          showToast('Migrando imagens para o Storage...');
+          const migrated = [];
+          let changed = false;
+          for (let i = 0; i < currentSlides.length; i++) {
+            const s = currentSlides[i];
+            if (s.imageData && !s.imageUrl) {
+              const res = await uploadSlideImage(s.imageData, ownerId, entry.id, i);
+              if (res) {
+                migrated.push({ ...s, imageUrl: res.url, imageVersion: res.version });
+                changed = true;
+              } else {
+                migrated.push(s);
+              }
+            } else {
+              migrated.push(s);
+            }
+          }
+          if (!changed) return;
+          const slidesForDB = migrated.map(({ imageData, ...rest }) => rest);
+          const rowPatch = { slides: slidesForDB, updated_at: new Date().toISOString() };
+          if (useAdmin) {
+            await adminCall('saveCarousel', effectiveUserId, { id: entry.id, row: rowPatch });
+          } else {
+            await sb.from('saved_carousels').update(rowPatch).eq('id', entry.id);
+          }
+          setSlides(prev => prev === currentSlides ? migrated : prev.map((s, i) => migrated[i]?.imageUrl && !s.imageUrl ? { ...s, imageUrl: migrated[i].imageUrl, imageVersion: migrated[i].imageVersion } : s));
+          setSavedCarousels(prev => prev.map(c => c.id === entry.id ? { ...c, slides: slidesForDB } : c));
+          localStorage.removeItem(`carouselImg_${entry.id}`);
+          showToast('✅ Imagens migradas com sucesso');
+        } catch (e) {
+          console.warn('Migração falhou:', e.message);
+        }
       };
 
       const handleDeleteCarousel = async (id) => {
-        if (isAdmin && effectiveUserId !== session?.user?.id) {
+        const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
+        const ownerId = useAdmin ? effectiveUserId : session.user.id;
+        const files = await listCarouselFiles(ownerId, id);
+        if (files.length) await removeStorageFiles(files);
+        if (useAdmin) {
           await adminCall('deleteCarousel', effectiveUserId, { id });
         } else {
           await sb.from('saved_carousels').delete().eq('id', id);
