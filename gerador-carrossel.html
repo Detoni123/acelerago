@@ -388,12 +388,12 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         for (let i = 0; i < words.length; i++) {
           const test = line + words[i] + ' ';
           if (ctx.measureText(test).width > maxW && i > 0) {
-            ctx.fillText(line.trimEnd(), x, cy);
+            if (cy < SH) ctx.fillText(line.trimEnd(), x, cy);
             line = words[i] + ' ';
             cy += lh;
           } else { line = test; }
         }
-        if (line.trim()) ctx.fillText(line.trimEnd(), x, cy);
+        if (line.trim() && cy < SH) ctx.fillText(line.trimEnd(), x, cy);
         cy += lh;
       }
       return cy;
@@ -709,7 +709,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               img.src = `data:image/png;base64,${slide.imageData}`;
             });
             ctx.restore();
-            return y + imgH + 40;
+            return y + imgH + 80;
           };
 
           let ty = startYByVAlign;
@@ -1160,7 +1160,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   {(slide.overlayOpacity||0)>0 && <div style={{position:'absolute',inset:0,background:`rgba(0,0,0,${slide.overlayOpacity})`,pointerEvents:'none'}} />}
                   <div style={textStyle}>
                     {slide.destaque && <div style={{color:slide.accentColor||cp,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:'0.04em',lineHeight:slide.lineHeight??1,textAlign:slide.textAlign||'left'}}>{slide.destaque}</div>}
-                    <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||78,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.headline, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>
+                    <div style={{color:slide.titleColor||'#fff',fontSize:slide.titleFontSize||78,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.headline, slide.titleColor||'#fff', slide.accentColor||cp)}</div>
                     {slide.subtitulo && <div style={{color:slide.textColor?`${slide.textColor}99`:'rgba(255,255,255,0.6)',fontSize:slide.textFontSize||36,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.subtitulo}</div>}
                   </div>
                   {/* Branding — sempre fixo no rodapé */}
