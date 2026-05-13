@@ -461,18 +461,19 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         if (slide.imageData) await drawImage(ctx, slide.imageData, slide.imageScale || 1, slide.imageOffsetY || 0, buildImgFilter(slide));
 
         const textPos = slide.textPosition || 'bottom';
+        const gs = slide.gradientStrength ?? 1;
         if (textPos === 'middle') {
           const radGrad = ctx.createRadialGradient(SW/2, SH/2, 0, SW/2, SH/2, SH * 0.72);
-          radGrad.addColorStop(0, 'rgba(6,14,24,0.85)');
-          radGrad.addColorStop(0.6, 'rgba(6,14,24,0.45)');
-          radGrad.addColorStop(1, 'rgba(6,14,24,0.1)');
+          radGrad.addColorStop(0, `rgba(6,14,24,${(0.85*gs).toFixed(2)})`);
+          radGrad.addColorStop(0.6, `rgba(6,14,24,${(0.45*gs).toFixed(2)})`);
+          radGrad.addColorStop(1, `rgba(6,14,24,${(0.1*gs).toFixed(2)})`);
           ctx.fillStyle = radGrad;
         } else {
           const grad = ctx.createLinearGradient(0, 0, 0, SH);
-          grad.addColorStop(0,   'rgba(6,14,24,0.05)');
-          grad.addColorStop(0.35,'rgba(6,14,24,0.40)');
-          grad.addColorStop(0.65,'rgba(6,14,24,0.90)');
-          grad.addColorStop(1,   'rgba(6,14,24,0.98)');
+          grad.addColorStop(0,   `rgba(6,14,24,${(0.05*gs).toFixed(2)})`);
+          grad.addColorStop(0.35,`rgba(6,14,24,${(0.40*gs).toFixed(2)})`);
+          grad.addColorStop(0.65,`rgba(6,14,24,${(0.90*gs).toFixed(2)})`);
+          grad.addColorStop(1,   `rgba(6,14,24,${(0.98*gs).toFixed(2)})`);
           ctx.fillStyle = grad;
         }
         ctx.fillRect(0, 0, SW, SH);
