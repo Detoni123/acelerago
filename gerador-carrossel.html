@@ -701,7 +701,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 const drawW = (SW - PAD*2) * sc;
                 const drawH = imgH * sc;
                 const drawX = PAD - (drawW - (SW - PAD*2)) / 2;
-                const drawY = y - (drawH - imgH) / 2 + offY * (imgH / 100);
+                const drawY = y - (drawH - imgH) * (50 + offY) / 100;
                 ctx.drawImage(img, drawX, drawY, drawW, drawH);
                 r();
               };
