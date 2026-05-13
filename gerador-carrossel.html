@@ -186,6 +186,40 @@
         console.warn('Erro ao remover arquivos do Storage:', e.message);
       }
     }
+    async function uploadClientLogo(b64OrDataUrl, ownerId) {
+      try {
+        const b64 = b64OrDataUrl.replace(/^data:image\/[^;]+;base64,/, '');
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'image/png' });
+        const path = `${ownerId}/_logos/logo.png`;
+        const version = Date.now();
+        const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: 'image/png', cacheControl: '31536000' });
+        if (error) throw error;
+        const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        return `${data.publicUrl}?v=${version}`;
+      } catch (e) {
+        console.warn('Erro ao subir logo:', e.message);
+        return null;
+      }
+    }
+    function computeLogoPos(slide, SW, SH, logoNaturalW, logoNaturalH) {
+      const pad = 60;
+      const sizePct = Math.max(8, Math.min(60, slide.logoSize || 25));
+      const w = SW * (sizePct / 100);
+      const h = w * (logoNaturalH / logoNaturalW);
+      const pos = slide.logoPosition || 'bc';
+      const h1 = pos[0], h2 = pos[1];
+      let x, y;
+      if (h2 === 'l') x = pad;
+      else if (h2 === 'r') x = SW - pad - w;
+      else x = (SW - w) / 2;
+      if (h1 === 't') y = pad;
+      else if (h1 === 'b') y = SH - pad - h;
+      else y = (SH - h) / 2;
+      return { x, y, w, h };
+    }
 
     const profileFromDB = (r) => r ? ({
       id: r.id, user_id: r.user_id,
@@ -196,6 +230,7 @@
       fonte: r.fonte || 'Sora',
       palavrasProibidas: r.palavras_proibidas || [...DEFAULT_FORBIDDEN],
       fotoRostoUrl: r.foto_rosto_url || '',
+      logoUrl: r.logo_url || '',
     }) : null;
 
     const profileToDB = (p, userId) => ({
@@ -207,6 +242,7 @@
       fonte: p.fonte || 'Sora',
       palavras_proibidas: p.palavrasProibidas || [...DEFAULT_FORBIDDEN],
       foto_rosto_url: p.fotoRostoUrl || '',
+      logo_url: p.logoUrl || '',
       updated_at: new Date().toISOString(),
     });
 
@@ -805,6 +841,24 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         }
       }
 
+      if (client?.logoUrl && slide.logoEnabled) {
+        await new Promise(r => {
+          const logoImg = new Image();
+          logoImg.crossOrigin = 'anonymous';
+          logoImg.onload = () => {
+            const { x, y, w, h } = computeLogoPos(slide, SW, SH, logoImg.naturalWidth, logoImg.naturalHeight);
+            const opacity = (slide.logoOpacity ?? 100) / 100;
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.drawImage(logoImg, x, y, w, h);
+            ctx.restore();
+            r();
+          };
+          logoImg.onerror = r;
+          logoImg.src = client.logoUrl;
+        });
+      }
+
       return canvas;
     }
 
@@ -932,8 +986,9 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         id: Date.now().toString(), nome:'', especialidade:'', instagram:'',
         nicho:'', tomVoz:'Acolhedor, científico, direto',
         corPrimaria: ORANGE, corSecundaria: DARK, fonte:'Sora',
-        palavrasProibidas: [...DEFAULT_FORBIDDEN], fotoRostoUrl:''
+        palavrasProibidas: [...DEFAULT_FORBIDDEN], fotoRostoUrl:'', logoUrl:''
       });
+      const [logoUploading, setLogoUploading] = useState(false);
       const [tag, setTag] = useState('');
       const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
@@ -972,6 +1027,37 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   }} />
               }
               <p style={{fontSize:11,color:'var(--l-label)',marginTop:5}}>Ative "Usar foto da médica" ao gerar para inserir o rosto nas imagens.</p>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Logo (sobreposta nos slides do carrossel)</label>
+              {f.logoUrl
+                ? <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                    <div style={{width:80,height:80,borderRadius:8,border:`2px solid ${ORANGE}`,background:'rgba(0,0,0,0.04)',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+                      <img src={f.logoUrl} style={{maxWidth:'100%',maxHeight:'100%',objectFit:'contain'}} alt="logo" crossOrigin="anonymous" />
+                    </div>
+                    <button style={{...S.btnS,width:'auto',fontSize:12}} onClick={()=>set('logoUrl','')}>Remover</button>
+                    <span style={{fontSize:11,color:'var(--l-label)'}}>Logo carregada</span>
+                  </div>
+                : (logoUploading
+                    ? <div style={{fontSize:12,color:'var(--l-label)',padding:'10px 0'}}>Subindo logo...</div>
+                    : <input type="file" accept="image/*" style={{...S.input,padding:'7px 14px',cursor:'pointer'}} onChange={async e=>{
+                        const file=e.target.files[0]; if(!file) return;
+                        setLogoUploading(true);
+                        const r=new FileReader();
+                        r.onload = async (ev) => {
+                          try {
+                            const { data: { session: s } } = await sb.auth.getSession();
+                            const ownerId = f.user_id || s?.user?.id;
+                            if (!ownerId) { setLogoUploading(false); return; }
+                            const url = await uploadClientLogo(ev.target.result, ownerId);
+                            if (url) set('logoUrl', url);
+                          } finally { setLogoUploading(false); }
+                        };
+                        r.readAsDataURL(file);
+                      }} />
+                  )
+              }
+              <p style={{fontSize:11,color:'var(--l-label)',marginTop:5}}>PNG com fundo transparente funciona melhor. Posição e tamanho ajustáveis por slide.</p>
             </div>
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr',gap:14,marginBottom:14}}>
               {[['corPrimaria','Cor Primária'],['corSecundaria','Cor Secundária']].map(([k,l]) => (
@@ -1177,7 +1263,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       );
     }
 
-    function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage, onDelete, scale }) {
+    function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage, onDelete, onApplyLogoAll, scale }) {
       const PW = Math.round(SW * scale);
       const PH = Math.round(SH * scale);
       const isCta = slide.tipo === 'cta';
@@ -1187,6 +1273,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
       const fileRef = useRef(null);
       const [imgOpen, setImgOpen] = useState(false);
+      const [logoOpen, setLogoOpen] = useState(false);
       const handleUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1336,6 +1423,25 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 );
               })()}
 
+              {/* ── LOGO OVERLAY ── */}
+              {client?.logoUrl && slide.logoEnabled && (() => {
+                const sizePct = Math.max(8, Math.min(60, slide.logoSize || 25));
+                const opacity = (slide.logoOpacity ?? 100) / 100;
+                const pos = slide.logoPosition || 'bc';
+                const v = pos[0], h = pos[1];
+                const padPct = (60 / SW) * 100;
+                const style = { position:'absolute', width:`${sizePct}%`, height:'auto', opacity, pointerEvents:'none' };
+                const tr = [];
+                if (h === 'l') style.left = `${padPct}%`;
+                else if (h === 'r') style.right = `${padPct}%`;
+                else { style.left = '50%'; tr.push('translateX(-50%)'); }
+                if (v === 't') style.top = `${padPct}%`;
+                else if (v === 'b') style.bottom = `${padPct}%`;
+                else { style.top = '50%'; tr.push('translateY(-50%)'); }
+                if (tr.length) style.transform = tr.join(' ');
+                return <img src={client.logoUrl} crossOrigin="anonymous" style={style} alt="logo" />;
+              })()}
+
             </div>
           </div>
           {/* Gemini — linha dedicada e destacada */}
@@ -1440,6 +1546,51 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   <button key={opt.v} onClick={()=>onEdit({...slide,ctaStyle:opt.v},idx,true)} style={{flex:1,padding:'8px 0',fontSize:11,fontWeight:600,borderRadius:5,border:`1px solid ${(slide.ctaStyle||'gatilho')===opt.v?ORANGE:'var(--l-border)'}`,background:(slide.ctaStyle||'gatilho')===opt.v?ORANGE:'transparent',color:(slide.ctaStyle||'gatilho')===opt.v?'#fff':'var(--l-label)',cursor:'pointer',fontFamily:'Sora,sans-serif'}}>{opt.l}</button>
                 ))}
               </div>
+            </div>
+          )}
+          {/* logo da médica — posição, tamanho, opacidade — colapsável */}
+          {client?.logoUrl && (
+            <div style={{width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,overflow:'hidden'}}>
+              <button onClick={()=>setLogoOpen(o=>!o)} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'10px 10px',background:'none',border:'none',cursor:'pointer',touchAction:'manipulation',minHeight:40}}>
+                <span style={{fontSize:11,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:600}}>Logo {slide.logoEnabled?'(ativo)':''}</span>
+                <span style={{fontSize:13,color:'var(--l-label)',display:'inline-block',transform:logoOpen?'rotate(180deg)':'rotate(0deg)',transition:'transform 0.2s'}}>▾</span>
+              </button>
+              {logoOpen && (
+                <div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 10px 12px'}}>
+                  <label style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:'var(--l-t2)',cursor:'pointer',minHeight:32}}>
+                    <input type="checkbox" checked={!!slide.logoEnabled} onChange={e=>onEdit({...slide,logoEnabled:e.target.checked,logoPosition:slide.logoPosition||'bc',logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100},idx,true)} style={{accentColor:ORANGE,width:16,height:16}} />
+                    Mostrar logo neste slide
+                  </label>
+                  {slide.logoEnabled && <>
+                    <div>
+                      <div style={{fontSize:11,color:'var(--l-label)',marginBottom:6,fontWeight:500}}>Posição</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,maxWidth:160}}>
+                        {[['tl','↖'],['tc','↑'],['tr','↗'],['ml','←'],['mc','●'],['mr','→'],['bl','↙'],['bc','↓'],['br','↘']].map(([code,arrow])=>{
+                          const active = (slide.logoPosition||'bc')===code;
+                          return (
+                            <button key={code} onClick={()=>onEdit({...slide,logoPosition:code},idx,true)} style={{padding:'6px 0',fontSize:13,fontWeight:600,borderRadius:4,border:`1px solid ${active?ORANGE:'var(--l-border)'}`,background:active?'rgba(244,117,48,0.12)':'transparent',color:active?ORANGE:'var(--l-label)',cursor:'pointer',fontFamily:'Sora,sans-serif',minHeight:32}}>
+                              {arrow}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:60,flexShrink:0}}>Tamanho</span>
+                      <input type="range" min={8} max={60} step={1} value={slide.logoSize||25} onChange={e=>onEdit({...slide,logoSize:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoSize||25}%</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:60,flexShrink:0}}>Opacidade</span>
+                      <input type="range" min={0} max={100} step={5} value={slide.logoOpacity??100} onChange={e=>onEdit({...slide,logoOpacity:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoOpacity??100}%</span>
+                    </div>
+                  </>}
+                  <button onClick={()=>onApplyLogoAll && onApplyLogoAll({logoEnabled:!!slide.logoEnabled,logoPosition:slide.logoPosition||'bc',logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100})} style={{padding:'8px',fontSize:11,fontWeight:600,borderRadius:5,border:'1px dashed var(--l-border)',background:'transparent',color:'var(--l-t2)',cursor:'pointer',fontFamily:'Sora,sans-serif'}}>
+                    ⎘ Aplicar este logo a todos os slides
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {/* ajustes de imagem — brilho, contraste, saturação, matiz — colapsável */}
@@ -1577,7 +1728,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
       const loadProfile = async (userId, userEmail, accessToken) => {
         const { data } = await sb.from('doctor_profiles').select('*').eq('user_id', userId).single();
-        setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'' });
+        setProfile(profileFromDB(data) || { user_id: userId, nome:'', especialidade:'', instagram:'', nicho:'', tomVoz:'Acolhedor, científico, direto', corPrimaria:ORANGE, corSecundaria:DARK, fonte:'Sora', palavrasProibidas:[...DEFAULT_FORBIDDEN], fotoRostoUrl:'', logoUrl:'' });
         setAuthLoading(false);
         loadSavedData(userId);
         if (userEmail === ADMIN_EMAIL) {
@@ -2221,6 +2372,7 @@ Retorne exatamente:
                         onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64,imageUrl:null}:s))}
                         onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null,imageUrl:null}:s))}
                         onDelete={(ix)=>{ if(window.confirm(`Deletar slide ${ix+1}?`)) setSlides(prev=>prev.filter((_,j)=>j!==ix)); }}
+                        onApplyLogoAll={(cfg)=>setSlides(prev=>prev.map(s=>({...s,logoEnabled:cfg.logoEnabled,logoPosition:cfg.logoPosition,logoSize:cfg.logoSize,logoOpacity:cfg.logoOpacity})))}
                       />
                     ))}
                   </div>
