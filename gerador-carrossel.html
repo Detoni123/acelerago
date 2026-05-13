@@ -509,7 +509,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         ctx.fillStyle = tc;
         ctx.font = `700 ${hSize}px ${font}`;
         ctx.textAlign = caTA;
-        y = wrapText(ctx, slide.headline || '', caTX, y, SW - PAD*2, Math.round(hSize * (caLH > 1 ? caLH : 1.22)));
+        y = wrapText(ctx, stripColors(slide.headline || ''), caTX, y, SW - PAD*2, Math.round(hSize * (caLH > 1 ? caLH : 1.22)));
         y += 24;
 
         // subtitulo
@@ -600,11 +600,11 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         const drawTitle = async (y) => {
           if (!slide.titulo) return y;
           const tSize = slide.titleFontSize || adaptFs(slide.titulo, 76, 52);
-          ctx.fillStyle = stc;
+          ctx.fillStyle = slide.titleColor || stc;
           ctx.font = `700 ${tSize}px ${font}`;
           ctx.textAlign = coTA;
           ctx.letterSpacing = coLS;
-          const ny = wrapText(ctx, slide.titulo, coTX, y, SW - PAD*2, Math.round(tSize*(coLH>1?coLH:1.2))) + 30;
+          const ny = wrapText(ctx, stripColors(slide.titulo), coTX, y, SW - PAD*2, Math.round(tSize*(coLH>1?coLH:1.2))) + 30;
           ctx.letterSpacing = '0px';
           return ny;
         };
@@ -614,12 +614,13 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           ctx.font = `400 ${size}px ${font}`;
           ctx.textAlign = coTA;
           ctx.letterSpacing = coLS;
-          const ny = wrapText(ctx, slide.texto, coTX, y, SW - PAD*2, Math.round(size*(coLH>1?coLH:lh/size)));
+          const ny = wrapText(ctx, stripColors(slide.texto), coTX, y, SW - PAD*2, Math.round(size*(coLH>1?coLH:lh/size)));
           ctx.letterSpacing = '0px';
           return ny;
         };
         const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
-        const startYByVAlign = vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 140;
+        const textOffY = slide.textOffsetY || 0;
+        const startYByVAlign = (vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 140) + textOffY;
 
         if (layout === 'lateral') {
           let ty = startYByVAlign;
@@ -661,7 +662,16 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             ctx.clip();
             const img = new Image();
             await new Promise(r => {
-              img.onload = () => { ctx.drawImage(img, PAD, y, SW - PAD*2, imgH); r(); };
+              img.onload = () => {
+                const sc = slide.imageScale || 1;
+                const offY = slide.imageOffsetY || 0;
+                const drawW = (SW - PAD*2) * sc;
+                const drawH = imgH * sc;
+                const drawX = PAD - (drawW - (SW - PAD*2)) / 2;
+                const drawY = y - (drawH - imgH) / 2 + offY * (imgH / 100);
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                r();
+              };
               img.onerror = r;
               img.src = `data:image/png;base64,${slide.imageData}`;
             });
@@ -1048,6 +1058,18 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
     }
 
     /* ── SLIDE CARD PREVIEW ── */
+    function stripColors(text) {
+      return text ? text.replace(/\{([^}]+)\}/g, '$1') : text;
+    }
+    function renderColored(text, defColor, accentColor) {
+      if (!text || !text.includes('{')) return text;
+      return text.split(/(\{[^}]+\})/).map((part, i) =>
+        part.startsWith('{') && part.endsWith('}')
+          ? React.createElement('span', {key:i, style:{color:accentColor}}, part.slice(1,-1))
+          : React.createElement('span', {key:i}, part)
+      );
+    }
+
     function SlideCard({ slide, idx, client, onEdit, onDownload, onRegen, regenning, onUploadImage, onClearImage, scale }) {
       const PW = Math.round(SW * scale);
       const PH = Math.round(SH * scale);
@@ -1084,7 +1106,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
       return (
         <div style={{display:'flex',flexDirection:'column',gap:6}}>
-          <div style={wrapperStyle} onClick={()=>onEdit(slide,idx)}>
+          <div style={{...wrapperStyle,position:'sticky',top:8,zIndex:2}} onClick={()=>onEdit(slide,idx)}>
             <div style={innerStyle}>
 
               {/* ── CAPA ── */}
@@ -1094,9 +1116,10 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 const textStyle = pos === 'middle'
                   ? {position:'absolute',top:'50%',left:0,right:0,transform:`translateY(calc(-50% - ${tOff}px))`,padding:`0 ${PAD}px`,display:'flex',flexDirection:'column',gap:24}
                   : {position:'absolute',bottom:0,left:0,right:0,transform:`translateY(-${tOff}px)`,padding:`0 ${PAD}px 100px`,display:'flex',flexDirection:'column',gap:24};
+                const gs = slide.gradientStrength ?? 1;
                 const gradStyle = pos === 'middle'
-                  ? 'radial-gradient(ellipse at center, rgba(6,14,24,0.82) 0%, rgba(6,14,24,0.35) 70%, rgba(6,14,24,0.1) 100%)'
-                  : 'linear-gradient(180deg,rgba(6,14,24,0.05) 0%,rgba(6,14,24,0.4) 35%,rgba(6,14,24,0.92) 70%,rgba(6,14,24,0.98) 100%)';
+                  ? `radial-gradient(ellipse at center, rgba(6,14,24,${(0.82*gs).toFixed(2)}) 0%, rgba(6,14,24,${(0.35*gs).toFixed(2)}) 70%, rgba(6,14,24,${(0.1*gs).toFixed(2)}) 100%)`
+                  : `linear-gradient(180deg,rgba(6,14,24,${(0.05*gs).toFixed(2)}) 0%,rgba(6,14,24,${(0.40*gs).toFixed(2)}) 35%,rgba(6,14,24,${(0.92*gs).toFixed(2)}) 70%,rgba(6,14,24,${(0.98*gs).toFixed(2)}) 100%)`;
                 return (
                 <div style={{width:SW,height:SH,position:'relative',background:cs}}>
                   {imgBg && <div style={{position:'absolute',inset:0,backgroundImage:imgBg,backgroundSize:slide.imageScale&&slide.imageScale>1?`${slide.imageScale*100}%`:'cover',backgroundPosition:`center ${50+(slide.imageOffsetY||0)}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />}
@@ -1104,7 +1127,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   {(slide.overlayOpacity||0)>0 && <div style={{position:'absolute',inset:0,background:`rgba(0,0,0,${slide.overlayOpacity})`,pointerEvents:'none'}} />}
                   <div style={textStyle}>
                     {slide.destaque && <div style={{color:slide.accentColor||cp,fontSize:46,fontWeight:800,textTransform:'uppercase',letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:'0.04em',lineHeight:slide.lineHeight??1,textAlign:slide.textAlign||'left'}}>{slide.destaque}</div>}
-                    <div style={{color:slide.textColor||'#fff',fontSize:slide.titleFontSize||78,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.headline}</div>
+                    <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||78,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.headline, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>
                     {slide.subtitulo && <div style={{color:slide.textColor?`${slide.textColor}99`:'rgba(255,255,255,0.6)',fontSize:slide.textFontSize||36,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.subtitulo}</div>}
                   </div>
                   {/* Branding — sempre fixo no rodapé */}
@@ -1133,8 +1156,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                     <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,display:'flex',minHeight:0}}>
-                        <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent}}>
-                          {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:slide.titleFontSize||60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
+                        <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
+                          {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
                           {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:slide.textFontSize||40,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
                         </div>
                         {slide.imageData && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
@@ -1146,8 +1169,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   return (
                     <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                       <div style={{height:8,background:cp,flexShrink:0}} />
-                      <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent}}>
-                        {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
+                      <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
+                        {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
                         {slide.texto && <div style={{color:slide.textColor||'#fff',fontSize:slide.textFontSize||58,fontWeight:500,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
                       </div>
                     </div>
@@ -1156,17 +1179,17 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 // inline (default)
                 const imgPos = slide.imagePosition || 'middle';
                 const inlineJustify = vAlign === 'bottom' ? 'flex-end' : vAlign === 'center' ? 'center' : 'flex-start';
+                const imgScale = slide.imageScale || 1;
+                const imgOffY = slide.imageOffsetY || 0;
                 const imgBlock = slide.imageData ? (
-                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0}}>
-                    <img src={`data:image/png;base64,${slide.imageData}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',filter:buildImgFilter(slide)||undefined}} alt="" />
-                  </div>
+                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0,backgroundImage:`url(data:image/png;base64,${slide.imageData})`,backgroundSize:imgScale>1?`${imgScale*100}%`:'cover',backgroundPosition:`center ${50+imgOffY}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />
                 ) : null;
                 return (
                   <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                     <div style={{height:8,background:cp,flexShrink:0}} />
-                    <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:inlineJustify}}>
+                    <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:inlineJustify,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
                       {imgPos==='top' && imgBlock}
-                      {slide.titulo && <div style={{color:slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.titulo}</div>}
+                      {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
                       {imgPos==='middle' && imgBlock}
                       {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:slide.textFontSize||44,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',flex:imgPos==='bottom'?1:undefined}}>{slide.texto}</div>}
                       {imgPos==='bottom' && imgBlock}
@@ -1209,11 +1232,12 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleUpload} />
           {/* cores de fundo e texto — disponível para todos os tipos */}
           {(
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'8px 8px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'8px 8px'}}>
               {[
-                {label:'Fundo',  val:slide.bgColor||slideBg,    set:v=>onEdit({...slide,bgColor:v},idx,true),      dirty:slide.bgColor,      reset:()=>onEdit({...slide,bgColor:null},idx,true)},
-                {label:'Texto',  val:slide.textColor||'#ffffff', set:v=>onEdit({...slide,textColor:v},idx,true),   dirty:slide.textColor,    reset:()=>onEdit({...slide,textColor:null},idx,true)},
-                {label:'Acento', val:slide.accentColor||cs,     set:v=>onEdit({...slide,accentColor:v},idx,true), dirty:slide.accentColor,  reset:()=>onEdit({...slide,accentColor:null},idx,true)},
+                {label:'Fundo',  val:slide.bgColor||slideBg,                         set:v=>onEdit({...slide,bgColor:v},idx,true),      dirty:slide.bgColor,      reset:()=>onEdit({...slide,bgColor:null},idx,true)},
+                {label:'Título', val:slide.titleColor||slide.textColor||'#ffffff',    set:v=>onEdit({...slide,titleColor:v},idx,true),   dirty:slide.titleColor,   reset:()=>onEdit({...slide,titleColor:null},idx,true)},
+                {label:'Texto',  val:slide.textColor||'#ffffff',                      set:v=>onEdit({...slide,textColor:v},idx,true),    dirty:slide.textColor,    reset:()=>onEdit({...slide,textColor:null},idx,true)},
+                {label:'Acento', val:slide.accentColor||cs,                           set:v=>onEdit({...slide,accentColor:v},idx,true),  dirty:slide.accentColor,  reset:()=>onEdit({...slide,accentColor:null},idx,true)},
               ].map(c=>(
                 <div key={c.label} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
                   <span style={{fontSize:11,color:'var(--l-label)',fontWeight:500}}>{c.label}</span>
@@ -1232,6 +1256,11 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                   <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.overlayOpacity||0)*100)}%</span>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Gradiente</span>
+                  <input type="range" min={0} max={1} step={0.05} value={slide.gradientStrength??1} onChange={e=>onEdit({...slide,gradientStrength:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                  <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.gradientStrength??1)*100)}%</span>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
                   <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Zoom</span>
                   <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
                   <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
@@ -1243,6 +1272,36 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 </div>
                 <div style={{height:1,background:'var(--l-border)',margin:'0'}} />
               </>}
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
+                <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+              </div>
+            </div>
+          )}
+          {/* zoom + offset da imagem + offset do texto — só para conteúdo */}
+          {slide.tipo === 'conteudo' && slide.imageData && (
+            <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Zoom</span>
+                <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Img ↕</span>
+                <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+              </div>
+              <div style={{height:1,background:'var(--l-border)',margin:'0'}} />
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
+                <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+              </div>
+            </div>
+          )}
+          {slide.tipo === 'conteudo' && !slide.imageData && (
+            <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
                 <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
                 <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
