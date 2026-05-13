@@ -1641,7 +1641,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         const savedAt = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
         // Strip imageData from DB payload — images ficam apenas no localStorage para evitar payload gigante
         const slidesForDB = slides.map(({ imageData, ...rest }) => rest);
-        const row = { client_nome: client?.nome || '', saved_at: savedAt, form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
+        const row = { client_nome: client?.nome || '', saved_at: savedAt, updated_at: new Date().toISOString(), form: { ...form }, slides: slidesForDB, legenda, hashtags, palavra_gatilho: palavraGatilho };
         const useAdmin = isAdmin && effectiveUserId !== session?.user?.id;
 
         const saveImages = (id) => {
@@ -1662,8 +1662,9 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 showToast('💾 Carrossel atualizado!');
               }
             } else {
-              const { error } = await sb.from('saved_carousels').update({ ...row, user_id: session.user.id }).eq('id', activeCarouselId);
+              const { data: updated, error } = await sb.from('saved_carousels').update({ ...row, user_id: session.user.id }).eq('id', activeCarouselId).select();
               if (error) throw new Error(error.message);
+              if (!updated?.length) throw new Error('Salvar falhou: sem permissão ou ID inválido.');
               saveImages(activeCarouselId);
               setSavedCarousels(prev => prev.map(c => c.id === activeCarouselId ? { ...c, ...row, slides, palavraGatilho } : c));
               showToast('💾 Carrossel atualizado!');
