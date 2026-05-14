@@ -1793,7 +1793,16 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
       const handleSaveClient = async (data) => {
         const { error } = await sb.from('doctor_profiles').upsert(profileToDB(data, session.user.id), { onConflict: 'user_id' });
-        if (!error) { setProfile({ ...data, user_id: session.user.id }); showToast('Perfil salvo!'); }
+        if (!error) {
+          const updated = { ...data, user_id: session.user.id };
+          setProfile(updated);
+          setAllProfiles(prev => {
+            const idx = prev.findIndex(p => p.user_id === session.user.id);
+            if (idx === -1) return [...prev, updated];
+            return prev.map((p, i) => i === idx ? updated : p);
+          });
+          showToast('Perfil salvo!');
+        }
         setModal(null); setEditClient(null);
       };
 
