@@ -509,6 +509,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           range.setStart(textNode, 0);
           range.setEnd(textNode, para.length);
           const rects = range.getClientRects();
+          if (window.__DEBUG_WRAP) console.log('[wrap]', JSON.stringify({text: para.slice(0, 50), fontSize, fontFamily, maxWidth, rectsCount: rects.length, tops: Array.from(rects).map(r => Math.round(r.top))}));
           if (rects.length <= 1) { lines.push(para); continue; }
           let prevEnd = 0;
           for (let i = 0; i < rects.length; i++) {
