@@ -483,7 +483,22 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       if (!text) return [];
       const lines = [];
       const div = document.createElement('div');
-      div.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${maxWidth}px;font:${fontWeight} ${fontSize}px ${fontFamily};letter-spacing:${letterSpacing || '0px'};white-space:pre-wrap;overflow-wrap:normal;word-break:normal;line-height:1;`;
+      div.style.position = 'absolute';
+      div.style.top = '-9999px';
+      div.style.left = '-9999px';
+      div.style.width = maxWidth + 'px';
+      div.style.fontFamily = `"${fontFamily}", "Sora", sans-serif`;
+      div.style.fontWeight = String(fontWeight);
+      div.style.fontSize = fontSize + 'px';
+      div.style.letterSpacing = letterSpacing || '0px';
+      div.style.lineHeight = '1';
+      div.style.whiteSpace = 'pre-wrap';
+      div.style.overflowWrap = 'normal';
+      div.style.wordBreak = 'normal';
+      div.style.wordWrap = 'normal';
+      div.style.padding = '0';
+      div.style.margin = '0';
+      div.style.border = '0';
       document.body.appendChild(div);
       try {
         for (const para of text.split('\n')) {
@@ -676,7 +691,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         }
 
         // headline
-        const hSize = slide.titleFontSize || adaptFs(slide.headline, 88, 58);
+        const hSize = slide.titleFontSize || 78;
         const tc = slide.titleColor || '#ffffff';
         ctx.fillStyle = tc;
         ctx.font = `700 ${hSize}px ${font}`;
@@ -686,7 +701,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
         // subtitulo
         if (slide.subtitulo) {
-          const subSize = slide.textFontSize || 38;
+          const subSize = slide.textFontSize || 36;
           ctx.fillStyle = slide.textColor ? (slide.textColor + '99') : 'rgba(255,255,255,0.58)';
           ctx.font = `400 ${subSize}px ${font}`;
           ctx.textAlign = caTA;
@@ -722,7 +737,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           // ── CTA mensagem livre ──
           let cy = 220;
           if (slide.titulo) {
-            const tSize = slide.titleFontSize || adaptFs(slide.titulo, 66, 48);
+            const tSize = slide.titleFontSize || 58;
             ctx.fillStyle = slide.titleColor || ctaTC;
             ctx.font = `700 ${tSize}px ${font}`;
             ctx.textAlign = 'center';
@@ -732,7 +747,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
             cy += 48;
           }
           if (slide.texto) {
-            const subSize = slide.textFontSize || 42;
+            const subSize = slide.textFontSize || 40;
             ctx.fillStyle = slide.textColor ? ctaTC + 'cc' : 'rgba(255,255,255,0.85)';
             ctx.font = `400 ${subSize}px ${font}`;
             ctx.textAlign = 'center';
@@ -756,7 +771,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           // ── CTA palavra-gatilho ──
           let cy = 260;
           if (slide.titulo) {
-            const tSize = slide.titleFontSize || adaptFs(slide.titulo, 60, 44);
+            const tSize = slide.titleFontSize || 56;
             ctx.fillStyle = slide.titleColor || ctaTC;
             ctx.font = `700 ${tSize}px ${font}`;
             ctx.textAlign = ctaTA;
@@ -802,9 +817,9 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         const coTX = coTA === 'center' ? SW/2 : coTA === 'right' ? SW - PAD : PAD;
         const coLS = slide.letterSpacing != null ? `${slide.letterSpacing}px` : '0px';
         const coLH = slide.lineHeight ?? 1;
-        const drawTitle = async (y) => {
+        const drawTitle = async (y, defaultSize = 72) => {
           if (!slide.titulo) return y;
-          const tSize = slide.titleFontSize || adaptFs(slide.titulo, 76, 52);
+          const tSize = slide.titleFontSize || defaultSize;
           ctx.fillStyle = slide.titleColor || stc;
           ctx.font = `700 ${tSize}px ${font}`;
           ctx.textAlign = coTA;
@@ -835,7 +850,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
         if (layout === 'lateral') {
           let ty = startYByVAlign;
-          ty = await withShift(tOff, () => drawTitle(ty));
+          ty = await withShift(tOff, () => drawTitle(ty, 60));
           await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 62));
           if (hasSlideImage(slide)) {
             const img = new Image();
