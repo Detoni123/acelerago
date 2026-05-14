@@ -490,7 +490,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       div.style.fontFamily = `"${fontFamily}", "Sora", sans-serif`;
       div.style.fontWeight = String(fontWeight);
       div.style.fontSize = fontSize + 'px';
-      div.style.letterSpacing = letterSpacing || '0px';
+      if (letterSpacing && letterSpacing !== '0px') div.style.letterSpacing = letterSpacing;
       div.style.lineHeight = '1';
       div.style.whiteSpace = 'pre-wrap';
       div.style.overflowWrap = 'normal';
@@ -515,6 +515,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               uniqueTops.push(r.top);
             }
           }
+          if (window.__DEBUG_WRAP) console.log('[wrap]', JSON.stringify({text: para.slice(0, 50), fontSize, lines: uniqueTops.length}));
           if (uniqueTops.length <= 1) { lines.push(para); continue; }
           let prevEnd = 0;
           for (let i = 0; i < uniqueTops.length; i++) {
