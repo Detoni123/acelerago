@@ -831,18 +831,18 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           ctx.font = `700 ${tSize}px ${font}`;
           ctx.textAlign = coTA;
           ctx.letterSpacing = coLS;
-          const lh = Math.round(tSize*(coLH>1?coLH:1.2));
-          const ny = drawCSSWrapped(ctx, stripColors(slide.titulo), coTX, y, SW - PAD*2, lh, 700, tSize, font, coLS) + 30;
+          const lh = Math.round(tSize*(coLH>1?coLH:1.18));
+          const ny = drawCSSWrapped(ctx, stripColors(slide.titulo), coTX, y, SW - PAD*2, lh, 700, tSize, font, coLS) + 36;
           ctx.letterSpacing = '0px';
           return ny;
         };
-        const drawBody = (y, color, size, lh) => {
+        const drawBody = (y, color, size, defaultLhFactor) => {
           if (!slide.texto) return y;
           ctx.fillStyle = slide.textColor ? stc + 'cc' : color;
           ctx.font = `400 ${size}px ${font}`;
           ctx.textAlign = coTA;
           ctx.letterSpacing = coLS;
-          const computedLh = Math.round(size*(coLH>1?coLH:lh/size));
+          const computedLh = Math.round(size*(coLH>1?coLH:defaultLhFactor));
           const ny = drawCSSWrapped(ctx, stripColors(slide.texto), coTX, y, SW - PAD*2, computedLh, 400, size, font, coLS);
           ctx.letterSpacing = '0px';
           return ny;
@@ -858,7 +858,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         if (layout === 'lateral') {
           let ty = startYByVAlign;
           ty = await withShift(tOff, () => drawTitle(ty, 60));
-          await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 62));
+          await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 1.65));
           if (hasSlideImage(slide)) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -879,7 +879,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         } else if (layout === 'texto') {
           let ty = startYByVAlign;
           ty = await withShift(tOff, () => drawTitle(ty));
-          await withShift(bOff, async () => drawBody(ty, '#ffffff', slide.textFontSize||58, 88));
+          await withShift(bOff, async () => drawBody(ty, '#ffffff', slide.textFontSize||58, 1.5));
 
 
         } else {
@@ -887,7 +887,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           const imgPos = slide.imagePosition || 'middle';
           const imgH = 380;
           const drawImg = async (y) => {
-            if (!hasSlideImage(slide)) return y;
+            if (!hasSlideImage(slide)) return y + 0;
             ctx.save();
             const f = buildImgFilter(slide);
             if (f) ctx.filter = f;
@@ -919,23 +919,23 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               img.src = slideImgSrc(slide);
             });
             ctx.restore();
-            return y + imgH + 80;
+            return y + imgH + 36;
           };
 
           let ty = startYByVAlign;
           if (imgPos === 'top') {
             ty = await withShift(iOff, () => drawImg(ty));
             ty = await withShift(tOff, () => drawTitle(ty));
-            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
+            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
           } else if (imgPos === 'bottom') {
             ty = await withShift(tOff, () => drawTitle(ty));
-            ty = await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
+            ty = await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
             await withShift(iOff, () => drawImg(ty + 20));
           } else {
             // middle (padrão)
             ty = await withShift(tOff, () => drawTitle(ty));
             ty = await withShift(iOff, () => drawImg(ty));
-            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
+            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
           }
 
         }
