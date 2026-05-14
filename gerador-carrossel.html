@@ -864,41 +864,83 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         const coTX = coTA === 'center' ? SW/2 : coTA === 'right' ? SW - PAD : PAD;
         const coLS = slide.letterSpacing != null ? `${slide.letterSpacing}px` : '0px';
         const coLH = slide.lineHeight ?? 1;
-        const drawTitle = async (y, defaultSize = 72) => {
-          if (!slide.titulo) return y;
-          const tSize = slide.titleFontSize || defaultSize;
-          ctx.fillStyle = slide.titleColor || stc;
-          ctx.font = `700 ${tSize}px ${font}`;
-          ctx.textAlign = coTA;
-          ctx.letterSpacing = coLS;
-          const lh = Math.round(tSize*(coLH>1?coLH:1.18));
-          const ny = drawCSSWrapped(ctx, stripColors(slide.titulo), coTX, y, SW - PAD*2, lh, 700, tSize, font, coLS) + 36;
-          ctx.letterSpacing = '0px';
-          return ny;
-        };
-        const drawBody = (y, color, size, defaultLhFactor) => {
-          if (!slide.texto) return y;
-          ctx.fillStyle = slide.textColor ? stc + 'cc' : color;
-          ctx.font = `400 ${size}px ${font}`;
-          ctx.textAlign = coTA;
-          ctx.letterSpacing = coLS;
-          const computedLh = Math.round(size*(coLH>1?coLH:defaultLhFactor));
-          const ny = drawCSSWrapped(ctx, stripColors(slide.texto), coTX, y, SW - PAD*2, computedLh, 400, size, font, coLS);
-          ctx.letterSpacing = '0px';
-          return ny;
-        };
-        const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
         const textOffY = slide.textOffsetY || 0;
-        const startYByVAlign = (vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 140) + textOffY;
         const tOff = slide.titleOffsetY || 0;
         const bOff = slide.bodyOffsetY || 0;
         const iOff = slide.imageFrameOffsetY || 0;
         const withShift = async (off, fn) => { ctx.save(); ctx.translate(0, off); const r = await fn(); ctx.restore(); return r; };
 
+        // sizes and line-heights (synced with preview defaults)
+        const titleSize = slide.titleFontSize || (layout === 'lateral' ? 60 : 72);
+        const bodySize = slide.textFontSize || (layout === 'lateral' ? 40 : layout === 'texto' ? 58 : 44);
+        const titleLh = Math.round(titleSize * (coLH > 1 ? coLH : 1.18));
+        const bodyLhFactor = layout === 'texto' ? 1.5 : 1.65;
+        const bodyLh = Math.round(bodySize * (coLH > 1 ? coLH : bodyLhFactor));
+
+        // measure lines for dynamic height
+        const titleLines = slide.titulo ? measureCSSLines(stripColors(slide.titulo), SW - PAD*2, 700, titleSize, font, coLS) : [];
+        const bodyLines = slide.texto ? measureCSSLines(stripColors(slide.texto), SW - PAD*2, 400, bodySize, font, coLS) : [];
+        const titleH = titleLines.length * titleLh;
+        const bodyH = bodyLines.length * bodyLh;
+        const imgBlockH = 380;
+        const gap = 36;
+
+        // total content height (depends on layout and image presence)
+        const hasImgInline = layout === 'inline' && hasSlideImage(slide);
+        let contentH;
+        if (layout === 'inline') {
+          const items = [titleH, hasImgInline ? imgBlockH : 0, bodyH].filter(h => h > 0);
+          contentH = items.reduce((s, h) => s + h, 0) + Math.max(0, items.length - 1) * gap;
+        } else {
+          contentH = titleH + (titleH && bodyH ? gap : 0) + bodyH;
+        }
+
+        // compute startY using flex-like positioning
+        const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
+        const padTop = layout === 'lateral' ? 60 : 70;
+        const padBot = layout === 'lateral' ? 60 : 70;
+        const innerTop = 8 + padTop; // border + padding-top
+        const innerH = SH - 8 - padTop - padBot;
+        let startY;
+        if (vAlign === 'bottom') startY = innerTop + Math.max(0, innerH - contentH);
+        else if (vAlign === 'center') startY = innerTop + Math.max(0, (innerH - contentH) / 2);
+        else startY = innerTop;
+        startY += textOffY;
+
+        ctx.textBaseline = 'top';
+
+        const drawTitle = (y) => {
+          if (!titleLines.length) return y;
+          ctx.fillStyle = slide.titleColor || stc;
+          ctx.font = `700 ${titleSize}px ${font}`;
+          ctx.textAlign = coTA;
+          ctx.letterSpacing = coLS;
+          for (const line of titleLines) {
+            if (line) ctx.fillText(line, coTX, y);
+            y += titleLh;
+          }
+          ctx.letterSpacing = '0px';
+          return y;
+        };
+        const drawBody = (y, color) => {
+          if (!bodyLines.length) return y;
+          ctx.fillStyle = slide.textColor ? stc + 'cc' : color;
+          ctx.font = `400 ${bodySize}px ${font}`;
+          ctx.textAlign = coTA;
+          ctx.letterSpacing = coLS;
+          for (const line of bodyLines) {
+            if (line) ctx.fillText(line, coTX, y);
+            y += bodyLh;
+          }
+          ctx.letterSpacing = '0px';
+          return y;
+        };
+
         if (layout === 'lateral') {
-          let ty = startYByVAlign;
-          ty = await withShift(tOff, () => drawTitle(ty, 60));
-          await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 1.65));
+          let ty = startY;
+          ty = await withShift(tOff, () => drawTitle(ty));
+          if (titleLines.length && bodyLines.length) ty += gap;
+          await withShift(bOff, () => drawBody(ty, 'rgba(255,255,255,0.78)'));
           if (hasSlideImage(slide)) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -917,15 +959,16 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
 
         } else if (layout === 'texto') {
-          let ty = startYByVAlign;
+          let ty = startY;
           ty = await withShift(tOff, () => drawTitle(ty));
-          await withShift(bOff, async () => drawBody(ty, '#ffffff', slide.textFontSize||58, 1.5));
+          if (titleLines.length && bodyLines.length) ty += gap;
+          await withShift(bOff, () => drawBody(ty, '#ffffff'));
 
 
         } else {
           // inline (default) — respeita imagePosition: top | middle | bottom
           const imgPos = slide.imagePosition || 'middle';
-          const imgH = 380;
+          const imgH = imgBlockH;
           const drawImg = async (y) => {
             if (!hasSlideImage(slide)) return y + 0;
             ctx.save();
@@ -959,26 +1002,34 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               img.src = slideImgSrc(slide);
             });
             ctx.restore();
-            return y + imgH + 36;
+            return y + imgH;
           };
 
-          let ty = startYByVAlign;
+          let ty = startY;
+          const hasImg = hasSlideImage(slide);
           if (imgPos === 'top') {
             ty = await withShift(iOff, () => drawImg(ty));
+            if (hasImg) ty += gap;
             ty = await withShift(tOff, () => drawTitle(ty));
-            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
+            if (titleLines.length && bodyLines.length) ty += gap;
+            await withShift(bOff, () => drawBody(ty, 'rgba(255,255,255,0.72)'));
           } else if (imgPos === 'bottom') {
             ty = await withShift(tOff, () => drawTitle(ty));
-            ty = await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
-            await withShift(iOff, () => drawImg(ty + 20));
+            if (titleLines.length && bodyLines.length) ty += gap;
+            ty = await withShift(bOff, () => drawBody(ty, 'rgba(255,255,255,0.72)'));
+            if (hasImg) ty += gap;
+            await withShift(iOff, () => drawImg(ty));
           } else {
             // middle (padrão)
             ty = await withShift(tOff, () => drawTitle(ty));
+            if (titleLines.length && hasImg) ty += gap;
             ty = await withShift(iOff, () => drawImg(ty));
-            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 1.65));
+            if (hasImg && bodyLines.length) ty += gap;
+            await withShift(bOff, () => drawBody(ty, 'rgba(255,255,255,0.72)'));
           }
 
         }
+        ctx.textBaseline = 'alphabetic';
       }
 
       if (preloadedLogo && logoBounds) {
