@@ -487,7 +487,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       div.style.top = '-9999px';
       div.style.left = '-9999px';
       div.style.width = maxWidth + 'px';
-      div.style.fontFamily = `"${fontFamily}", "Sora", sans-serif`;
+      div.style.fontFamily = fontFamily.includes(',') ? fontFamily : `"${fontFamily}", "Sora", sans-serif`;
       div.style.fontWeight = String(fontWeight);
       div.style.fontSize = fontSize + 'px';
       if (letterSpacing && letterSpacing !== '0px') div.style.letterSpacing = letterSpacing;
@@ -630,7 +630,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const ctx = canvas.getContext('2d');
       const cp = slide.accentColor || client.corPrimaria || ORANGE;
       const cs = client.corSecundaria || DARK;
-      const font = client.fonte || 'Sora';
+      const fontName = client.fonte || 'Sora';
+      const font = `"${fontName}", "Sora", sans-serif`;
       const PAD = 90;
 
       let preloadedLogo = null;
@@ -1422,7 +1423,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       const innerStyle = {
         width: SW, height: SH, position: 'absolute', top: 0, left: 0,
         transform: `scale(${scale})`, transformOrigin: 'top left',
-        fontFamily: 'Sora,sans-serif', overflow: 'hidden', position: 'absolute',
+        fontFamily: `"${client?.fonte || 'Sora'}", "Sora", sans-serif`, overflow: 'hidden', position: 'absolute',
       };
 
       const PAD = 90;
