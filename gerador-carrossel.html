@@ -483,7 +483,7 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       if (!text) return [];
       const lines = [];
       const div = document.createElement('div');
-      div.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${maxWidth}px;font:${fontWeight} ${fontSize}px ${fontFamily};letter-spacing:${letterSpacing || '0px'};white-space:pre-wrap;word-wrap:break-word;line-height:1;`;
+      div.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${maxWidth}px;font:${fontWeight} ${fontSize}px ${fontFamily};letter-spacing:${letterSpacing || '0px'};white-space:pre-wrap;overflow-wrap:normal;word-break:normal;line-height:1;`;
       document.body.appendChild(div);
       try {
         for (const para of text.split('\n')) {
