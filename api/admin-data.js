@@ -99,6 +99,14 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'saveProfile': {
+        const data = await sbFetch('/doctor_profiles?on_conflict=user_id', {
+          method: 'POST', prefer: 'return=representation,resolution=merge-duplicates',
+          body: { ...payload.row, user_id: targetUserId },
+        });
+        return res.json({ data: Array.isArray(data) ? data[0] : data });
+      }
+
       default:
         return res.status(400).json({ error: 'Ação desconhecida' });
     }

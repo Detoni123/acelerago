@@ -1792,16 +1792,25 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
       };
 
       const handleSaveClient = async (data) => {
-        const { error } = await sb.from('doctor_profiles').upsert(profileToDB(data, session.user.id), { onConflict: 'user_id' });
-        if (!error) {
-          const updated = { ...data, user_id: session.user.id };
-          setProfile(updated);
+        const targetId = data.user_id || session.user.id;
+        const useAdmin = isAdmin && targetId !== session.user.id;
+        try {
+          if (useAdmin) {
+            await adminCall('saveProfile', targetId, { row: profileToDB(data, targetId) });
+          } else {
+            const { error } = await sb.from('doctor_profiles').upsert(profileToDB(data, targetId), { onConflict: 'user_id' });
+            if (error) throw new Error(error.message);
+          }
+          const updated = { ...data, user_id: targetId };
+          if (targetId === session.user.id) setProfile(updated);
           setAllProfiles(prev => {
-            const idx = prev.findIndex(p => p.user_id === session.user.id);
+            const idx = prev.findIndex(p => p.user_id === targetId);
             if (idx === -1) return [...prev, updated];
             return prev.map((p, i) => i === idx ? updated : p);
           });
           showToast('Perfil salvo!');
+        } catch (e) {
+          setError(`Erro ao salvar perfil: ${e.message}`);
         }
         setModal(null); setEditClient(null);
       };
@@ -2154,7 +2163,7 @@ Retorne exatamente:
                 </div>
               )}
               {!isMobile && !isAdmin && profile?.nome && <span style={{fontSize:13,color:'rgba(255,255,255,0.7)'}}>{profile.nome}</span>}
-              <button onClick={()=>{setEditClient(profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
+              <button onClick={()=>{setEditClient(client||profile);setModal('client');}} style={{...S.btnS,height:32,padding:'0 10px',fontSize:11,whiteSpace:'nowrap'}}>✏ Perfil</button>
               <button onClick={()=>{ applyTheme(!dark); setDark(!dark); }} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:7,height:32,width:32,color:'rgba(255,255,255,0.8)',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}} title={dark?'Modo claro':'Modo escuro'}>{dark ? '☀' : '☾'}</button>
               <button onClick={handleLogout} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:7,height:32,padding:'0 10px',color:'rgba(255,255,255,0.7)',cursor:'pointer',fontFamily:'Sora,sans-serif',fontSize:11}}>Sair</button>
             </div>
