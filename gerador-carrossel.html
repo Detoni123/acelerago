@@ -676,53 +676,92 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
           ctx.fillRect(0, 0, SW, SH);
         }
 
-        // slide count top-right
-        ctx.fillStyle = 'rgba(255,255,255,0.22)';
+        // slide count top-right (matches preview: 1 / {numero})
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
         ctx.font = `400 30px ${font}`;
         ctx.textAlign = 'right';
-        ctx.fillText('1 / deslize →', SW - PAD, 80);
+        ctx.textBaseline = 'top';
+        ctx.fillText(`1 / ${slide.numero || 1}`, SW - PAD, 60);
 
-        // destaque (small label above headline)
+        // setup capa text properties
         const caTA = slide.textAlign || 'left';
         const caTX = caTA === 'center' ? SW/2 : caTA === 'right' ? SW - PAD : PAD;
         const caLS = slide.letterSpacing != null ? `${slide.letterSpacing}px` : '0px';
         const caLH = slide.lineHeight ?? 1;
-        let y = (textPos === 'middle' ? SH / 2 - 220 : SH - 520) - (slide.textOffsetY || 0);
         ctx.letterSpacing = caLS;
+
+        // measure content heights to compute y_start dynamically (matches preview flex)
+        const dSize = 46;
+        const dLh = Math.round(dSize * 1);
+        const hSize = slide.titleFontSize || 78;
+        const hLh = Math.round(hSize * (caLH > 1 ? caLH : 1.18));
+        const subSize = slide.textFontSize || 36;
+        const subLh = Math.round(subSize * (caLH > 1 ? caLH : 1.5));
+        const headlineLines = slide.headline ? measureCSSLines(stripColors(slide.headline), SW - PAD*2, 700, hSize, font, caLS) : [];
+        const subtituloLines = slide.subtitulo ? measureCSSLines(slide.subtitulo, SW - PAD*2, 400, subSize, font, caLS) : [];
+        const gap = 24;
+        const destaqueBlock = slide.destaque ? dLh : 0;
+        const headlineBlock = headlineLines.length * hLh;
+        const subtituloBlock = subtituloLines.length * subLh;
+        const gaps = (slide.destaque ? gap : 0) + (slide.subtitulo ? gap : 0);
+        const totalContent = destaqueBlock + headlineBlock + subtituloBlock + gaps;
+        const padBot = 100; // matches preview's padding-bottom on text container
+        let y;
+        if (textPos === 'middle') {
+          y = (SH - totalContent) / 2 - (slide.textOffsetY || 0);
+        } else {
+          y = SH - padBot - totalContent - (slide.textOffsetY || 0);
+        }
+
+        // render destaque
+        ctx.textBaseline = 'top';
         if (slide.destaque) {
           ctx.fillStyle = cp;
-          ctx.font = `800 52px ${font}`;
+          ctx.font = `800 ${dSize}px ${font}`;
           ctx.textAlign = caTA;
           ctx.fillText(slide.destaque.toUpperCase(), caTX, y);
-          y += Math.round(52 * (caLH > 1 ? caLH : 1)) + 36;
+          y += dLh + gap;
         }
 
         // headline
-        const hSize = slide.titleFontSize || 78;
         const tc = slide.titleColor || '#ffffff';
         ctx.fillStyle = tc;
         ctx.font = `700 ${hSize}px ${font}`;
         ctx.textAlign = caTA;
-        y = drawCSSWrapped(ctx, stripColors(slide.headline || ''), caTX, y, SW - PAD*2, Math.round(hSize * (caLH > 1 ? caLH : 1.22)), 700, hSize, font, caLS);
-        y += 24;
+        for (const line of headlineLines) {
+          if (line) ctx.fillText(line, caTX, y);
+          y += hLh;
+        }
+        if (slide.subtitulo) y += gap;
 
         // subtitulo
         if (slide.subtitulo) {
-          const subSize = slide.textFontSize || 36;
           ctx.fillStyle = slide.textColor ? (slide.textColor + '99') : 'rgba(255,255,255,0.58)';
           ctx.font = `400 ${subSize}px ${font}`;
           ctx.textAlign = caTA;
-          y = drawCSSWrapped(ctx, slide.subtitulo, caTX, y, SW - PAD*2, Math.round(subSize * (caLH > 1 ? caLH : 1.5)), 400, subSize, font, caLS);
+          for (const line of subtituloLines) {
+            if (line) ctx.fillText(line, caTX, y);
+            y += subLh;
+          }
         }
         ctx.letterSpacing = '0px';
+        ctx.textBaseline = 'alphabetic';
 
-        // branding bar — sempre fixo no rodapé
-        const brandY = SH - 110;
+        // branding bar — sempre fixo no rodapé (preview: bottom:72)
+        const brandY = SH - 72 - 32; // bottom 72 minus row height 32
+        ctx.textBaseline = 'top';
         ctx.fillStyle = cp;
-        ctx.beginPath(); ctx.arc(PAD + 8, brandY + 8, 8, 0, Math.PI*2); ctx.fill();
-        ctx.font = `700 28px ${font}`;
+        ctx.beginPath(); ctx.arc(PAD + 8, brandY + 16, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = slide.accentColor || cp;
+        ctx.font = `700 26px ${font}`;
         ctx.textAlign = 'left';
-        ctx.fillText(client.instagram ? `@${client.instagram.replace(/^@/,'')}` : (client.nome || ''), PAD + 28, brandY + 16);
+        ctx.fillText(client.instagram ? `@${client.instagram.replace(/^@/,'')}` : (client.nome || ''), PAD + 28, brandY + 6);
+        // deslize → on right
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = `400 28px ${font}`;
+        ctx.textAlign = 'right';
+        ctx.fillText('deslize →', SW - PAD, brandY + 6);
+        ctx.textBaseline = 'alphabetic';
 
       } else if (slide.tipo === 'cta') {
         /* ── CTA: solid color (respects bgColor), no image ── */
