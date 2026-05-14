@@ -205,19 +205,21 @@
       }
     }
     function computeLogoPos(slide, SW, SH, logoNaturalW, logoNaturalH) {
-      const pad = 60;
-      const sizePct = Math.max(8, Math.min(60, slide.logoSize || 25));
+      const sizePct = Math.max(5, Math.min(80, slide.logoSize || 25));
       const w = SW * (sizePct / 100);
       const h = w * (logoNaturalH / logoNaturalW);
-      const pos = slide.logoPosition || 'bc';
-      const h1 = pos[0], h2 = pos[1];
-      let x, y;
-      if (h2 === 'l') x = pad;
-      else if (h2 === 'r') x = SW - pad - w;
-      else x = (SW - w) / 2;
-      if (h1 === 't') y = pad;
-      else if (h1 === 'b') y = SH - pad - h;
-      else y = (SH - h) / 2;
+      let lx, ly;
+      if (slide.logoX != null || slide.logoY != null) {
+        lx = slide.logoX ?? 50;
+        ly = slide.logoY ?? 90;
+      } else {
+        const pos = slide.logoPosition || 'bc';
+        const v = pos[0], h2 = pos[1];
+        lx = h2 === 'l' ? 8 : h2 === 'r' ? 92 : 50;
+        ly = v === 't' ? 8 : v === 'b' ? 92 : 50;
+      }
+      const x = SW * lx / 100 - w / 2;
+      const y = SH * ly / 100 - h / 2;
       return { x, y, w, h };
     }
 
@@ -769,11 +771,15 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         const vAlign = slide.contentVAlign || (layout === 'texto' ? 'center' : 'top');
         const textOffY = slide.textOffsetY || 0;
         const startYByVAlign = (vAlign === 'bottom' ? 700 : vAlign === 'center' ? 400 : 140) + textOffY;
+        const tOff = slide.titleOffsetY || 0;
+        const bOff = slide.bodyOffsetY || 0;
+        const iOff = slide.imageFrameOffsetY || 0;
+        const withShift = async (off, fn) => { ctx.save(); ctx.translate(0, off); const r = await fn(); ctx.restore(); return r; };
 
         if (layout === 'lateral') {
           let ty = startYByVAlign;
-          ty = await drawTitle(ty);
-          drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 62);
+          ty = await withShift(tOff, () => drawTitle(ty));
+          await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.78)', slide.textFontSize||40, 62));
           if (hasSlideImage(slide)) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -793,8 +799,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
         } else if (layout === 'texto') {
           let ty = startYByVAlign;
-          ty = await drawTitle(ty);
-          drawBody(ty, '#ffffff', slide.textFontSize||58, 88);
+          ty = await withShift(tOff, () => drawTitle(ty));
+          await withShift(bOff, async () => drawBody(ty, '#ffffff', slide.textFontSize||58, 88));
 
 
         } else {
@@ -839,18 +845,18 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
           let ty = startYByVAlign;
           if (imgPos === 'top') {
-            ty = await drawImg(ty);
-            ty = await drawTitle(ty);
-            drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68);
+            ty = await withShift(iOff, () => drawImg(ty));
+            ty = await withShift(tOff, () => drawTitle(ty));
+            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
           } else if (imgPos === 'bottom') {
-            ty = await drawTitle(ty);
-            ty = drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68);
-            await drawImg(ty + 20);
+            ty = await withShift(tOff, () => drawTitle(ty));
+            ty = await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
+            await withShift(iOff, () => drawImg(ty + 20));
           } else {
             // middle (padrão)
-            ty = await drawTitle(ty);
-            ty = await drawImg(ty);
-            drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68);
+            ty = await withShift(tOff, () => drawTitle(ty));
+            ty = await withShift(iOff, () => drawImg(ty));
+            await withShift(bOff, async () => drawBody(ty, 'rgba(255,255,255,0.72)', slide.textFontSize||44, 68));
           }
 
         }
@@ -1356,10 +1362,10 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,display:'flex',minHeight:0}}>
                         <div style={{flex:1,padding:`60px ${PAD}px 60px`,display:'flex',flexDirection:'column',gap:30,justifyContent,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
-                          {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
-                          {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:slide.textFontSize||40,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
+                          {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||60,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',transform:slide.titleOffsetY?`translateY(${slide.titleOffsetY}px)`:undefined}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
+                          {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.78)',fontSize:slide.textFontSize||40,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',transform:slide.bodyOffsetY?`translateY(${slide.bodyOffsetY}px)`:undefined}}>{slide.texto}</div>}
                         </div>
-                        {hasSlideImage(slide) && <div style={{width:'45%',flexShrink:0,overflow:'hidden'}}><img src={slideImgSrc(slide)} crossOrigin="anonymous" style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
+                        {hasSlideImage(slide) && <div style={{width:'45%',flexShrink:0,overflow:'hidden',transform:slide.imageFrameOffsetY?`translateY(${slide.imageFrameOffsetY}px)`:undefined}}><img src={slideImgSrc(slide)} crossOrigin="anonymous" style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',filter:buildImgFilter(slide)||undefined}} alt="" /></div>}
                       </div>
                     </div>
                   );
@@ -1369,8 +1375,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                     <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                       <div style={{height:8,background:cp,flexShrink:0}} />
                       <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
-                        {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
-                        {slide.texto && <div style={{color:slide.textColor||'#fff',fontSize:slide.textFontSize||58,fontWeight:500,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{slide.texto}</div>}
+                        {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',transform:slide.titleOffsetY?`translateY(${slide.titleOffsetY}px)`:undefined}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
+                        {slide.texto && <div style={{color:slide.textColor||'#fff',fontSize:slide.textFontSize||58,fontWeight:500,lineHeight:slide.lineHeight??1.5,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',transform:slide.bodyOffsetY?`translateY(${slide.bodyOffsetY}px)`:undefined}}>{slide.texto}</div>}
                       </div>
                     </div>
                   );
@@ -1381,16 +1387,16 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 const imgScale = slide.imageScale || 1;
                 const imgOffY = slide.imageOffsetY || 0;
                 const imgBlock = hasSlideImage(slide) ? (
-                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0,backgroundImage:`url(${slideImgSrc(slide)})`,backgroundSize:imgScale>1?`${imgScale*100}%`:'cover',backgroundPosition:`center ${50+imgOffY}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined}} />
+                  <div style={{width:'100%',height:380,borderRadius:20,overflow:'hidden',flexShrink:0,backgroundImage:`url(${slideImgSrc(slide)})`,backgroundSize:imgScale>1?`${imgScale*100}%`:'cover',backgroundPosition:`center ${50+imgOffY}%`,backgroundRepeat:'no-repeat',filter:buildImgFilter(slide)||undefined,transform:slide.imageFrameOffsetY?`translateY(${slide.imageFrameOffsetY}px)`:undefined}} />
                 ) : null;
                 return (
                   <div style={{width:SW,height:SH,background:slide.bgColor||cs,display:'flex',flexDirection:'column'}}>
                     <div style={{height:8,background:cp,flexShrink:0}} />
                     <div style={{flex:1,padding:`70px ${PAD}px 70px`,display:'flex',flexDirection:'column',gap:36,justifyContent:inlineJustify,transform:slide.textOffsetY?`translateY(${slide.textOffsetY}px)`:undefined}}>
                       {imgPos==='top' && imgBlock}
-                      {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left'}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
+                      {slide.titulo && <div style={{color:slide.titleColor||slide.textColor||'#fff',fontSize:slide.titleFontSize||72,fontWeight:700,lineHeight:slide.lineHeight??1.18,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',transform:slide.titleOffsetY?`translateY(${slide.titleOffsetY}px)`:undefined}}>{renderColored(slide.titulo, slide.titleColor||slide.textColor||'#fff', slide.accentColor||cp)}</div>}
                       {imgPos==='middle' && imgBlock}
-                      {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:slide.textFontSize||44,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',flex:imgPos==='bottom'?1:undefined}}>{slide.texto}</div>}
+                      {slide.texto && <div style={{color:slide.textColor?`${slide.textColor}cc`:'rgba(255,255,255,0.72)',fontSize:slide.textFontSize||44,lineHeight:slide.lineHeight??1.65,letterSpacing:slide.letterSpacing!=null?`${slide.letterSpacing}px`:undefined,whiteSpace:'pre-wrap',textAlign:slide.textAlign||'left',flex:imgPos==='bottom'?1:undefined,transform:slide.bodyOffsetY?`translateY(${slide.bodyOffsetY}px)`:undefined}}>{slide.texto}</div>}
                       {imgPos==='bottom' && imgBlock}
                     </div>
                   </div>
@@ -1428,22 +1434,21 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
                 );
               })()}
 
-              {/* ── LOGO OVERLAY ── */}
+              {/* ── LOGO OVERLAY (camada flutuante livre) ── */}
               {client?.logoUrl && slide.logoEnabled && (() => {
-                const sizePct = Math.max(8, Math.min(60, slide.logoSize || 25));
+                const sizePct = Math.max(5, Math.min(80, slide.logoSize || 25));
                 const opacity = (slide.logoOpacity ?? 100) / 100;
-                const pos = slide.logoPosition || 'bc';
-                const v = pos[0], h = pos[1];
-                const padPct = (60 / SW) * 100;
-                const style = { position:'absolute', width:`${sizePct}%`, height:'auto', opacity, pointerEvents:'none' };
-                const tr = [];
-                if (h === 'l') style.left = `${padPct}%`;
-                else if (h === 'r') style.right = `${padPct}%`;
-                else { style.left = '50%'; tr.push('translateX(-50%)'); }
-                if (v === 't') style.top = `${padPct}%`;
-                else if (v === 'b') style.bottom = `${padPct}%`;
-                else { style.top = '50%'; tr.push('translateY(-50%)'); }
-                if (tr.length) style.transform = tr.join(' ');
+                let lx, ly;
+                if (slide.logoX != null || slide.logoY != null) {
+                  lx = slide.logoX ?? 50;
+                  ly = slide.logoY ?? 90;
+                } else {
+                  const pos = slide.logoPosition || 'bc';
+                  const v = pos[0], hh = pos[1];
+                  lx = hh === 'l' ? 8 : hh === 'r' ? 92 : 50;
+                  ly = v === 't' ? 8 : v === 'b' ? 92 : 50;
+                }
+                const style = { position:'absolute', width:`${sizePct}%`, height:'auto', opacity, pointerEvents:'none', left:`${lx}%`, top:`${ly}%`, transform:'translate(-50%, -50%)', zIndex:10 };
                 return <img src={client.logoUrl} crossOrigin="anonymous" style={style} alt="logo" />;
               })()}
 
@@ -1512,33 +1517,57 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               </div>
             </div>
           )}
-          {/* zoom + offset da imagem + offset do texto — só para conteúdo */}
+          {/* zoom + offset da imagem + offsets independentes — só para conteúdo */}
           {slide.tipo === 'conteudo' && hasSlideImage(slide) && (
             <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Zoom</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Zoom foto</span>
                 <input type="range" min={1} max={2.5} step={0.05} value={slide.imageScale||1} onChange={e=>onEdit({...slide,imageScale:parseFloat(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{Math.round((slide.imageScale||1)*100)}%</span>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Img ↕</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Foto interna ↕</span>
                 <input type="range" min={-50} max={50} step={1} value={slide.imageOffsetY||0} onChange={e=>onEdit({...slide,imageOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.imageOffsetY||0)>0?'+':''}{slide.imageOffsetY||0}</span>
               </div>
-              <div style={{height:1,background:'var(--l-border)',margin:'0'}} />
+              <div style={{height:1,background:'var(--l-border)',margin:'2px 0'}} />
+              <div style={{fontSize:10,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:600,opacity:0.7}}>Posição dos elementos</div>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
-                <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Título ↕</span>
+                <input type="range" min={-400} max={400} step={5} value={slide.titleOffsetY||0} onChange={e=>onEdit({...slide,titleOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.titleOffsetY||0)>0?'+':''}{slide.titleOffsetY||0}</span>
               </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Foto ↕</span>
+                <input type="range" min={-400} max={400} step={5} value={slide.imageFrameOffsetY||0} onChange={e=>onEdit({...slide,imageFrameOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.imageFrameOffsetY||0)>0?'+':''}{slide.imageFrameOffsetY||0}</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Texto ↕</span>
+                <input type="range" min={-400} max={400} step={5} value={slide.bodyOffsetY||0} onChange={e=>onEdit({...slide,bodyOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.bodyOffsetY||0)>0?'+':''}{slide.bodyOffsetY||0}</span>
+              </div>
+              {!!slide.textOffsetY && (
+                <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                  <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Grupo ↕</span>
+                  <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                  <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                </div>
+              )}
             </div>
           )}
           {slide.tipo === 'conteudo' && !hasSlideImage(slide) && (
             <div style={{display:'flex',flexDirection:'column',gap:8,width:PW,background:'var(--l-surf2)',border:'1px solid var(--l-border)',borderRadius:6,padding:'10px 10px'}}>
+              <div style={{fontSize:10,color:'var(--l-label)',textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:600,opacity:0.7}}>Posição dos elementos</div>
               <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                <span style={{fontSize:11,color:'var(--l-label)',width:52,flexShrink:0}}>Texto ↕</span>
-                <input type="range" min={-400} max={400} step={10} value={slide.textOffsetY||0} onChange={e=>onEdit({...slide,textOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
-                <span style={{fontSize:11,color:'var(--l-label)',width:32,textAlign:'right'}}>{(slide.textOffsetY||0)>0?'+':''}{slide.textOffsetY||0}</span>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Título ↕</span>
+                <input type="range" min={-400} max={400} step={5} value={slide.titleOffsetY||0} onChange={e=>onEdit({...slide,titleOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.titleOffsetY||0)>0?'+':''}{slide.titleOffsetY||0}</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                <span style={{fontSize:11,color:'var(--l-label)',width:62,flexShrink:0}}>Texto ↕</span>
+                <input type="range" min={-400} max={400} step={5} value={slide.bodyOffsetY||0} onChange={e=>onEdit({...slide,bodyOffsetY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{(slide.bodyOffsetY||0)>0?'+':''}{slide.bodyOffsetY||0}</span>
               </div>
             </div>
           )}
@@ -1563,35 +1592,32 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
               {logoOpen && (
                 <div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 10px 12px'}}>
                   <label style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:'var(--l-t2)',cursor:'pointer',minHeight:32}}>
-                    <input type="checkbox" checked={!!slide.logoEnabled} onChange={e=>onEdit({...slide,logoEnabled:e.target.checked,logoPosition:slide.logoPosition||'bc',logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100},idx,true)} style={{accentColor:ORANGE,width:16,height:16}} />
+                    <input type="checkbox" checked={!!slide.logoEnabled} onChange={e=>onEdit({...slide,logoEnabled:e.target.checked,logoX:slide.logoX??50,logoY:slide.logoY??90,logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100},idx,true)} style={{accentColor:ORANGE,width:16,height:16}} />
                     Mostrar logo neste slide
                   </label>
                   {slide.logoEnabled && <>
-                    <div>
-                      <div style={{fontSize:11,color:'var(--l-label)',marginBottom:6,fontWeight:500}}>Posição</div>
-                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,maxWidth:160}}>
-                        {[['tl','↖'],['tc','↑'],['tr','↗'],['ml','←'],['mc','●'],['mr','→'],['bl','↙'],['bc','↓'],['br','↘']].map(([code,arrow])=>{
-                          const active = (slide.logoPosition||'bc')===code;
-                          return (
-                            <button key={code} onClick={()=>onEdit({...slide,logoPosition:code},idx,true)} style={{padding:'6px 0',fontSize:13,fontWeight:600,borderRadius:4,border:`1px solid ${active?ORANGE:'var(--l-border)'}`,background:active?'rgba(244,117,48,0.12)':'transparent',color:active?ORANGE:'var(--l-label)',cursor:'pointer',fontFamily:'Sora,sans-serif',minHeight:32}}>
-                              {arrow}
-                            </button>
-                          );
-                        })}
-                      </div>
+                    <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:64,flexShrink:0}}>Posição X</span>
+                      <input type="range" min={0} max={100} step={1} value={slide.logoX??50} onChange={e=>onEdit({...slide,logoX:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoX??50}%</span>
                     </div>
                     <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                      <span style={{fontSize:11,color:'var(--l-label)',width:60,flexShrink:0}}>Tamanho</span>
-                      <input type="range" min={8} max={60} step={1} value={slide.logoSize||25} onChange={e=>onEdit({...slide,logoSize:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:64,flexShrink:0}}>Posição Y</span>
+                      <input type="range" min={0} max={100} step={1} value={slide.logoY??90} onChange={e=>onEdit({...slide,logoY:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
+                      <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoY??90}%</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:64,flexShrink:0}}>Tamanho</span>
+                      <input type="range" min={5} max={80} step={1} value={slide.logoSize||25} onChange={e=>onEdit({...slide,logoSize:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
                       <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoSize||25}%</span>
                     </div>
                     <div style={{display:'flex',alignItems:'center',gap:8,minHeight:36}}>
-                      <span style={{fontSize:11,color:'var(--l-label)',width:60,flexShrink:0}}>Opacidade</span>
+                      <span style={{fontSize:11,color:'var(--l-label)',width:64,flexShrink:0}}>Opacidade</span>
                       <input type="range" min={0} max={100} step={5} value={slide.logoOpacity??100} onChange={e=>onEdit({...slide,logoOpacity:parseInt(e.target.value)},idx,true)} style={{flex:1,accentColor:ORANGE}} />
                       <span style={{fontSize:11,color:'var(--l-label)',width:36,textAlign:'right'}}>{slide.logoOpacity??100}%</span>
                     </div>
                   </>}
-                  <button onClick={()=>onApplyLogoAll && onApplyLogoAll({logoEnabled:!!slide.logoEnabled,logoPosition:slide.logoPosition||'bc',logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100})} style={{padding:'8px',fontSize:11,fontWeight:600,borderRadius:5,border:'1px dashed var(--l-border)',background:'transparent',color:'var(--l-t2)',cursor:'pointer',fontFamily:'Sora,sans-serif'}}>
+                  <button onClick={()=>onApplyLogoAll && onApplyLogoAll({logoEnabled:!!slide.logoEnabled,logoX:slide.logoX??50,logoY:slide.logoY??90,logoSize:slide.logoSize||25,logoOpacity:slide.logoOpacity??100})} style={{padding:'8px',fontSize:11,fontWeight:600,borderRadius:5,border:'1px dashed var(--l-border)',background:'transparent',color:'var(--l-t2)',cursor:'pointer',fontFamily:'Sora,sans-serif'}}>
                     ⎘ Aplicar este logo a todos os slides
                   </button>
                 </div>
@@ -2395,7 +2421,7 @@ Retorne exatamente:
                         onUploadImage={(ix,b64)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:b64,imageUrl:null}:s))}
                         onClearImage={(ix)=>setSlides(prev=>prev.map((s,j)=>j===ix?{...s,imageData:null,imageUrl:null}:s))}
                         onDelete={(ix)=>{ if(window.confirm(`Deletar slide ${ix+1}?`)) setSlides(prev=>prev.filter((_,j)=>j!==ix)); }}
-                        onApplyLogoAll={(cfg)=>setSlides(prev=>prev.map(s=>({...s,logoEnabled:cfg.logoEnabled,logoPosition:cfg.logoPosition,logoSize:cfg.logoSize,logoOpacity:cfg.logoOpacity})))}
+                        onApplyLogoAll={(cfg)=>setSlides(prev=>prev.map(s=>({...s,logoEnabled:cfg.logoEnabled,logoX:cfg.logoX,logoY:cfg.logoY,logoSize:cfg.logoSize,logoOpacity:cfg.logoOpacity})))}
                       />
                     ))}
                   </div>
