@@ -477,10 +477,8 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
     }
 
     /* ── CANVAS EXPORT ── */
-    let _renderMaxY = null;
     function wrapText(ctx, text, x, y, maxW, lh) {
       if (!text) return y;
-      const limit = _renderMaxY != null ? _renderMaxY : SH;
       let cy = y;
       for (const para of text.split('\n')) {
         if (!para.trim()) { cy += lh; continue; }
@@ -489,12 +487,12 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         for (let i = 0; i < words.length; i++) {
           const test = line + words[i] + ' ';
           if (ctx.measureText(test).width > maxW && i > 0) {
-            if (cy < limit) ctx.fillText(line.trimEnd(), x, cy);
+            if (cy < SH) ctx.fillText(line.trimEnd(), x, cy);
             line = words[i] + ' ';
             cy += lh;
           } else { line = test; }
         }
-        if (line.trim() && cy < limit) ctx.fillText(line.trimEnd(), x, cy);
+        if (line.trim() && cy < SH) ctx.fillText(line.trimEnd(), x, cy);
         cy += lh;
       }
       return cy;
@@ -558,7 +556,6 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
 
       let preloadedLogo = null;
       let logoBounds = null;
-      _renderMaxY = null;
       if (client?.logoUrl && slide.logoEnabled) {
         preloadedLogo = await new Promise(r => {
           const img = new Image();
@@ -569,8 +566,6 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         });
         if (preloadedLogo) {
           logoBounds = computeLogoPos(slide, SW, SH, preloadedLogo.naturalWidth, preloadedLogo.naturalHeight);
-          const pos = slide.logoPosition || 'bc';
-          if (pos[0] === 'b') _renderMaxY = logoBounds.y - 24;
         }
       }
 
@@ -868,7 +863,6 @@ Slide 10 (CTA): palavra-gatilho em caixa alta + lead magnet CONCRETO relacionado
         ctx.drawImage(preloadedLogo, logoBounds.x, logoBounds.y, logoBounds.w, logoBounds.h);
         ctx.restore();
       }
-      _renderMaxY = null;
 
       return canvas;
     }
