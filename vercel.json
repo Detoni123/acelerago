@@ -1,4 +1,8 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/gerador-carrossel", "destination": "https://gerador.acelerago.com.br/", "permanent": true },
+    { "source": "/gerador-carrossel.html", "destination": "https://gerador.acelerago.com.br/", "permanent": true }
+  ]
 }

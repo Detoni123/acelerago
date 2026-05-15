@@ -10,6 +10,10 @@ Disallow: /wp-admin/
 Disallow: /cgi-bin/
 Disallow: /*.json$
 Disallow: /api/
+Disallow: /gerador-carrossel
+Disallow: /gerador-carrossel.html
+Disallow: /sw.js
+Disallow: /manifest.json
 
 # Permitir rastreamento de recursos estáticos (CSS, JS, imagens)
 Allow: /styles.css
