@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico Gratuito — AceleraGO</title>
+  <meta name="description" content="Descubra como sua clínica pode captar mais pacientes com tráfego pago especializado em saúde da mulher." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/logo-favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #F47530;
+      --orange-dark: #d9621e;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Barra de progresso */
+    #progressBar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: var(--orange);
+      transition: width 0.4s ease;
+      z-index: 100;
+    }
+
+    /* Logo */
+    .logo-bar {
+      padding: 20px 28px;
+    }
+    .logo-bar img {
+      height: 30px;
+    }
+
+    /* Step base */
+    .step {
+      display: none;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      min-height: calc(100vh - 70px);
+      flex-direction: column;
+      justify-content: center;
+    }
+    .step.active {
+      display: flex;
+      animation: fadeIn 0.28s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Capa */
+    .cover-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 20px;
+    }
+    .cover-title {
+      font-size: clamp(26px, 5.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 28px;
+    }
+    .cover-bullets {
+      list-style: none;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cover-bullets li {
+      font-size: 15px;
+      font-weight: 500;
+      color: #374151;
+    }
+    .cover-note {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      line-height: 1.6;
+      max-width: 520px;
+    }
+
+    /* Pergunta */
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .step-question {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .step-hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    /* Input */
+    .input-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .input-at {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .field {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 15px 16px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: #fafafa;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .field.has-at { padding-left: 30px; }
+    .field:focus {
+      border-color: var(--orange);
+      background: #fff;
+    }
+    .field-error {
+      font-size: 13px;
+      color: #ef4444;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* Opções múltipla escolha */
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+      margin-bottom: 24px;
+    }
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      background: #fafafa;
+      transition: border-color 0.18s, background 0.18s;
+      user-select: none;
+    }
+    .choice:hover { border-color: #d1d5db; background: #f3f4f6; }
+    .choice.sel { border-color: var(--orange); background: #fff8f5; }
+    .badge {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      color: #6b7280;
+      flex-shrink: 0;
+      transition: background 0.18s, color 0.18s;
+    }
+    .choice.sel .badge { background: var(--orange); color: #fff; }
+    .choice-label { font-size: 15px; font-weight: 500; }
+
+    /* Botões */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 15px 28px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .btn:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(244,117,48,.25); }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Final */
+    .final-wrap {
+      text-align: center;
+      align-items: center;
+    }
+    .final-pct {
+      font-size: clamp(44px, 11vw, 80px);
+      font-weight: 900;
+      color: var(--orange);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .final-sub {
+      font-size: 17px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 36px;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (min-width: 640px) {
+      .step { padding: 48px 40px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progressBar" style="width:2%"></div>
+
+<div class="logo-bar">
+  <img src="/logonova.png" alt="AceleraGO" />
+</div>
+
+<!-- ── CAPA ── -->
+<div class="step active" id="s0">
+  <div class="cover-tag">AceleraGO · Marketing para Saúde da Mulher</div>
+  <h1 class="cover-title">Clínica de saúde da mulher captando <strong>mais pacientes</strong> com tráfego pago</h1>
+  <ul class="cover-bullets">
+    <li>📈 <strong>Mais consultas</strong> todos os dias</li>
+    <li>🎯 Apareça para quem <strong>já quer ser atendida</strong></li>
+    <li>🏆 Sua clínica no <strong>Topo do Google</strong></li>
+    <li>✅ <strong>Método validado</strong> em +30 clínicas</li>
+  </ul>
+  <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de R$ 1.500 por mês em gestão de marketing.</p>
+  <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
+</div>
+
+<!-- ── NOME ── -->
+<div class="step" id="s1">
+  <div class="step-label">1 de 6</div>
+  <h2 class="step-question">Qual o seu nome completo?</h2>
+  <div class="input-wrap">
+    <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula Silva" autocomplete="name" />
+  </div>
+  <span class="field-error" id="eNome">Por favor, informe seu nome.</span>
+  <button class="btn" onclick="nextText('fNome','eNome',2)">Avançar →</button>
+</div>
+
+<!-- ── WHATSAPP ── -->
+<div class="step" id="s2">
+  <div class="step-label">2 de 6</div>
+  <h2 class="step-question">Qual o seu WhatsApp?</h2>
+  <div class="input-wrap">
+    <input class="field" id="fTelefone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+  </div>
+  <span class="field-error" id="eTelefone">Por favor, informe seu WhatsApp.</span>
+  <button class="btn" onclick="nextText('fTelefone','eTelefone',3)">Avançar →</button>
+</div>
+
+<!-- ── INSTAGRAM ── -->
+<div class="step" id="s3">
+  <div class="step-label">3 de 6</div>
+  <h2 class="step-question">Qual o @ do seu Instagram?</h2>
+  <div class="input-wrap">
+    <span class="input-at">@</span>
+    <input class="field has-at" id="fInstagram" type="text" placeholder="seuinstagram" autocomplete="off" />
+  </div>
+  <span class="field-error" id="eInstagram">Por favor, informe seu Instagram.</span>
+  <button class="btn" onclick="nextText('fInstagram','eInstagram',4)">Avançar →</button>
+</div>
+
+<!-- ── SITE ── -->
+<div class="step" id="s4">
+  <div class="step-label">4 de 6</div>
+  <h2 class="step-question">Qual o site da sua clínica?</h2>
+  <p class="step-hint">Se não tiver site, pode deixar em branco.</p>
+  <div class="input-wrap">
+    <input class="field" id="fSite" type="url" placeholder="www.suaclinica.com.br" autocomplete="url" />
+  </div>
+  <button class="btn" onclick="go(5)">Avançar →</button>
+</div>
+
+<!-- ── FATURAMENTO ── -->
+<div class="step" id="s5">
+  <div class="step-label">5 de 6</div>
+  <h2 class="step-question">Qual o faturamento médio mensal da sua clínica?</h2>
+  <div class="choices" id="cFaturamento">
+    <div class="choice" onclick="pick('faturamento',this,'Até R$ 30.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 30.000</span></div>
+    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 30.000 e R$ 50.000','btnFat')"><span class="badge">B</span><span class="choice-label">Entre R$ 30.000 e R$ 50.000</span></div>
+    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 50.000 e R$ 100.000','btnFat')"><span class="badge">C</span><span class="choice-label">Entre R$ 50.000 e R$ 100.000</span></div>
+    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 100.000 e R$ 150.000','btnFat')"><span class="badge">D</span><span class="choice-label">Entre R$ 100.000 e R$ 150.000</span></div>
+    <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 150.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 150.000</span></div>
+  </div>
+  <button class="btn" id="btnFat" disabled onclick="go(6)">Avançar</button>
+</div>
+
+<!-- ── INVESTIMENTO ── -->
+<div class="step" id="s6">
+  <div class="step-label">6 de 6</div>
+  <h2 class="step-question"><strong>Nossa gestão se inicia em R$ 1.500 por mês.</strong> Está disposta a investir esse valor para atrair mais pacientes qualificadas?</h2>
+  <div class="choices" id="cInvestimento">
+    <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso e estou disposta!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso e estou disposta!</span></div>
+    <div class="choice" onclick="pick('investimento',this,'Não estou disposta a investir no meu negócio.','btnInv')"><span class="badge">B</span><span class="choice-label">Não estou disposta a investir no meu negócio.</span></div>
+  </div>
+  <button class="btn" id="btnInv" disabled onclick="submit()">
+    <span id="btnInvLabel">✓ Enviar respostas</span>
+    <span class="spinner" id="spinnerInv"></span>
+  </button>
+</div>
+
+<!-- ── FINAL ── -->
+<div class="step final-wrap" id="s7">
+  <div class="final-pct">FORMULÁRIO<br>98%<br>PREENCHIDO!</div>
+  <p class="final-sub">Agende agora um bate-papo com Ronaldo Detoni 👇</p>
+  <a class="btn" href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go" target="_blank" rel="noopener">✓ AGENDAR DIAGNÓSTICO GRATUITO</a>
+</div>
+
+<script>
+  const data = { nome:'', telefone:'', instagram:'', site:'', faturamento:'', investimento:'' }
+  let current = 0
+  let partialSent = false
+
+  function go(n) {
+    if (n === 5) data.site = document.getElementById('fSite').value.trim()
+    document.getElementById('s' + current).classList.remove('active')
+    document.getElementById('s' + n).classList.add('active')
+    current = n
+    const pct = n === 0 ? 2 : n >= 7 ? 100 : Math.round((n / 6) * 96) + 2
+    document.getElementById('progressBar').style.width = pct + '%'
+    const inp = document.querySelector('#s' + n + ' .field')
+    if (inp) setTimeout(() => inp.focus(), 300)
+  }
+
+  function sendPartial() {
+    if (partialSent || !data.telefone) return
+    partialSent = true
+    fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, parcial: true })
+    }).catch(() => {})
+  }
+
+  function nextText(fieldId, errId, next) {
+    const val = document.getElementById(fieldId).value.trim()
+    if (!val) { document.getElementById(errId).style.display = 'block'; return }
+    document.getElementById(errId).style.display = 'none'
+    const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
+    if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
+    // Dispara alerta parcial assim que o telefone for confirmado
+    if (fieldId === 'fTelefone') sendPartial()
+    go(next)
+  }
+
+  function pick(key, el, val, btnId) {
+    el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('sel'))
+    el.classList.add('sel')
+    data[key] = val
+    document.getElementById(btnId).disabled = false
+  }
+
+  async function submit() {
+    document.getElementById('btnInvLabel').style.display = 'none'
+    document.getElementById('spinnerInv').style.display = 'block'
+    document.getElementById('btnInv').disabled = true
+    try {
+      await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, parcial: false })
+      })
+    } catch(_) {}
+    go(7)
+  }
+
+  // Enter key nos inputs de texto
+  document.querySelectorAll('.field').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return
+      const s = inp.closest('.step')
+      const id = s.id.replace('s','')
+      if (id === '4') go(5)
+      else {
+        const btn = s.querySelector('.btn')
+        if (btn && !btn.disabled) btn.click()
+      }
+    })
+  })
+</script>
+</body>
+</html>
