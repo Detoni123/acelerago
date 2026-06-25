@@ -517,7 +517,7 @@
 <script>
   const data = { nome:'', telefone:'', instagram:'', site:'', faturamento:'', investimento:'' }
   let current = 0
-  let partialSent = false
+  let enviado = false
 
   function go(n) {
     if (n === 5) data.site = document.getElementById('fSite').value.trim()
@@ -531,15 +531,25 @@
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  function sendPartial() {
-    if (partialSent || !data.telefone) return
-    partialSent = true
-    fetch('/api/lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, parcial: true })
-    }).catch(() => {})
+  function sendBeaconLead(tipo) {
+    const payload = JSON.stringify({ ...data, tipo })
+    const blob = new Blob([payload], { type: 'application/json' })
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon('/api/lead', blob)
+    } else {
+      fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: payload, keepalive: true }).catch(()=>{})
+    }
   }
+
+  // Abandono: dispara quando o usuário fecha/sai da aba sem concluir
+  function onAbandon() {
+    if (enviado) return
+    if (!data.nome && !data.telefone) return
+    enviado = true
+    sendBeaconLead('abandono')
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') onAbandon() })
+  window.addEventListener('pagehide', onAbandon)
 
   function nextText(fieldId, errId, next) {
     const val = document.getElementById(fieldId).value.trim()
@@ -547,13 +557,17 @@
     document.getElementById(errId).style.display = 'none'
     const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
-    if (fieldId === 'fTelefone') sendPartial()
     go(next)
   }
 
   function nextFaturamento() {
-    if (data.faturamento === 'Até R$ 30.000') go(8)
-    else go(6)
+    if (data.faturamento === 'Até R$ 30.000') {
+      enviado = true
+      fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado' }) }).catch(()=>{})
+      go(8)
+    } else {
+      go(6)
+    }
   }
 
   function pick(key, el, val, btnId) {
@@ -567,12 +581,9 @@
     document.getElementById('btnInvLabel').style.display = 'none'
     document.getElementById('spinnerInv').style.display = 'block'
     document.getElementById('btnInv').disabled = true
+    enviado = true
     try {
-      await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, parcial: false })
-      })
+      await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo' }) })
     } catch(_) {}
     go(7)
   }
