@@ -556,7 +556,6 @@
   function initCalendly() {
     const url = 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go'
       + '?name=' + encodeURIComponent(data.nome)
-      + '&a1='   + encodeURIComponent(data.telefone)
     const widget = document.getElementById('calendlyWidget')
     widget.setAttribute('data-url', url)
     if (window.Calendly) {
