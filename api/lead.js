@@ -134,7 +134,7 @@ export default async function handler(req, res) {
             especialidade: 'Médica / Saúde da Mulher',
             cidade:        'Não informado',
             origem_lead:   'Google',
-            etapa:         tipo === 'desqualificado' ? 'perdido' : 'prospeccao',
+            etapa:         'prospeccao',
             observacoes,
           }),
         })
