@@ -6,121 +6,188 @@
   <title>Diagnóstico Gratuito — AceleraGO</title>
   <meta name="description" content="Descubra como sua clínica pode captar mais pacientes com tráfego pago especializado em saúde da mulher." />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="/logo-favicon.png" />
+  <link rel="icon" type="image/png" href="/logo-favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --orange: #F47530;
-      --orange-dark: #d9621e;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
+      --navy:         #0d1928;
+      --navy-mid:     #152640;
+      --teal:         #00b5a9;
+      --orange:       #f47530;
+      --orange-light: #f7965a;
+      --orange-dark:  #d45f1a;
+      --cream:        #f8f7f5;
+      --cream-dark:   #eeecea;
+      --white:        #ffffff;
+      --text-dark:    #0d1928;
+      --text-mid:     #2d3d4e;
+      --text-muted:   #6b7a8d;
+      --border:       #e2e8f0;
+      --shadow-sm:    0 2px 8px rgba(13,25,40,.06);
+      --shadow-md:    0 8px 30px rgba(13,25,40,.10);
+      --radius:       12px;
+      --transition:   .3s cubic-bezier(.4,0,.2,1);
     }
+
+    html { font-size: 16px; }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #fff;
-      color: var(--text);
+      background: var(--cream);
+      color: var(--text-dark);
       min-height: 100vh;
     }
 
-    /* Barra de progresso */
+    /* ── Barra de progresso ── */
     #progressBar {
       position: fixed;
       top: 0; left: 0;
       height: 3px;
-      background: var(--orange);
+      background: var(--teal);
       transition: width 0.4s ease;
+      z-index: 200;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--navy);
+      padding: 0 28px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 20px rgba(0,0,0,.25);
+      position: sticky;
+      top: 0;
       z-index: 100;
     }
-
-    /* Logo */
-    .logo-bar {
-      padding: 20px 28px;
-    }
-    .logo-bar img {
-      height: 30px;
+    .site-header img {
+      height: 36px;
+      width: auto;
     }
 
-    /* Step base */
+    /* ── Layout ── */
+    .page {
+      min-height: calc(100vh - 68px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 60px;
+    }
+
+    /* ── Steps ── */
     .step {
       display: none;
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 32px 28px 80px;
-      min-height: calc(100vh - 70px);
-      flex-direction: column;
-      justify-content: center;
+      width: 100%;
+      max-width: 640px;
     }
     .step.active {
-      display: flex;
-      animation: fadeIn 0.28s ease;
+      display: block;
+      animation: slideIn .28s ease;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(24px); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
       to   { opacity: 1; transform: translateX(0); }
     }
 
-    /* Capa */
-    .cover-tag {
+    /* ── Card ── */
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ── Label de progresso ── */
+    .step-progress {
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-progress::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: var(--cream-dark);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Capa ── */
+    .cover-tag {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .2em;
       text-transform: uppercase;
       color: var(--orange);
       margin-bottom: 20px;
     }
     .cover-title {
-      font-size: clamp(26px, 5.5vw, 42px);
+      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
       font-weight: 800;
       line-height: 1.2;
+      letter-spacing: -.02em;
+      color: var(--text-dark);
       margin-bottom: 28px;
+    }
+    .cover-title em {
+      font-style: normal;
+      color: var(--orange);
     }
     .cover-bullets {
       list-style: none;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
     .cover-bullets li {
-      font-size: 15px;
+      font-size: .95rem;
       font-weight: 500;
-      color: #374151;
+      color: var(--text-mid);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
     }
     .cover-note {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 36px;
-      line-height: 1.6;
-      max-width: 520px;
+      font-size: .85rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.65;
+      padding: 14px 16px;
+      background: var(--cream);
+      border-left: 3px solid var(--teal);
+      border-radius: 0 8px 8px 0;
     }
 
-    /* Pergunta */
-    .step-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
+    /* ── Pergunta ── */
     .step-question {
-      font-size: clamp(20px, 4vw, 28px);
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
       font-weight: 700;
       line-height: 1.3;
+      letter-spacing: -.02em;
+      color: var(--text-dark);
       margin-bottom: 8px;
     }
     .step-hint {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 28px;
+      font-size: .875rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
     }
 
-    /* Input */
+    /* ── Input ── */
     .input-wrap {
       position: relative;
       margin-bottom: 8px;
@@ -130,40 +197,41 @@
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 16px;
+      font-size: 1rem;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--text-muted);
       pointer-events: none;
     }
     .field {
       width: 100%;
       border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 15px 16px;
-      font-size: 16px;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 1rem;
       font-family: 'Inter', sans-serif;
-      color: var(--text);
-      background: #fafafa;
+      color: var(--text-dark);
+      background: var(--cream);
       outline: none;
-      transition: border-color 0.2s, background 0.2s;
+      transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
     }
     .field.has-at { padding-left: 30px; }
     .field:focus {
-      border-color: var(--orange);
-      background: #fff;
+      border-color: var(--teal);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(0,181,169,.1);
     }
     .field-error {
-      font-size: 13px;
-      color: #ef4444;
-      margin-bottom: 16px;
+      font-size: .8rem;
+      color: #e53e3e;
+      margin-bottom: 14px;
       display: none;
     }
 
-    /* Opções múltipla escolha */
+    /* ── Múltipla escolha ── */
     .choices {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       margin-top: 20px;
       margin-bottom: 24px;
     }
@@ -171,83 +239,125 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 14px 16px;
+      padding: 13px 16px;
       border: 2px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius);
       cursor: pointer;
-      background: #fafafa;
-      transition: border-color 0.18s, background 0.18s;
+      background: var(--cream);
+      transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
       user-select: none;
     }
-    .choice:hover { border-color: #d1d5db; background: #f3f4f6; }
-    .choice.sel { border-color: var(--orange); background: #fff8f5; }
+    .choice:hover {
+      border-color: var(--teal);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .choice.sel {
+      border-color: var(--orange);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(244,117,48,.12);
+    }
     .badge {
       width: 28px; height: 28px;
       border-radius: 50%;
-      background: #e5e7eb;
+      background: var(--cream-dark);
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700;
-      color: #6b7280;
+      font-size: .7rem; font-weight: 700;
+      color: var(--text-muted);
       flex-shrink: 0;
-      transition: background 0.18s, color 0.18s;
+      transition: background var(--transition), color var(--transition);
     }
-    .choice.sel .badge { background: var(--orange); color: #fff; }
-    .choice-label { font-size: 15px; font-weight: 500; }
+    .choice.sel .badge {
+      background: var(--orange);
+      color: var(--white);
+    }
+    .choice-label {
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--text-mid);
+    }
+    .choice.sel .choice-label { color: var(--text-dark); font-weight: 600; }
 
-    /* Botões */
+    /* ── Botão ── */
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 15px 28px;
-      font-size: 13px;
+      color: var(--white);
+      border: 2px solid var(--orange);
+      border-radius: var(--radius);
+      padding: .9rem 2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: .88rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: .06em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition), box-shadow var(--transition);
       text-decoration: none;
       margin-top: 8px;
     }
-    .btn:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(244,117,48,.25); }
-    .btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn:hover {
+      background: var(--orange-light);
+      border-color: var(--orange-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(244,117,48,.35);
+    }
+    .btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
 
-    /* Final */
-    .final-wrap {
+    /* ── Tela final ── */
+    .final-card {
       text-align: center;
-      align-items: center;
+      padding: 56px 36px;
+    }
+    .final-label {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 20px;
     }
     .final-pct {
-      font-size: clamp(44px, 11vw, 80px);
+      font-size: clamp(3rem, 10vw, 5rem);
       font-weight: 900;
       color: var(--orange);
       line-height: 1;
-      margin-bottom: 16px;
+      letter-spacing: -.04em;
+      margin-bottom: 12px;
+    }
+    .final-heading {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
     }
     .final-sub {
-      font-size: 17px;
-      font-weight: 600;
-      color: #374151;
+      font-size: .95rem;
+      color: var(--text-muted);
       margin-bottom: 36px;
+      line-height: 1.6;
     }
 
-    /* Spinner */
+    /* ── Spinner ── */
     .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.35);
-      border-top-color: #fff;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: var(--white);
       border-radius: 50%;
       animation: spin .7s linear infinite;
       display: none;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (min-width: 640px) {
-      .step { padding: 48px 40px 80px; }
+    @media (max-width: 480px) {
+      .card, .final-card { padding: 28px 22px; }
     }
   </style>
 </head>
@@ -255,102 +365,131 @@
 
 <div id="progressBar" style="width:2%"></div>
 
-<div class="logo-bar">
-  <img src="/logonova.png" alt="AceleraGO" />
-</div>
+<header class="site-header">
+  <a href="/">
+    <img src="/logonova.png" alt="AceleraGO" />
+  </a>
+</header>
 
-<!-- ── CAPA ── -->
-<div class="step active" id="s0">
-  <div class="cover-tag">AceleraGO · Marketing para Saúde da Mulher</div>
-  <h1 class="cover-title">Clínica de saúde da mulher captando <strong>mais pacientes</strong> com tráfego pago</h1>
-  <ul class="cover-bullets">
-    <li>📈 <strong>Mais consultas</strong> todos os dias</li>
-    <li>🎯 Apareça para quem <strong>já quer ser atendida</strong></li>
-    <li>🏆 Sua clínica no <strong>Topo do Google</strong></li>
-    <li>✅ <strong>Método validado</strong> em +30 clínicas</li>
-  </ul>
-  <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de R$ 1.500 por mês em gestão de marketing.</p>
-  <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
-</div>
+<div class="page">
+  <div style="width:100%;max-width:640px">
 
-<!-- ── NOME ── -->
-<div class="step" id="s1">
-  <div class="step-label">1 de 6</div>
-  <h2 class="step-question">Qual o seu nome completo?</h2>
-  <div class="input-wrap">
-    <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula Silva" autocomplete="name" />
+    <!-- ── CAPA ── -->
+    <div class="step active" id="s0">
+      <div class="card">
+        <span class="cover-tag">AceleraGO · Marketing para Saúde da Mulher</span>
+        <h1 class="cover-title">Sua agenda cheia com pacientes que <em>já estão buscando</em> por você</h1>
+        <ul class="cover-bullets">
+          <li>📈 <span><strong>Mais consultas</strong> todo mês, de forma previsível</span></li>
+          <li>🎯 <span>Apareça para quem <strong>já quer ser atendida</strong></span></li>
+          <li>🏆 <span>Sua clínica no <strong>Topo do Google</strong></span></li>
+          <li>✅ <span><strong>Método validado</strong> em +30 clínicas de saúde da mulher</span></li>
+        </ul>
+        <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de R$ 2.000 por mês em anúncios.</p>
+        <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
+      </div>
+    </div>
+
+    <!-- ── NOME ── -->
+    <div class="step" id="s1">
+      <div class="card">
+        <div class="step-progress">Etapa 1 de 6</div>
+        <h2 class="step-question">Qual o seu nome completo?</h2>
+        <p class="step-hint" style="margin-bottom:20px">Como prefere ser chamada por Ronaldo.</p>
+        <div class="input-wrap">
+          <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula Silva" autocomplete="name" />
+        </div>
+        <span class="field-error" id="eNome">Por favor, informe seu nome.</span>
+        <button class="btn" onclick="nextText('fNome','eNome',2)">Avançar →</button>
+      </div>
+    </div>
+
+    <!-- ── WHATSAPP ── -->
+    <div class="step" id="s2">
+      <div class="card">
+        <div class="step-progress">Etapa 2 de 6</div>
+        <h2 class="step-question">Qual o seu WhatsApp?</h2>
+        <p class="step-hint" style="margin-bottom:20px">Para Ronaldo entrar em contato após o diagnóstico.</p>
+        <div class="input-wrap">
+          <input class="field" id="fTelefone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+        </div>
+        <span class="field-error" id="eTelefone">Por favor, informe seu WhatsApp.</span>
+        <button class="btn" onclick="nextText('fTelefone','eTelefone',3)">Avançar →</button>
+      </div>
+    </div>
+
+    <!-- ── INSTAGRAM ── -->
+    <div class="step" id="s3">
+      <div class="card">
+        <div class="step-progress">Etapa 3 de 6</div>
+        <h2 class="step-question">Qual o @ do seu Instagram?</h2>
+        <p class="step-hint" style="margin-bottom:20px">Vamos analisar seu perfil antes do bate-papo.</p>
+        <div class="input-wrap">
+          <span class="input-at">@</span>
+          <input class="field has-at" id="fInstagram" type="text" placeholder="seuinstagram" autocomplete="off" />
+        </div>
+        <span class="field-error" id="eInstagram">Por favor, informe seu Instagram.</span>
+        <button class="btn" onclick="nextText('fInstagram','eInstagram',4)">Avançar →</button>
+      </div>
+    </div>
+
+    <!-- ── SITE ── -->
+    <div class="step" id="s4">
+      <div class="card">
+        <div class="step-progress">Etapa 4 de 6</div>
+        <h2 class="step-question">Qual o site da sua clínica?</h2>
+        <p class="step-hint" style="margin-bottom:20px">Se não tiver site, pode deixar em branco.</p>
+        <div class="input-wrap">
+          <input class="field" id="fSite" type="url" placeholder="www.suaclinica.com.br" autocomplete="url" />
+        </div>
+        <button class="btn" onclick="go(5)">Avançar →</button>
+      </div>
+    </div>
+
+    <!-- ── FATURAMENTO ── -->
+    <div class="step" id="s5">
+      <div class="card">
+        <div class="step-progress">Etapa 5 de 6</div>
+        <h2 class="step-question">Qual o faturamento médio mensal da sua clínica?</h2>
+        <div class="choices">
+          <div class="choice" onclick="pick('faturamento',this,'Até R$ 30.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 30.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 30.000 e R$ 50.000','btnFat')"><span class="badge">B</span><span class="choice-label">Entre R$ 30.000 e R$ 50.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 50.000 e R$ 100.000','btnFat')"><span class="badge">C</span><span class="choice-label">Entre R$ 50.000 e R$ 100.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 100.000 e R$ 150.000','btnFat')"><span class="badge">D</span><span class="choice-label">Entre R$ 100.000 e R$ 150.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 150.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 150.000</span></div>
+        </div>
+        <button class="btn" id="btnFat" disabled onclick="go(6)">Avançar</button>
+      </div>
+    </div>
+
+    <!-- ── INVESTIMENTO ── -->
+    <div class="step" id="s6">
+      <div class="card">
+        <div class="step-progress">Etapa 6 de 6</div>
+        <h2 class="step-question"><strong>Nossa gestão se inicia em R$ 1.500 por mês.</strong> Está disposta a investir esse valor para atrair mais pacientes qualificadas?</h2>
+        <div class="choices">
+          <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso e estou disposta!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso e estou disposta!</span></div>
+          <div class="choice" onclick="pick('investimento',this,'Não estou disposta a investir no meu negócio.','btnInv')"><span class="badge">B</span><span class="choice-label">Não estou disposta a investir no meu negócio.</span></div>
+        </div>
+        <button class="btn" id="btnInv" disabled onclick="submitForm()">
+          <span id="btnInvLabel">✓ Enviar respostas</span>
+          <span class="spinner" id="spinnerInv"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FINAL ── -->
+    <div class="step" id="s7">
+      <div class="card final-card">
+        <div class="final-label">AceleraGO · Diagnóstico Gratuito</div>
+        <div class="final-pct">98%<br>CONCLUÍDO!</div>
+        <p class="final-heading">Falta só um passo.</p>
+        <p class="final-sub">Agende agora um bate-papo de 30 minutos com Ronaldo Detoni para receber seu diagnóstico gratuito. 👇</p>
+        <a class="btn" href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go" target="_blank" rel="noopener">✓ AGENDAR DIAGNÓSTICO GRATUITO</a>
+      </div>
+    </div>
+
   </div>
-  <span class="field-error" id="eNome">Por favor, informe seu nome.</span>
-  <button class="btn" onclick="nextText('fNome','eNome',2)">Avançar →</button>
-</div>
-
-<!-- ── WHATSAPP ── -->
-<div class="step" id="s2">
-  <div class="step-label">2 de 6</div>
-  <h2 class="step-question">Qual o seu WhatsApp?</h2>
-  <div class="input-wrap">
-    <input class="field" id="fTelefone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
-  </div>
-  <span class="field-error" id="eTelefone">Por favor, informe seu WhatsApp.</span>
-  <button class="btn" onclick="nextText('fTelefone','eTelefone',3)">Avançar →</button>
-</div>
-
-<!-- ── INSTAGRAM ── -->
-<div class="step" id="s3">
-  <div class="step-label">3 de 6</div>
-  <h2 class="step-question">Qual o @ do seu Instagram?</h2>
-  <div class="input-wrap">
-    <span class="input-at">@</span>
-    <input class="field has-at" id="fInstagram" type="text" placeholder="seuinstagram" autocomplete="off" />
-  </div>
-  <span class="field-error" id="eInstagram">Por favor, informe seu Instagram.</span>
-  <button class="btn" onclick="nextText('fInstagram','eInstagram',4)">Avançar →</button>
-</div>
-
-<!-- ── SITE ── -->
-<div class="step" id="s4">
-  <div class="step-label">4 de 6</div>
-  <h2 class="step-question">Qual o site da sua clínica?</h2>
-  <p class="step-hint">Se não tiver site, pode deixar em branco.</p>
-  <div class="input-wrap">
-    <input class="field" id="fSite" type="url" placeholder="www.suaclinica.com.br" autocomplete="url" />
-  </div>
-  <button class="btn" onclick="go(5)">Avançar →</button>
-</div>
-
-<!-- ── FATURAMENTO ── -->
-<div class="step" id="s5">
-  <div class="step-label">5 de 6</div>
-  <h2 class="step-question">Qual o faturamento médio mensal da sua clínica?</h2>
-  <div class="choices" id="cFaturamento">
-    <div class="choice" onclick="pick('faturamento',this,'Até R$ 30.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 30.000</span></div>
-    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 30.000 e R$ 50.000','btnFat')"><span class="badge">B</span><span class="choice-label">Entre R$ 30.000 e R$ 50.000</span></div>
-    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 50.000 e R$ 100.000','btnFat')"><span class="badge">C</span><span class="choice-label">Entre R$ 50.000 e R$ 100.000</span></div>
-    <div class="choice" onclick="pick('faturamento',this,'Entre R$ 100.000 e R$ 150.000','btnFat')"><span class="badge">D</span><span class="choice-label">Entre R$ 100.000 e R$ 150.000</span></div>
-    <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 150.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 150.000</span></div>
-  </div>
-  <button class="btn" id="btnFat" disabled onclick="go(6)">Avançar</button>
-</div>
-
-<!-- ── INVESTIMENTO ── -->
-<div class="step" id="s6">
-  <div class="step-label">6 de 6</div>
-  <h2 class="step-question"><strong>Nossa gestão se inicia em R$ 1.500 por mês.</strong> Está disposta a investir esse valor para atrair mais pacientes qualificadas?</h2>
-  <div class="choices" id="cInvestimento">
-    <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso e estou disposta!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso e estou disposta!</span></div>
-    <div class="choice" onclick="pick('investimento',this,'Não estou disposta a investir no meu negócio.','btnInv')"><span class="badge">B</span><span class="choice-label">Não estou disposta a investir no meu negócio.</span></div>
-  </div>
-  <button class="btn" id="btnInv" disabled onclick="submit()">
-    <span id="btnInvLabel">✓ Enviar respostas</span>
-    <span class="spinner" id="spinnerInv"></span>
-  </button>
-</div>
-
-<!-- ── FINAL ── -->
-<div class="step final-wrap" id="s7">
-  <div class="final-pct">FORMULÁRIO<br>98%<br>PREENCHIDO!</div>
-  <p class="final-sub">Agende agora um bate-papo com Ronaldo Detoni 👇</p>
-  <a class="btn" href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go" target="_blank" rel="noopener">✓ AGENDAR DIAGNÓSTICO GRATUITO</a>
 </div>
 
 <script>
@@ -367,6 +506,7 @@
     document.getElementById('progressBar').style.width = pct + '%'
     const inp = document.querySelector('#s' + n + ' .field')
     if (inp) setTimeout(() => inp.focus(), 300)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function sendPartial() {
@@ -385,7 +525,6 @@
     document.getElementById(errId).style.display = 'none'
     const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
-    // Dispara alerta parcial assim que o telefone for confirmado
     if (fieldId === 'fTelefone') sendPartial()
     go(next)
   }
@@ -397,7 +536,7 @@
     document.getElementById(btnId).disabled = false
   }
 
-  async function submit() {
+  async function submitForm() {
     document.getElementById('btnInvLabel').style.display = 'none'
     document.getElementById('spinnerInv').style.display = 'block'
     document.getElementById('btnInv').disabled = true
@@ -411,15 +550,13 @@
     go(7)
   }
 
-  // Enter key nos inputs de texto
   document.querySelectorAll('.field').forEach(inp => {
     inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter') return
-      const s = inp.closest('.step')
-      const id = s.id.replace('s','')
+      const id = inp.closest('.step').id.replace('s','')
       if (id === '4') go(5)
       else {
-        const btn = s.querySelector('.btn')
+        const btn = inp.closest('.step').querySelector('.btn')
         if (btn && !btn.disabled) btn.click()
       }
     })
