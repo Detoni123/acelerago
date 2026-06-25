@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -372,7 +373,7 @@
 </header>
 
 <div class="page">
-  <div style="width:100%;max-width:640px">
+  <div id="formContainer" style="width:100%;max-width:640px;transition:max-width .4s ease">
 
     <!-- ── CAPA ── -->
     <div class="step active" id="s0">
@@ -502,12 +503,15 @@
 
     <!-- ── FINAL ── -->
     <div class="step" id="s7">
-      <div class="card final-card">
-        <div class="final-label">AceleraGO · Diagnóstico Gratuito</div>
-        <div class="final-pct">98%<br>CONCLUÍDO!</div>
-        <p class="final-heading">Falta só um passo.</p>
-        <p class="final-sub">Agende agora um bate-papo de 30 minutos com Ronaldo Detoni para receber seu diagnóstico gratuito. 👇</p>
-        <a class="btn" href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go" target="_blank" rel="noopener">✓ AGENDAR DIAGNÓSTICO GRATUITO</a>
+      <div class="card" style="padding:32px 28px 24px">
+        <div class="final-label" style="text-align:center;margin-bottom:6px">AceleraGO · Diagnóstico Gratuito</div>
+        <div class="final-pct" style="font-size:clamp(2rem,7vw,3.2rem);text-align:center;margin-bottom:6px">98% CONCLUÍDO!</div>
+        <p style="text-align:center;font-size:.95rem;color:var(--text-muted);margin-bottom:20px">Escolha o melhor dia e horário para o seu diagnóstico gratuito 👇</p>
+        <div id="calendlyWidget"
+          class="calendly-inline-widget"
+          style="min-width:280px;height:660px;border-radius:12px;overflow:hidden"
+          data-url="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go">
+        </div>
       </div>
     </div>
 
@@ -529,6 +533,25 @@
     const inp = document.querySelector('#s' + n + ' .field')
     if (inp) setTimeout(() => inp.focus(), 300)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (n === 7) {
+      document.getElementById('formContainer').style.maxWidth = '820px'
+      initCalendly()
+    }
+  }
+
+  function initCalendly() {
+    const url = 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go'
+      + '?name=' + encodeURIComponent(data.nome)
+      + '&a1='   + encodeURIComponent(data.telefone)
+    const widget = document.getElementById('calendlyWidget')
+    widget.setAttribute('data-url', url)
+    if (window.Calendly) {
+      Calendly.initInlineWidget({ url, parentElement: widget })
+    } else {
+      const s = document.createElement('script')
+      s.src = 'https://assets.calendly.com/assets/external/widget.js'
+      document.head.appendChild(s)
+    }
   }
 
   function sendBeaconLead(tipo) {
