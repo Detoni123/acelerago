@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -158,8 +159,20 @@
       font-weight: 500;
       color: var(--text-mid);
       display: flex;
-      align-items: baseline;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
+    }
+    .bullet-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--teal);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
     }
     .cover-note {
       font-size: .85rem;
@@ -382,10 +395,10 @@
         <h1 class="cover-title">Mais pacientes qualificadas na sua clínica, <em>sem depender de indicação</em></h1>
         <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:24px;margin-top:-12px">Torne-se a primeira opção em saúde da mulher na sua região.</p>
         <ul class="cover-bullets">
-          <li>📈 <span><strong>Mais pacientes qualificadas</strong> todo mês</span></li>
-          <li>🎯 <span>Seja <strong>encontrada por quem procura</strong> uma especialista de confiança</span></li>
-          <li>🏆 <span><strong>Mais visibilidade</strong> nas buscas do Google</span></li>
-          <li>✅ <span><strong>Método validado</strong> em +30 clínicas de saúde da mulher</span></li>
+          <li><span class="bullet-icon"><i class="ph ph-chart-line-up"></i></span><span><strong>Mais pacientes qualificadas</strong> todo mês</span></li>
+          <li><span class="bullet-icon"><i class="ph ph-magnifying-glass"></i></span><span>Seja <strong>encontrada por quem procura</strong> uma especialista de confiança</span></li>
+          <li><span class="bullet-icon"><i class="ph ph-google-logo"></i></span><span><strong>Mais visibilidade</strong> nas buscas do Google</span></li>
+          <li><span class="bullet-icon"><i class="ph ph-seal-check"></i></span><span><strong>Método validado</strong> em +30 clínicas de saúde da mulher</span></li>
         </ul>
         <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de <strong>R$ 2.000/mês em anúncios</strong>.</p>
         <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
