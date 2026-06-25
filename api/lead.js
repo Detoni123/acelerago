@@ -5,6 +5,9 @@ export default async function handler(req, res) {
 
   const { nome, telefone, instagram, site, faturamento, investimento, tipo } = req.body
   // tipo: 'completo' | 'desqualificado' | 'abandono'
+  if (!['completo', 'desqualificado', 'abandono'].includes(tipo)) {
+    return res.status(200).json({ ok: true }) // ignora requisições inválidas ou de versões antigas em cache
+  }
 
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID

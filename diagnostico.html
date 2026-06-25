@@ -564,14 +564,14 @@
     }
   }
 
-  // Abandono: dispara quando o usuário fecha/sai da aba sem concluir
+  // Abandono: só dispara ao fechar/navegar para fora, e apenas se passou da etapa do WhatsApp
   function onAbandon() {
     if (enviado) return
-    if (!data.nome && !data.telefone) return
+    if (current < 3) return   // ainda não passou da etapa de WhatsApp
+    if (!data.telefone) return
     enviado = true
     sendBeaconLead('abandono')
   }
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') onAbandon() })
   window.addEventListener('pagehide', onAbandon)
 
   function nextText(fieldId, errId, next) {
