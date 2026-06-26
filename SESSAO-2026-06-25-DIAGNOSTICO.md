@@ -88,11 +88,11 @@ https://acelerago.com.br/diagnostico
 
 | Variável | Valor | Ambiente |
 |---|---|---|
-| `TELEGRAM_BOT_TOKEN` | `8795337334:AAHJdmh38lU70FRejj7y43D5jXP32bhsSlc` | Preview + Production |
-| `TELEGRAM_CHAT_ID` | `1981945816` | Preview + Production |
-| `SUPABASE_URL` | `https://ozxjjvtrlmeiveioblci.supabase.co` | Preview + Production |
-| `SUPABASE_SECRET_KEY` | (encrypted) | Preview + Production |
-| `RESEND_API_KEY` | `re_EjvcNAqQ_Ak4KUCsAKjTAd23WqeUZmGkX` | Production |
+| `TELEGRAM_BOT_TOKEN` | (configurado no Vercel) | Preview + Production |
+| `TELEGRAM_CHAT_ID` | (configurado no Vercel) | Preview + Production |
+| `SUPABASE_URL` | (configurado no Vercel) | Preview + Production |
+| `SUPABASE_SECRET_KEY` | (configurado no Vercel) | Preview + Production |
+| `RESEND_API_KEY` | (configurado no Vercel) | Production |
 | `META_ACCESS_TOKEN` | (encrypted — copiado do CRM) | Production |
 | `CALENDLY_TOKEN` | (encrypted — PAT com :read escopos) | Production |
 
