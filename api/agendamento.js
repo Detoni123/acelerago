@@ -3,7 +3,7 @@ import crypto from 'crypto'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { eventUri, nome, telefone, instagram, site, faturamento, investimento } = req.body
+  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento } = req.body
   if (!eventUri) return res.status(200).json({ ok: true })
 
   const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
@@ -55,6 +55,7 @@ export default async function handler(req, res) {
           data: [{
             event_name:       'Schedule',
             event_time:       Math.floor(Date.now() / 1000),
+            ...(eventId && { event_id: eventId }),
             action_source:    'website',
             event_source_url: 'https://acelerago.com.br/diagnostico',
             user_data:        userData,
