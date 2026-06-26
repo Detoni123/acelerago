@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
@@ -31,6 +33,39 @@ export default async function handler(req, res) {
     } catch (_) {}
   }
 
+  // Meta CAPI — evento Schedule via servidor (garante rastreamento no iOS)
+  const META_TOKEN = process.env.META_ACCESS_TOKEN
+  if (META_TOKEN) {
+    const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
+
+    const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
+    const phoneE164   = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : null
+    const nomeParts   = nome ? nome.trim().split(/\s+/) : []
+
+    const userData = {}
+    if (phoneE164)            userData.ph = [sha256(phoneE164)]
+    if (nomeParts[0])         userData.fn = [sha256(nomeParts[0])]
+    if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
+
+    try {
+      await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{
+            event_name:       'Schedule',
+            event_time:       Math.floor(Date.now() / 1000),
+            action_source:    'website',
+            event_source_url: 'https://acelerago.com.br/diagnostico',
+            user_data:        userData,
+            custom_data:      { content_name: 'Diagnóstico AceleraGO' },
+          }],
+          ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
+        }),
+      })
+    } catch (_) {}
+  }
+
   const whatsappLink = telefone
     ? `https://wa.me/55${telefone.replace(/\D/g, '')}`
     : null
@@ -41,13 +76,13 @@ export default async function handler(req, res) {
   const msg = [
     qualificado ? '🟢 *Lead QUALIFICADO — AceleraGO*' : '🔴 *Lead Concluído — AceleraGO*',
     '',
-    linha('👤 *Nome:*',         nome),
-    linha('📱 *WhatsApp:*',     telefone),
-    linha('📸 *Instagram:*',    instagram ? `@${instagram}` : null),
-    linha('🌐 *Site:*',         site || 'Não informado'),
-    linha('💰 *Faturamento:*',  faturamento),
-    linha('✅ *Investimento:*',  investimento),
-    linha('🗓 *Reunião:*',      dataHora),
+    linha('👤 *Nome:*',        nome),
+    linha('📱 *WhatsApp:*',    telefone),
+    linha('📸 *Instagram:*',   instagram ? `@${instagram}` : null),
+    linha('🌐 *Site:*',        site || 'Não informado'),
+    linha('💰 *Faturamento:*', faturamento),
+    linha('✅ *Investimento:*', investimento),
+    linha('🗓 *Reunião:*',     dataHora),
     '',
     whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
   ].filter(Boolean).join('\n')
