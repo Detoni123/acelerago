@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     } catch (_) {}
   }
 
-  // Meta CAPI — evento Schedule via servidor (garante rastreamento no iOS)
+  // Meta CAPI — evento CompleteRegistration via servidor (garante rastreamento no iOS)
   const META_TOKEN = process.env.META_ACCESS_TOKEN
   if (META_TOKEN) {
     const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           data: [{
-            event_name:       'Schedule',
+            event_name:       'CompleteRegistration',
             event_time:       Math.floor(Date.now() / 1000),
             ...(eventId && { event_id: eventId }),
             action_source:    'website',

@@ -612,7 +612,7 @@
       const eventId  = 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
       const eventUri = e.data.payload?.event?.uri
 
-      if (typeof fbq !== 'undefined') fbq('track', 'Schedule', {}, { eventID: eventId })
+      if (typeof fbq !== 'undefined') fbq('track', 'CompleteRegistration', {}, { eventID: eventId })
 
       if (eventUri) {
         fetch('/api/agendamento', {
