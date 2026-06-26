@@ -174,7 +174,8 @@ export default async function handler(req, res) {
               event_source_url: 'https://acelerago.com.br/diagnostico',
               user_data:        userData,
               custom_data:      { content_name: 'Diagnóstico AceleraGO' },
-            }]
+            }],
+            ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
           }),
         })
       } catch (_) {}
