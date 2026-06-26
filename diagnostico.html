@@ -614,22 +614,20 @@
 
       if (typeof fbq !== 'undefined') fbq('track', 'CompleteRegistration', {}, { eventID: eventId })
 
-      if (eventUri) {
-        fetch('/api/agendamento', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({
-            eventUri,
-            eventId,
-            nome:         data.nome,
-            telefone:     data.telefone,
-            instagram:    data.instagram,
-            site:         data.site,
-            faturamento:  data.faturamento,
-            investimento: data.investimento,
-          }),
-        }).catch(() => {})
-      }
+      fetch('/api/agendamento', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          eventUri:     eventUri || null,
+          eventId,
+          nome:         data.nome,
+          telefone:     data.telefone,
+          instagram:    data.instagram,
+          site:         data.site,
+          faturamento:  data.faturamento,
+          investimento: data.investimento,
+        }),
+      }).catch(() => {})
     }
   })
 

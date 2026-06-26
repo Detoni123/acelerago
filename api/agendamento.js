@@ -4,7 +4,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento } = req.body
-  if (!eventUri) return res.status(200).json({ ok: true })
 
   const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -12,7 +11,7 @@ export default async function handler(req, res) {
 
   let dataHora = null
 
-  if (CALENDLY_TOKEN) {
+  if (CALENDLY_TOKEN && eventUri) {
     try {
       const resp = await fetch(eventUri, {
         headers: { Authorization: `Bearer ${CALENDLY_TOKEN}` }
