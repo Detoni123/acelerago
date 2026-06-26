@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -152,18 +154,16 @@ export default async function handler(req, res) {
   if (tipo === 'completo') {
     const META_TOKEN = process.env.META_ACCESS_TOKEN
     if (META_TOKEN) {
-      const sha256 = async (val) => {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val.trim().toLowerCase()))
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('')
-      }
+      const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
+
       const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
       const phoneE164   = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : null
       const nomeParts   = nome ? nome.trim().split(/\s+/) : []
 
       const userData = {}
-      if (phoneE164)       userData.ph = [await sha256(phoneE164)]
-      if (nomeParts[0])    userData.fn = [await sha256(nomeParts[0])]
-      if (nomeParts[1])    userData.ln = [await sha256(nomeParts[nomeParts.length - 1])]
+      if (phoneE164)    userData.ph = [sha256(phoneE164)]
+      if (nomeParts[0]) userData.fn = [sha256(nomeParts[0])]
+      if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
 
       try {
         await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
