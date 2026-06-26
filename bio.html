@@ -46,32 +46,43 @@
       padding: 40px 0 32px;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .social-row {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      justify-content: center;
       width: 100%;
     }
 
     .soc {
-      display: flex;
+      display: inline-flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 11px;
-      padding: 17px 20px;
-      border-radius: 14px;
+      gap: 8px;
+      flex: 1;
+      padding: 15px 16px;
+      border-radius: 12px;
       background: rgba(255,255,255,.08);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       line-height: 1;
       text-decoration: none;
+      white-space: nowrap;
       transition: background .18s ease;
       -webkit-font-smoothing: antialiased;
     }
 
     .soc:hover  { background: rgba(255,255,255,.13); }
     .soc:active { background: rgba(255,255,255,.18); }
-    .soc svg    { flex-shrink: 0; }
+    .soc svg    { flex-shrink: 0; display: block; }
 
     .copy {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial, sans-serif;
@@ -79,7 +90,6 @@
       color: #2d3d4e;
       letter-spacing: .02em;
       text-align: center;
-      margin-top: 4px;
       -webkit-font-smoothing: antialiased;
     }
   </style>
@@ -137,6 +147,7 @@
     </a>
 
     <footer>
+      <div class="social-row">
       <a href="https://instagram.com/acelerago.oficial" class="soc" target="_blank" rel="noopener noreferrer">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
@@ -149,6 +160,7 @@
         </svg>
         @ronaldodetoni
       </a>
+      </div>
       <p class="copy">© AceleraGO | acelerago.com.br</p>
     </footer>
 
