@@ -610,9 +610,12 @@
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({
             eventUri,
-            nome:      data.nome,
-            telefone:  data.telefone,
-            instagram: data.instagram,
+            nome:        data.nome,
+            telefone:    data.telefone,
+            instagram:   data.instagram,
+            site:        data.site,
+            faturamento: data.faturamento,
+            investimento: data.investimento,
           }),
         }).catch(() => {})
       }

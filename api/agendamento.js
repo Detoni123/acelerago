@@ -1,10 +1,10 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { eventUri, nome, telefone, instagram } = req.body
+  const { eventUri, nome, telefone, instagram, site, faturamento, investimento } = req.body
   if (!eventUri) return res.status(200).json({ ok: true })
 
-  const CALENDLY_TOKEN    = process.env.CALENDLY_TOKEN
+  const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
@@ -19,13 +19,13 @@ export default async function handler(req, res) {
       const startTime = json.resource?.start_time
       if (startTime) {
         dataHora = new Date(startTime).toLocaleString('pt-BR', {
-          timeZone:  'America/Sao_Paulo',
-          weekday:   'long',
-          day:       '2-digit',
-          month:     'long',
-          year:      'numeric',
-          hour:      '2-digit',
-          minute:    '2-digit',
+          timeZone: 'America/Sao_Paulo',
+          weekday:  'long',
+          day:      '2-digit',
+          month:    'long',
+          year:     'numeric',
+          hour:     '2-digit',
+          minute:   '2-digit',
         })
       }
     } catch (_) {}
@@ -36,14 +36,18 @@ export default async function handler(req, res) {
     : null
 
   const linha = (label, val) => val ? `${label} ${val}` : null
+  const qualificado = investimento && investimento.startsWith('Sim')
 
   const msg = [
-    '📅 *Reunião Agendada — AceleraGO*',
+    qualificado ? '🟢 *Lead QUALIFICADO — AceleraGO*' : '🔴 *Lead Concluído — AceleraGO*',
     '',
-    linha('👤 *Nome:*',      nome),
-    linha('📱 *WhatsApp:*',  telefone),
-    linha('📸 *Instagram:*', instagram ? `@${instagram}` : null),
-    linha('🗓 *Data/Hora:*', dataHora),
+    linha('👤 *Nome:*',         nome),
+    linha('📱 *WhatsApp:*',     telefone),
+    linha('📸 *Instagram:*',    instagram ? `@${instagram}` : null),
+    linha('🌐 *Site:*',         site || 'Não informado'),
+    linha('💰 *Faturamento:*',  faturamento),
+    linha('✅ *Investimento:*',  investimento),
+    linha('🗓 *Reunião:*',      dataHora),
     '',
     whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
   ].filter(Boolean).join('\n')

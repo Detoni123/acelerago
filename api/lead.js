@@ -63,13 +63,16 @@ export default async function handler(req, res) {
 
   const msg = [header, '', ...linhas].filter(l => l !== null).join('\n')
 
-  try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' }),
-    })
-  } catch (_) {}
+  // Telegram apenas para abandono e desqualificado — completo é enviado após agendamento no Calendly
+  if (tipo !== 'completo') {
+    try {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' }),
+      })
+    } catch (_) {}
+  }
 
   // Email via Resend (adicione RESEND_API_KEY nas env vars do Vercel para ativar)
   const RESEND_API_KEY = process.env.RESEND_API_KEY
