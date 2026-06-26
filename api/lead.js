@@ -145,5 +145,41 @@ export default async function handler(req, res) {
     }
   }
 
+  // Meta CAPI — evento Lead via servidor (funciona em iOS sem depender de cookie)
+  if (tipo === 'completo') {
+    const META_TOKEN = process.env.META_ACCESS_TOKEN
+    if (META_TOKEN) {
+      const sha256 = async (val) => {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val.trim().toLowerCase()))
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('')
+      }
+      const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
+      const phoneE164   = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : null
+      const nomeParts   = nome ? nome.trim().split(/\s+/) : []
+
+      const userData = {}
+      if (phoneE164)       userData.ph = [await sha256(phoneE164)]
+      if (nomeParts[0])    userData.fn = [await sha256(nomeParts[0])]
+      if (nomeParts[1])    userData.ln = [await sha256(nomeParts[nomeParts.length - 1])]
+
+      try {
+        await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: [{
+              event_name:       'Lead',
+              event_time:       Math.floor(Date.now() / 1000),
+              action_source:    'website',
+              event_source_url: 'https://acelerago.com.br/diagnostico',
+              user_data:        userData,
+              custom_data:      { content_name: 'Diagnóstico AceleraGO' },
+            }]
+          }),
+        })
+      } catch (_) {}
+    }
+  }
+
   return res.status(200).json({ ok: true })
 }
