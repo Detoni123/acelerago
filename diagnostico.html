@@ -598,10 +598,24 @@
   }
   window.addEventListener('pagehide', onAbandon)
 
-  // Conversão Calendly → Meta Pixel
+  // Conversão Calendly → Meta Pixel + notificação Telegram com data/hora
   window.addEventListener('message', function(e) {
     if (e.data && e.data.event === 'calendly.event_scheduled') {
       if (typeof fbq !== 'undefined') fbq('track', 'Schedule')
+
+      const eventUri = e.data.payload?.event?.uri
+      if (eventUri) {
+        fetch('/api/agendamento', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({
+            eventUri,
+            nome:      data.nome,
+            telefone:  data.telefone,
+            instagram: data.instagram,
+          }),
+        }).catch(() => {})
+      }
     }
   })
 
