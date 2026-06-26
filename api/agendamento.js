@@ -3,7 +3,9 @@ import crypto from 'crypto'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento } = req.body
+  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento,
+          fbc, fbp, userAgent } = req.body
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress
 
   const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -42,9 +44,13 @@ export default async function handler(req, res) {
     const nomeParts   = nome ? nome.trim().split(/\s+/) : []
 
     const userData = {}
-    if (phoneE164)            userData.ph = [sha256(phoneE164)]
-    if (nomeParts[0])         userData.fn = [sha256(nomeParts[0])]
-    if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
+    if (phoneE164)            userData.ph          = [sha256(phoneE164)]
+    if (nomeParts[0])         userData.fn          = [sha256(nomeParts[0])]
+    if (nomeParts.length > 1) userData.ln          = [sha256(nomeParts[nomeParts.length - 1])]
+    if (clientIp)             userData.client_ip_address = clientIp
+    if (userAgent)            userData.client_user_agent = userAgent
+    if (fbc)                  userData.fbc         = fbc
+    if (fbp)                  userData.fbp         = fbp
 
     try {
       await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {

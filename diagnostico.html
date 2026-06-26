@@ -606,6 +606,12 @@
   }
   window.addEventListener('pagehide', onAbandon)
 
+  // Lê cookies Meta (_fbc / _fbp) para enriquecer CAPI
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
+    return match ? decodeURIComponent(match[1]) : null
+  }
+
   // Conversão Calendly → Meta Pixel + CAPI com mesmo event_id para deduplicação
   window.addEventListener('message', function(e) {
     if (e.data && e.data.event === 'calendly.event_scheduled') {
@@ -626,6 +632,9 @@
           site:         data.site,
           faturamento:  data.faturamento,
           investimento: data.investimento,
+          fbc:          getCookie('_fbc'),
+          fbp:          getCookie('_fbp'),
+          userAgent:    navigator.userAgent,
         }),
       }).catch(() => {})
     }
