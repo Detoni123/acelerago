@@ -4,7 +4,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento,
-          fbc, fbp, userAgent } = req.body
+          fbc, fbp, userAgent,
+          utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
+  const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress
 
   const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
@@ -64,7 +66,14 @@ export default async function handler(req, res) {
             action_source:    'website',
             event_source_url: 'https://acelerago.com.br/diagnostico',
             user_data:        userData,
-            custom_data:      { content_name: 'Diagnóstico AceleraGO' },
+            custom_data:      {
+              content_name: 'Diagnóstico AceleraGO',
+              ...(utm_source   && { utm_source }),
+              ...(utm_medium   && { utm_medium }),
+              ...(utm_campaign && { utm_campaign }),
+              ...(utm_content  && { utm_content }),
+              ...(utm_term     && { utm_term }),
+            },
           }],
           ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
         }),
@@ -88,6 +97,7 @@ export default async function handler(req, res) {
     linha('🌐 *Site:*',        site || 'Não informado'),
     linha('💰 *Faturamento:*', faturamento),
     linha('✅ *Investimento:*', investimento),
+    linha('📊 *Origem:*',      utmLabel),
     linha('🗓 *Reunião:*',     dataHora),
     '',
     whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,

@@ -5,7 +5,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, investimento, tipo } = req.body
+  const { nome, telefone, instagram, site, faturamento, investimento, tipo,
+          utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
+  const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
   // tipo: 'completo' | 'desqualificado' | 'abandono'
   if (!['completo', 'desqualificado', 'abandono'].includes(tipo)) {
     return res.status(200).json({ ok: true }) // ignora requisições inválidas ou de versões antigas em cache
@@ -30,6 +32,7 @@ export default async function handler(req, res) {
       linha('📸 *Instagram:*',  instagram ? `@${instagram}` : null),
       linha('🌐 *Site:*',       site),
       linha('💰 *Faturamento:*',faturamento),
+      linha('📊 *Origem:*',     utmLabel),
       '',
       whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
     ]
@@ -41,6 +44,7 @@ export default async function handler(req, res) {
       linha('📸 *Instagram:*',  instagram ? `@${instagram}` : null),
       linha('🌐 *Site:*',       site),
       linha('💰 *Faturamento:*',faturamento),
+      linha('📊 *Origem:*',     utmLabel),
       '',
       whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
     ]
@@ -57,6 +61,7 @@ export default async function handler(req, res) {
       linha('🌐 *Site:*',        site || 'Não informado'),
       linha('💰 *Faturamento:*', faturamento),
       linha('✅ *Investimento:*', investimento),
+      linha('📊 *Origem:*',      utmLabel),
       '',
       whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
       `📅 [Ver agenda](https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go)`,
@@ -124,6 +129,7 @@ export default async function handler(req, res) {
         faturamento  ? `Faturamento: ${faturamento}` : null,
         investimento ? `Investimento: ${investimento}` : null,
         tipo === 'desqualificado' ? 'Status: Desqualificado (faturamento abaixo do mínimo)' : null,
+        utmLabel ? `UTM: ${utmLabel}` : null,
         `Origem: Formulário /diagnostico`,
       ].filter(Boolean).join('\n')
 
@@ -176,7 +182,14 @@ export default async function handler(req, res) {
               action_source:    'website',
               event_source_url: 'https://acelerago.com.br/diagnostico',
               user_data:        userData,
-              custom_data:      { content_name: 'Diagnóstico AceleraGO' },
+              custom_data:      {
+                content_name: 'Diagnóstico AceleraGO',
+                ...(utm_source   && { utm_source }),
+                ...(utm_medium   && { utm_medium }),
+                ...(utm_campaign && { utm_campaign }),
+                ...(utm_content  && { utm_content }),
+                ...(utm_term     && { utm_term }),
+              },
             }],
             ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
           }),

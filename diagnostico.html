@@ -556,6 +556,14 @@
   let current = 0
   let enviado = false
 
+  // Captura UTMs da URL e guarda no data para enviar em todos os payloads
+  ;(function() {
+    const p = new URLSearchParams(location.search)
+    ;['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k => {
+      const v = p.get(k); if (v) data[k] = v
+    })
+  })()
+
   function go(n) {
     if (n === 5) data.site = document.getElementById('fSite').value.trim()
     document.getElementById('s' + current).classList.remove('active')
