@@ -243,7 +243,8 @@ export default async function handler(req, res) {
           const patch = await fetch(`${SUPABASE_URL}/rest/v1/prospects?id=eq.${existing[0].id}`, {
             method: 'PATCH',
             headers: { ...sbHeaders, Prefer: 'return=minimal' },
-            body: JSON.stringify({ nome: nome || undefined, observacoes }),
+            // fbc/fbp só entram quando chegam (não sobrescreve cookie já salvo com null)
+            body: JSON.stringify({ nome: nome || undefined, observacoes, ...(fbc && { fbc }), ...(fbp && { fbp }) }),
           })
           if (!patch.ok) console.error(`[lead] CRM PATCH falhou (${tipo}): HTTP ${patch.status} — ${await patch.text()}`)
         } else {
@@ -258,6 +259,9 @@ export default async function handler(req, res) {
               origem_lead:   origemLead,
               etapa:         'prospeccao',
               observacoes,
+              // Cookies Meta p/ conversão offline depois (reunião/fechado no CRM)
+              ...(fbc && { fbc }),
+              ...(fbp && { fbp }),
             }),
           })
           if (!insert.ok) console.error(`[lead] CRM INSERT falhou (${tipo}): HTTP ${insert.status} — ${await insert.text()}`)
