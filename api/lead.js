@@ -12,9 +12,11 @@ export default async function handler(req, res) {
   // Origem real derivada do utm_source (antes ficava fixo em 'Google' — atribuição errada)
   const origemLead = (() => {
     const s = (utm_source || '').toLowerCase()
-    if (/meta|facebook|fb\b/.test(s))      return 'Meta'
-    if (/instagram|insta/.test(s))          return 'Instagram'
-    if (/google|gads|youtube|yt/.test(s))   return 'Google'
+    const m = (utm_medium || '').toLowerCase()
+    if (/bio/.test(s) || /bio/.test(m))     return 'Bio IG'
+    if (/meta|facebook|fb\b/.test(s))       return 'Meta Ads'
+    if (/instagram|insta|^ig$/.test(s))     return m === 'social' ? 'Meta Ads' : 'Instagram'
+    if (/google|gads|youtube|yt/.test(s))   return 'Google Ads'
     if (utm_source) return utm_source.charAt(0).toUpperCase() + utm_source.slice(1)
     return 'Diagnóstico'
   })()
