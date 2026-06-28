@@ -56,14 +56,22 @@
       min-height: 100vh;
     }
 
-    /* ── Barra de progresso ── */
+    /* ── Barra de progresso (no topo do formulário) ── */
+    #progressTrack {
+      width: 100%;
+      height: 7px;
+      background: var(--cream-dark);
+      border-radius: 99px;
+      margin: 0 auto 16px;
+      overflow: hidden;
+      display: none;
+    }
     #progressBar {
-      position: fixed;
-      top: 0; left: 0;
-      height: 3px;
+      height: 100%;
+      width: 2%;
       background: var(--teal);
-      transition: width 0.4s ease;
-      z-index: 200;
+      border-radius: 99px;
+      transition: width .45s cubic-bezier(.4,0,.2,1);
     }
 
     /* ── Header ── */
@@ -415,8 +423,6 @@
 </head>
 <body>
 
-<div id="progressBar" style="width:2%"></div>
-
 <header class="site-header">
   <a href="/">
     <img src="/acelerafundotransp.png" alt="AceleraGO" />
@@ -426,6 +432,8 @@
 <div class="page">
   <div id="formContainer" style="width:100%;max-width:640px;transition:max-width .4s ease">
 
+    <div id="progressTrack"><div id="progressBar"></div></div>
+
     <!-- ── CAPA ── -->
     <div class="step active" id="s0">
       <div class="card">
@@ -434,11 +442,11 @@
         <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:24px;margin-top:-12px">Torne-se a primeira opção em saúde da mulher na sua região.</p>
         <ul class="cover-bullets">
           <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span><span><strong>Mais pacientes qualificadas</strong> todo mês</span></li>
-          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span>Seja <strong>encontrada por quem procura</strong> uma especialista de confiança</span></li>
+          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span><strong>Apareça para quem procura</strong> uma referência em saúde da mulher</span></li>
           <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span><span><strong>Mais visibilidade</strong> nas buscas do Google</span></li>
           <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 1.8 3 .3 1 2.8 2.2 2-1 2.8 1 2.8-2.2 2-1 2.8-3 .3L12 22l-2.4-1.8-3-.3-1-2.8-2.2-2 1-2.8-1-2.8 2.2-2 1-2.8 3-.3z"/><polyline points="9 12 11.5 14.5 16 9.5"/></svg></span><span><strong>Método validado</strong> em +30 clínicas de saúde da mulher</span></li>
         </ul>
-        <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de <strong>R$ 2.000/mês em anúncios</strong>.</p>
+        <p class="cover-note">→ Exclusivo para clínicas que investem (ou pretendem investir) a partir de <strong>R$ 2.000/mês em anúncios</strong>.</p>
         <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
       </div>
     </div>
@@ -446,7 +454,6 @@
     <!-- ── NOME ── -->
     <div class="step" id="s1">
       <div class="card">
-        <div class="step-progress">Etapa 1 de 6</div>
         <h2 class="step-question" style="margin-bottom:20px">Qual o seu nome?</h2>
         <div class="input-wrap">
           <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula" autocomplete="name" />
@@ -459,7 +466,6 @@
     <!-- ── WHATSAPP ── -->
     <div class="step" id="s2">
       <div class="card">
-        <div class="step-progress">Etapa 2 de 6</div>
         <h2 class="step-question">Qual o seu WhatsApp?</h2>
         <p class="step-hint" style="margin-bottom:20px">É por onde você recebe o resultado do diagnóstico.</p>
         <div class="input-wrap">
@@ -473,7 +479,6 @@
     <!-- ── INSTAGRAM ── -->
     <div class="step" id="s3">
       <div class="card">
-        <div class="step-progress">Etapa 3 de 6</div>
         <h2 class="step-question">Qual o @ do seu Instagram?</h2>
         <p class="step-hint" style="margin-bottom:20px">Para analisarmos seu posicionamento atual.</p>
         <div class="input-wrap">
@@ -488,7 +493,7 @@
     <!-- ── SITE ── -->
     <div class="step" id="s4">
       <div class="card">
-        <div class="step-progress">Etapa 4 de 6</div>
+        <div class="step-progress">Falta pouco</div>
         <h2 class="step-question">Qual o site da sua clínica?</h2>
         <p class="step-hint" style="margin-bottom:20px">Se não tiver site, pode deixar em branco.</p>
         <div class="input-wrap">
@@ -501,7 +506,7 @@
     <!-- ── FATURAMENTO ── -->
     <div class="step" id="s5">
       <div class="card">
-        <div class="step-progress">Etapa 5 de 6</div>
+        <div class="step-progress">Quase lá</div>
         <h2 class="step-question">Qual o faturamento médio mensal da sua clínica?</h2>
         <div class="choices">
           <div class="choice" onclick="pick('faturamento',this,'Até R$ 30.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 30.000</span></div>
@@ -517,10 +522,10 @@
     <!-- ── INVESTIMENTO ── -->
     <div class="step" id="s6">
       <div class="card">
-        <div class="step-progress">Etapa 6 de 6</div>
-        <h2 class="step-question">Além da verba de anúncios, <strong>nossa gestão se inicia em R$ 1.500/mês.</strong> Você está disposta a investir para atrair mais pacientes qualificadas?</h2>
+        <div class="step-progress">Última pergunta</div>
+        <h2 class="step-question">Além da verba de anúncios, <strong>nossa gestão se inicia em R$ 1.500/mês.</strong> Você tem disposição para investir nisso e atrair mais pacientes qualificadas?</h2>
         <div class="choices">
-          <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso e estou disposta!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso e estou disposta!</span></div>
+          <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso para crescer!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso para crescer!</span></div>
           <div class="choice" onclick="pick('investimento',this,'Ainda não é o momento de investir.','btnInv')"><span class="badge">B</span><span class="choice-label">Ainda não é o momento de investir.</span></div>
         </div>
         <button class="btn" id="btnInv" disabled onclick="submitForm()">
@@ -595,6 +600,7 @@
     current = n
     const pct = n === 0 ? 2 : n >= 7 ? 100 : Math.round((n / 6) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
+    document.getElementById('progressTrack').style.display = n === 0 ? 'none' : 'block'
     const inp = document.querySelector('#s' + n + ' .field')
     if (inp) setTimeout(() => inp.focus(), 300)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -612,6 +618,7 @@
     current = prev
     const pct = prev === 0 ? 2 : prev >= 7 ? 100 : Math.round((prev / 6) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
+    document.getElementById('progressTrack').style.display = prev === 0 ? 'none' : 'block'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
