@@ -8,6 +8,17 @@ export default async function handler(req, res) {
   const { nome, telefone, instagram, site, faturamento, investimento, tipo,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
+
+  // Origem real derivada do utm_source (antes ficava fixo em 'Google' — atribuição errada)
+  const origemLead = (() => {
+    const s = (utm_source || '').toLowerCase()
+    if (/meta|facebook|fb\b/.test(s))      return 'Meta'
+    if (/instagram|insta/.test(s))          return 'Instagram'
+    if (/google|gads|youtube|yt/.test(s))   return 'Google'
+    if (utm_source) return utm_source.charAt(0).toUpperCase() + utm_source.slice(1)
+    return 'Diagnóstico'
+  })()
+
   // tipo: 'completo' | 'desqualificado' | 'abandono'
   if (!['completo', 'desqualificado', 'abandono'].includes(tipo)) {
     return res.status(200).json({ ok: true }) // ignora requisições inválidas ou de versões antigas em cache
@@ -180,7 +191,7 @@ export default async function handler(req, res) {
               telefone,
               especialidade: 'Médica / Saúde da Mulher',
               cidade:        'Não informado',
-              origem_lead:   'Google',
+              origem_lead:   origemLead,
               etapa:         'prospeccao',
               observacoes,
             }),
