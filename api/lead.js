@@ -13,6 +13,12 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true }) // ignora requisições inválidas ou de versões antigas em cache
   }
 
+  // Guard contra leads vazios — sem nome nem telefone não há o que abordar nem salvar.
+  // Evita registros-lixo no CRM e notificações inúteis.
+  if (!nome && !telefone) {
+    return res.status(200).json({ ok: true, skipped: 'no data' })
+  }
+
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
@@ -73,12 +79,13 @@ export default async function handler(req, res) {
   // Telegram apenas para abandono e desqualificado — completo é enviado após agendamento no Calendly
   if (tipo !== 'completo') {
     try {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' }),
       })
-    } catch (_) {}
+      if (!tg.ok) console.error(`[lead] Telegram falhou (${tipo}): HTTP ${tg.status} — ${await tg.text()}`)
+    } catch (e) { console.error(`[lead] Telegram erro (${tipo}):`, e) }
   }
 
   // Email via Resend (adicione RESEND_API_KEY nas env vars do Vercel para ativar)
@@ -94,11 +101,11 @@ export default async function handler(req, res) {
       .join('')
 
     try {
-      await fetch('https://api.resend.com/emails', {
+      const mail = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: 'AceleraGO <noreply@acelerago.com.br>',
+          from: 'AceleraGO <noreply@mail.acelerago.com.br>',
           to: ['detoniads@gmail.com'],
           subject: subjects[tipo] || subjects.completo,
           html: `<h2 style="font-family:sans-serif">${subjects[tipo] || subjects.completo}</h2>
@@ -114,45 +121,73 @@ export default async function handler(req, res) {
             </table>`,
         }),
       })
-    } catch (_) {}
+      if (!mail.ok) console.error(`[lead] Email falhou (${tipo}): HTTP ${mail.status} — ${await mail.text()}`)
+    } catch (e) { console.error(`[lead] Email erro (${tipo}):`, e) }
   }
 
-  // CRM — insere apenas leads completos e desqualificados (têm pelo menos nome + telefone + faturamento)
-  if (tipo === 'completo' || tipo === 'desqualificado') {
+  // CRM — salva completo, desqualificado E abandono (com telefone), para que todo
+  // lead que avançou no formulário fique resgatável mesmo se não concluir.
+  // Dedup por telefone: se o lead voltar e avançar, atualiza o registro em vez de duplicar.
+  if ((tipo === 'completo' || tipo === 'desqualificado' || tipo === 'abandono') && telefone) {
     const SUPABASE_URL = process.env.SUPABASE_URL
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY
 
     if (SUPABASE_URL && SUPABASE_KEY) {
+      const statusNota =
+        tipo === 'desqualificado' ? 'Status: Desqualificado (faturamento abaixo do mínimo)'
+        : tipo === 'abandono'     ? 'Status: ABANDONOU o formulário (dados parciais — abordar)'
+        : null
+
       const observacoes = [
         instagram    ? `Instagram: @${instagram}` : null,
         site         ? `Site: ${site}` : null,
         faturamento  ? `Faturamento: ${faturamento}` : null,
         investimento ? `Investimento: ${investimento}` : null,
-        tipo === 'desqualificado' ? 'Status: Desqualificado (faturamento abaixo do mínimo)' : null,
+        statusNota,
         utmLabel ? `UTM: ${utmLabel}` : null,
         `Origem: Formulário /diagnostico`,
       ].filter(Boolean).join('\n')
 
+      const sbHeaders = {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/prospects`, {
-          method: 'POST',
-          headers: {
-            'Content-Type':  'application/json',
-            'apikey':        SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Prefer':        'return=minimal',
-          },
-          body: JSON.stringify({
-            nome,
-            telefone,
-            especialidade: 'Médica / Saúde da Mulher',
-            cidade:        'Não informado',
-            origem_lead:   'Google',
-            etapa:         'prospeccao',
-            observacoes,
-          }),
-        })
-      } catch (_) {}
+        // Dedup por telefone — procura prospect já existente com este número
+        const lookup = await fetch(
+          `${SUPABASE_URL}/rest/v1/prospects?select=id&telefone=eq.${encodeURIComponent(telefone)}`,
+          { headers: sbHeaders },
+        )
+        const existing = lookup.ok ? await lookup.json() : []
+
+        if (existing.length > 0) {
+          // Já existe — atualiza nome/observações (não duplica). Como 'completo'/'desqualificado'
+          // só ocorrem depois do abandono na mesma sessão, isto enriquece o registro parcial.
+          const patch = await fetch(`${SUPABASE_URL}/rest/v1/prospects?id=eq.${existing[0].id}`, {
+            method: 'PATCH',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({ nome: nome || undefined, observacoes }),
+          })
+          if (!patch.ok) console.error(`[lead] CRM PATCH falhou (${tipo}): HTTP ${patch.status} — ${await patch.text()}`)
+        } else {
+          const insert = await fetch(`${SUPABASE_URL}/rest/v1/prospects`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              nome,
+              telefone,
+              especialidade: 'Médica / Saúde da Mulher',
+              cidade:        'Não informado',
+              origem_lead:   'Google',
+              etapa:         'prospeccao',
+              observacoes,
+            }),
+          })
+          if (!insert.ok) console.error(`[lead] CRM INSERT falhou (${tipo}): HTTP ${insert.status} — ${await insert.text()}`)
+        }
+      } catch (e) { console.error(`[lead] CRM erro (${tipo}):`, e) }
     }
   }
 
@@ -172,7 +207,7 @@ export default async function handler(req, res) {
       if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
 
       try {
-        await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
+        const meta = await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -194,7 +229,8 @@ export default async function handler(req, res) {
             ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
           }),
         })
-      } catch (_) {}
+        if (!meta.ok) console.error(`[lead] Meta CAPI falhou: HTTP ${meta.status} — ${await meta.text()}`)
+      } catch (e) { console.error('[lead] Meta CAPI erro:', e) }
     }
   }
 
