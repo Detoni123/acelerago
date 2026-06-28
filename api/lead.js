@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     // completo
     const qualificado = investimento && investimento.startsWith('Sim')
     header = qualificado
-      ? '🟢 *Lead QUALIFICADO — AceleraGO*'
+      ? '🟢 *Lead QUALIFICADO — AceleraGO*\n_(terminou o formulário — confirme se agendou)_'
       : '🔴 *Lead Concluído — AceleraGO*\n_(não aceitou o investimento)_'
     linhas = [
       linha('👤 *Nome:*',        nome),
