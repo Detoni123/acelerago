@@ -5,9 +5,57 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, investimento, tipo,
+  const { nome, telefone, instagram, site, faturamento, investimento, tipo, eventId,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
+
+  // Helper Meta CAPI — dispara um evento server-side (funciona em iOS sem cookie).
+  // eventId permite deduplicar com o pixel do navegador.
+  async function fireMetaEvent(eventName, evId) {
+    const META_TOKEN = process.env.META_ACCESS_TOKEN
+    if (!META_TOKEN) return
+    const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
+    const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
+    const phoneE164   = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : null
+    const nomeParts   = nome ? nome.trim().split(/\s+/) : []
+    const userData = {}
+    if (phoneE164)    userData.ph = [sha256(phoneE164)]
+    if (nomeParts[0]) userData.fn = [sha256(nomeParts[0])]
+    if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
+    try {
+      const meta = await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{
+            event_name:       eventName,
+            ...(evId && { event_id: evId }),
+            event_time:       Math.floor(Date.now() / 1000),
+            action_source:    'website',
+            event_source_url: 'https://acelerago.com.br/diagnostico',
+            user_data:        userData,
+            custom_data:      {
+              content_name: 'Diagnóstico AceleraGO',
+              ...(utm_source   && { utm_source }),
+              ...(utm_medium   && { utm_medium }),
+              ...(utm_campaign && { utm_campaign }),
+              ...(utm_content  && { utm_content }),
+              ...(utm_term     && { utm_term }),
+            },
+          }],
+          ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
+        }),
+      })
+      if (!meta.ok) console.error(`[lead] Meta CAPI ${eventName} falhou: HTTP ${meta.status} — ${await meta.text()}`)
+    } catch (e) { console.error(`[lead] Meta CAPI ${eventName} erro:`, e) }
+  }
+
+  // Evento Lead antecipado (etapa 2 — deu o WhatsApp). Só CAPI, NÃO notifica nem
+  // grava no CRM (é o evento de otimização da campanha, alto volume).
+  if (tipo === 'contato') {
+    await fireMetaEvent('Lead', eventId)
+    return res.status(200).json({ ok: true })
+  }
 
   // Origem real derivada do utm_source (antes ficava fixo em 'Google' — atribuição errada)
   const origemLead = (() => {
@@ -206,47 +254,10 @@ export default async function handler(req, res) {
     }
   }
 
-  // Meta CAPI — evento Lead via servidor (funciona em iOS sem depender de cookie)
+  // Meta CAPI — completou o formulário (qualificação). Evento mais profundo que o
+  // Lead da etapa 2; serve pra medir qualidade e otimizar quando o volume escalar.
   if (tipo === 'completo') {
-    const META_TOKEN = process.env.META_ACCESS_TOKEN
-    if (META_TOKEN) {
-      const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
-
-      const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
-      const phoneE164   = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : null
-      const nomeParts   = nome ? nome.trim().split(/\s+/) : []
-
-      const userData = {}
-      if (phoneE164)    userData.ph = [sha256(phoneE164)]
-      if (nomeParts[0]) userData.fn = [sha256(nomeParts[0])]
-      if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
-
-      try {
-        const meta = await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: [{
-              event_name:       'Lead',
-              event_time:       Math.floor(Date.now() / 1000),
-              action_source:    'website',
-              event_source_url: 'https://acelerago.com.br/diagnostico',
-              user_data:        userData,
-              custom_data:      {
-                content_name: 'Diagnóstico AceleraGO',
-                ...(utm_source   && { utm_source }),
-                ...(utm_medium   && { utm_medium }),
-                ...(utm_campaign && { utm_campaign }),
-                ...(utm_content  && { utm_content }),
-                ...(utm_term     && { utm_term }),
-              },
-            }],
-            ...(process.env.META_TEST_EVENT_CODE && { test_event_code: process.env.META_TEST_EVENT_CODE }),
-          }),
-        })
-        if (!meta.ok) console.error(`[lead] Meta CAPI falhou: HTTP ${meta.status} — ${await meta.text()}`)
-      } catch (e) { console.error('[lead] Meta CAPI erro:', e) }
-    }
+    await fireMetaEvent('SubmitApplication', eventId)
   }
 
   return res.status(200).json({ ok: true })

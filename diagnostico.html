@@ -710,12 +710,30 @@
     }
   })
 
+  // Evento de conversão Lead — disparado quando a pessoa entrega o WhatsApp (etapa 2).
+  // É o evento de OTIMIZAÇÃO da campanha (alto volume + intenção real). Pixel +
+  // CAPI com o mesmo eventID para o Meta deduplicar.
+  let leadFired = false
+  function fireLead() {
+    if (leadFired) return
+    leadFired = true
+    const eventId = 'lead_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
+    if (typeof fbq !== 'undefined') fbq('track', 'Lead', {}, { eventID: eventId })
+    fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, tipo: 'contato', eventId }),
+      keepalive: true,
+    }).catch(() => {})
+  }
+
   function nextText(fieldId, errId, next) {
     const val = document.getElementById(fieldId).value.trim()
     if (!val) { document.getElementById(errId).style.display = 'block'; return }
     document.getElementById(errId).style.display = 'none'
     const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
+    if (fieldId === 'fTelefone') fireLead()   // etapa 2: deu o WhatsApp → evento Lead
     go(next)
   }
 
