@@ -50,10 +50,11 @@ export default async function handler(req, res) {
     } catch (e) { console.error(`[lead] Meta CAPI ${eventName} erro:`, e) }
   }
 
-  // Evento Lead antecipado (etapa 2 — deu o WhatsApp). Só CAPI, NÃO notifica nem
-  // grava no CRM (é o evento de otimização da campanha, alto volume).
+  // Evento de otimização (etapa 2 — deu o WhatsApp). InitiateCheckout porque o
+  // objetivo Vendas não aceita 'Lead'. Só CAPI aqui (o navegador dispara o pixel);
+  // NÃO notifica nem grava no CRM (é só o sinal de otimização, alto volume).
   if (tipo === 'contato') {
-    await fireMetaEvent('Lead', eventId)
+    await fireMetaEvent('InitiateCheckout', eventId)
     return res.status(200).json({ ok: true })
   }
 
@@ -254,10 +255,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // Meta CAPI — completou o formulário (qualificação). Evento mais profundo que o
-  // Lead da etapa 2; serve pra medir qualidade e otimizar quando o volume escalar.
+  // Meta CAPI — completou o formulário (qualificação). AddPaymentInfo (Vendas-nativo),
+  // mais profundo que o InitiateCheckout da etapa 2; mede qualidade e serve para
+  // otimizar mais fundo quando o volume escalar.
   if (tipo === 'completo') {
-    await fireMetaEvent('SubmitApplication', eventId)
+    await fireMetaEvent('AddPaymentInfo', eventId)
   }
 
   return res.status(200).json({ ok: true })

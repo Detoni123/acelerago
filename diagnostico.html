@@ -710,15 +710,15 @@
     }
   })
 
-  // Evento de conversão Lead — disparado quando a pessoa entrega o WhatsApp (etapa 2).
-  // É o evento de OTIMIZAÇÃO da campanha (alto volume + intenção real). Pixel +
-  // CAPI com o mesmo eventID para o Meta deduplicar.
+  // Evento de OTIMIZAÇÃO — disparado quando a pessoa entrega o WhatsApp (etapa 2).
+  // Usa InitiateCheckout porque o objetivo Vendas não aceita "Lead" (exclusivo do
+  // objetivo Leads). Pixel do NAVEGADOR (o que destrava no Vendas) + CAPI com dedup.
   let leadFired = false
   function fireLead() {
     if (leadFired) return
     leadFired = true
-    const eventId = 'lead_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
-    if (typeof fbq !== 'undefined') fbq('track', 'Lead', {}, { eventID: eventId })
+    const eventId = 'ic_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
+    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', {}, { eventID: eventId })
     fetch('/api/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -759,8 +759,11 @@
     document.getElementById('spinnerInv').style.display = 'block'
     document.getElementById('btnInv').disabled = true
     enviado = true
+    // Completou o formulário → AddPaymentInfo (Vendas-nativo). Navegador + CAPI com dedup.
+    const eventId = 'api_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
+    if (typeof fbq !== 'undefined') fbq('track', 'AddPaymentInfo', {}, { eventID: eventId })
     try {
-      await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo' }) })
+      await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo', eventId }) })
     } catch(_) {}
     go(7)
   }
