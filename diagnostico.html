@@ -722,7 +722,7 @@
     fetch('/api/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, tipo: 'contato', eventId }),
+      body: JSON.stringify({ ...data, tipo: 'contato', eventId, fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }),
       keepalive: true,
     }).catch(() => {})
   }
@@ -763,7 +763,7 @@
     const eventId = 'api_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
     if (typeof fbq !== 'undefined') fbq('track', 'AddPaymentInfo', {}, { eventID: eventId })
     try {
-      await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo', eventId }) })
+      await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo', eventId, fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) })
     } catch(_) {}
     go(7)
   }

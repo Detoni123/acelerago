@@ -6,8 +6,14 @@ export default async function handler(req, res) {
   }
 
   const { nome, telefone, instagram, site, faturamento, investimento, tipo, eventId,
+          fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
+
+  // Sinais extras de correspondência (sobem o match quality do CAPI)
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.headers['x-real-ip'] || undefined
+  const clientUa = userAgent || req.headers['user-agent'] || undefined
 
   // Helper Meta CAPI — dispara um evento server-side (funciona em iOS sem cookie).
   // eventId permite deduplicar com o pixel do navegador.
@@ -22,6 +28,11 @@ export default async function handler(req, res) {
     if (phoneE164)    userData.ph = [sha256(phoneE164)]
     if (nomeParts[0]) userData.fn = [sha256(nomeParts[0])]
     if (nomeParts.length > 1) userData.ln = [sha256(nomeParts[nomeParts.length - 1])]
+    // Sinais não-hasheados (melhoram o match): cookies Meta + IP + user-agent
+    if (fbc)          userData.fbc = fbc
+    if (fbp)          userData.fbp = fbp
+    if (clientIp)     userData.client_ip_address = clientIp
+    if (clientUa)     userData.client_user_agent = clientUa
     try {
       const meta = await fetch(`https://graph.facebook.com/v21.0/3236771719838015/events?access_token=${META_TOKEN}`, {
         method: 'POST',
