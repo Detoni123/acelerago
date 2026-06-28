@@ -89,8 +89,10 @@ export default async function handler(req, res) {
 
   const msg = [header, '', ...linhas].filter(l => l !== null).join('\n')
 
-  // Telegram apenas para abandono e desqualificado — completo é enviado após agendamento no Calendly
-  if (tipo !== 'completo') {
+  // Telegram para TODOS os tipos — inclusive 'completo'. Antes o completo só
+  // notificava via agendamento do Calendly, então quem terminava o formulário e
+  // não agendava se perdia. Quem agendar recebe a 2ª mensagem (com data/hora).
+  {
     try {
       const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
