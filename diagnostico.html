@@ -677,6 +677,19 @@
   }
   window.addEventListener('pagehide', onAbandon)
 
+  // Máscara de telefone BR: formata como (11) 99999-9999 enquanto digita.
+  ;(function () {
+    const tel = document.getElementById('fTelefone')
+    if (!tel) return
+    tel.addEventListener('input', function () {
+      const d = this.value.replace(/\D/g, '').slice(0, 11)
+      let out = d
+      if (d.length > 7)      out = `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+      else if (d.length > 2) out = `(${d.slice(0, 2)}) ${d.slice(2)}`
+      this.value = out
+    })
+  })()
+
   // Lê cookies Meta (_fbc / _fbp) para enriquecer CAPI
   function getCookie(name) {
     const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
@@ -728,10 +741,30 @@
     }).catch(() => {})
   }
 
+  // Valida WhatsApp BR: DDD válido + 10 ou 11 dígitos, bloqueia número falso
+  // (todos os dígitos iguais, ex: 1199999999). Evita lixo entrando no CRM.
+  function isValidPhone(raw) {
+    let d = (raw || '').replace(/\D/g, '')
+    if (d.startsWith('55') && d.length > 11) d = d.slice(2)  // remove DDI
+    if (d.length < 10 || d.length > 11) return false
+    if (Number(d.slice(0, 2)) < 11) return false             // DDD começa em 11
+    const num = d.slice(2)
+    if (/^(\d)\1+$/.test(num)) return false                  // todos iguais = falso
+    return true
+  }
+
   function nextText(fieldId, errId, next) {
     const val = document.getElementById(fieldId).value.trim()
-    if (!val) { document.getElementById(errId).style.display = 'block'; return }
-    document.getElementById(errId).style.display = 'none'
+    const errEl = document.getElementById(errId)
+    if (!val) {
+      if (fieldId === 'fTelefone') errEl.textContent = 'Por favor, informe seu WhatsApp.'
+      errEl.style.display = 'block'; return
+    }
+    if (fieldId === 'fTelefone' && !isValidPhone(val)) {
+      errEl.textContent = 'Informe um WhatsApp válido com DDD, ex: (11) 99999-9999.'
+      errEl.style.display = 'block'; return
+    }
+    errEl.style.display = 'none'
     const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
     if (fieldId === 'fTelefone') fireLead()   // etapa 2: deu o WhatsApp → evento Lead
