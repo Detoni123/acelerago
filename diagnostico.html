@@ -499,7 +499,8 @@
         <div class="input-wrap">
           <input class="field" id="fSite" type="url" placeholder="www.suaclinica.com.br" autocomplete="url" />
         </div>
-        <button class="btn" onclick="go(5)">Avançar →</button>
+        <span class="field-error" id="eSite">Informe um site válido ou deixe em branco.</span>
+        <button class="btn" onclick="nextSite()">Avançar →</button>
       </div>
     </div>
 
@@ -753,6 +754,22 @@
     return true
   }
 
+  // Nome: filtro leve (sem barrar nome real). Bloqueia vazio de letra,
+  // 1 caractere e tudo igual (ex: "aaaa", "...", "123").
+  function isValidName(raw) {
+    const v = (raw || '').trim()
+    if (v.length < 2) return false
+    if (!/[a-zA-ZÀ-ÿ]/.test(v)) return false
+    if (/^(.)\1+$/.test(v)) return false
+    return true
+  }
+
+  // Instagram: formato de @ válido (letras, números, ponto, underline). Sem espaço.
+  function isValidInstagram(raw) {
+    const v = (raw || '').trim().replace(/^@/, '')
+    return /^[a-zA-Z0-9._]{1,30}$/.test(v)
+  }
+
   function nextText(fieldId, errId, next) {
     const val = document.getElementById(fieldId).value.trim()
     const errEl = document.getElementById(errId)
@@ -764,11 +781,30 @@
       errEl.textContent = 'Informe um WhatsApp válido com DDD, ex: (11) 99999-9999.'
       errEl.style.display = 'block'; return
     }
+    if (fieldId === 'fNome' && !isValidName(val)) {
+      errEl.textContent = 'Por favor, informe seu nome.'
+      errEl.style.display = 'block'; return
+    }
+    if (fieldId === 'fInstagram' && !isValidInstagram(val)) {
+      errEl.textContent = 'Informe um @ válido, sem espaços. Ex: draanapaula'
+      errEl.style.display = 'block'; return
+    }
     errEl.style.display = 'none'
     const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
     if (fieldId === 'fTelefone') fireLead()   // etapa 2: deu o WhatsApp → evento Lead
     go(next)
+  }
+
+  // Site é opcional: em branco passa. Se digitar algo, precisa parecer um domínio.
+  function nextSite() {
+    const v = document.getElementById('fSite').value.trim()
+    const errEl = document.getElementById('eSite')
+    if (v && !/^(https?:\/\/)?[^\s.]+\.[^\s]{2,}$/.test(v)) {
+      errEl.style.display = 'block'; return
+    }
+    errEl.style.display = 'none'
+    go(5)
   }
 
   function nextFaturamento() {
