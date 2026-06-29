@@ -85,31 +85,35 @@ export default async function handler(req, res) {
     ? `https://wa.me/55${telefone.replace(/\D/g, '')}`
     : null
 
-  const linha = (label, val) => val ? `${label} ${val}` : null
+  // HTML (não Markdown): valores dinâmicos como utm_medium "paid_social" têm '_'
+  // que quebram o Markdown legado e fazem o Telegram descartar a mensagem.
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const linha = (label, val) => val ? `${label} ${esc(val)}` : null
   const qualificado = investimento && investimento.startsWith('Sim')
 
   const msg = [
-    qualificado ? '🟢 *Lead QUALIFICADO — AceleraGO*' : '🔴 *Lead Concluído — AceleraGO*',
+    qualificado ? '🟢 <b>Lead QUALIFICADO — AceleraGO</b>' : '🔴 <b>Lead Concluído — AceleraGO</b>',
     '',
-    linha('👤 *Nome:*',        nome),
-    linha('📱 *WhatsApp:*',    telefone),
-    linha('📸 *Instagram:*',   instagram ? `@${instagram}` : null),
-    linha('🌐 *Site:*',        site || 'Não informado'),
-    linha('💰 *Faturamento:*', faturamento),
-    linha('✅ *Investimento:*', investimento),
-    linha('📊 *Origem:*',      utmLabel),
-    linha('🗓 *Reunião:*',     dataHora),
+    linha('👤 <b>Nome:</b>',        nome),
+    linha('📱 <b>WhatsApp:</b>',    telefone),
+    linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
+    linha('🌐 <b>Site:</b>',        site || 'Não informado'),
+    linha('💰 <b>Faturamento:</b>', faturamento),
+    linha('✅ <b>Investimento:</b>', investimento),
+    linha('📊 <b>Origem:</b>',      utmLabel),
+    linha('🗓 <b>Reunião:</b>',     dataHora),
     '',
-    whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
+    whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
   ].filter(Boolean).join('\n')
 
   try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' }),
+      body:    JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'HTML' }),
     })
-  } catch (_) {}
+    if (!tg.ok) console.error(`[agendamento] Telegram falhou: HTTP ${tg.status} — ${await tg.text()}`)
+  } catch (e) { console.error('[agendamento] Telegram erro:', e) }
 
   return res.status(200).json({ ok: true })
 }

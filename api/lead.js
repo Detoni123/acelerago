@@ -99,51 +99,56 @@ export default async function handler(req, res) {
     ? `https://wa.me/55${telefone.replace(/\D/g, '')}`
     : null
 
-  const linha = (label, val) => val ? `${label} ${val}` : null
+  // Telegram usa HTML (não Markdown legado): valores dinâmicos como o utm_medium
+  // "paid_social" têm '_' que abre uma entidade itálico nunca fechada e faz o
+  // Telegram DESCARTAR a mensagem inteira (todo lead vindo da Meta sumia). Em HTML
+  // só é preciso escapar < > &; '_' e '*' viram texto literal.
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const linha = (label, val) => val ? `${label} ${esc(val)}` : null
 
   let header, linhas
 
   if (tipo === 'abandono') {
-    header = '⚠️ *Lead Abandonou — AceleraGO*\n_(não concluiu o formulário)_'
+    header = '⚠️ <b>Lead Abandonou — AceleraGO</b>\n<i>(não concluiu o formulário)</i>'
     linhas = [
-      linha('👤 *Nome:*',       nome),
-      linha('📱 *WhatsApp:*',   telefone),
-      linha('📸 *Instagram:*',  instagram ? `@${instagram}` : null),
-      linha('🌐 *Site:*',       site),
-      linha('💰 *Faturamento:*',faturamento),
-      linha('📊 *Origem:*',     utmLabel),
+      linha('👤 <b>Nome:</b>',       nome),
+      linha('📱 <b>WhatsApp:</b>',   telefone),
+      linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
+      linha('🌐 <b>Site:</b>',       site),
+      linha('💰 <b>Faturamento:</b>',faturamento),
+      linha('📊 <b>Origem:</b>',     utmLabel),
       '',
-      whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
+      whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
   } else if (tipo === 'desqualificado') {
-    header = '🟡 *Lead Desqualificado — AceleraGO*\n_(faturamento até R$ 30.000)_'
+    header = '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(faturamento até R$ 30.000)</i>'
     linhas = [
-      linha('👤 *Nome:*',       nome),
-      linha('📱 *WhatsApp:*',   telefone),
-      linha('📸 *Instagram:*',  instagram ? `@${instagram}` : null),
-      linha('🌐 *Site:*',       site),
-      linha('💰 *Faturamento:*',faturamento),
-      linha('📊 *Origem:*',     utmLabel),
+      linha('👤 <b>Nome:</b>',       nome),
+      linha('📱 <b>WhatsApp:</b>',   telefone),
+      linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
+      linha('🌐 <b>Site:</b>',       site),
+      linha('💰 <b>Faturamento:</b>',faturamento),
+      linha('📊 <b>Origem:</b>',     utmLabel),
       '',
-      whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
+      whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
   } else {
     // completo
     const qualificado = investimento && investimento.startsWith('Sim')
     header = qualificado
-      ? '🟢 *Lead QUALIFICADO — AceleraGO*\n_(terminou o formulário — confirme se agendou)_'
-      : '🔴 *Lead Concluído — AceleraGO*\n_(não aceitou o investimento)_'
+      ? '🟢 <b>Lead QUALIFICADO — AceleraGO</b>\n<i>(terminou o formulário — confirme se agendou)</i>'
+      : '🔴 <b>Lead Concluído — AceleraGO</b>\n<i>(não aceitou o investimento)</i>'
     linhas = [
-      linha('👤 *Nome:*',        nome),
-      linha('📱 *WhatsApp:*',    telefone),
-      linha('📸 *Instagram:*',   instagram ? `@${instagram}` : null),
-      linha('🌐 *Site:*',        site || 'Não informado'),
-      linha('💰 *Faturamento:*', faturamento),
-      linha('✅ *Investimento:*', investimento),
-      linha('📊 *Origem:*',      utmLabel),
+      linha('👤 <b>Nome:</b>',        nome),
+      linha('📱 <b>WhatsApp:</b>',    telefone),
+      linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
+      linha('🌐 <b>Site:</b>',        site || 'Não informado'),
+      linha('💰 <b>Faturamento:</b>', faturamento),
+      linha('✅ <b>Investimento:</b>', investimento),
+      linha('📊 <b>Origem:</b>',      utmLabel),
       '',
-      whatsappLink ? `💬 [Abordar no WhatsApp](${whatsappLink})` : null,
-      `📅 [Ver agenda](https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go)`,
+      whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
+      `📅 <a href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go">Ver agenda</a>`,
     ]
   }
 
@@ -157,7 +162,7 @@ export default async function handler(req, res) {
       const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' }),
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'HTML' }),
       })
       if (!tg.ok) console.error(`[lead] Telegram falhou (${tipo}): HTTP ${tg.status} — ${await tg.text()}`)
     } catch (e) { console.error(`[lead] Telegram erro (${tipo}):`, e) }
