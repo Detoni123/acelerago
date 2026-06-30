@@ -516,7 +516,8 @@
           <div class="choice" onclick="pick('faturamento',this,'Entre R$ 100.000 e R$ 150.000','btnFat')"><span class="badge">D</span><span class="choice-label">Entre R$ 100.000 e R$ 150.000</span></div>
           <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 150.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 150.000</span></div>
         </div>
-        <button class="btn" id="btnFat" disabled onclick="nextFaturamento()">Avançar</button>
+        <span class="field-error" id="eFat">Selecione uma opção para continuar.</span>
+        <button class="btn" id="btnFat" onclick="nextFaturamento()">Avançar</button>
       </div>
     </div>
 
@@ -529,7 +530,8 @@
           <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso para crescer!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso para crescer!</span></div>
           <div class="choice" onclick="pick('investimento',this,'Ainda não é o momento de investir.','btnInv')"><span class="badge">B</span><span class="choice-label">Ainda não é o momento de investir.</span></div>
         </div>
-        <button class="btn" id="btnInv" disabled onclick="submitForm()">
+        <span class="field-error" id="eInv">Selecione uma opção para continuar.</span>
+        <button class="btn" id="btnInv" onclick="submitForm()">
           <span id="btnInvLabel">✓ Enviar respostas</span>
           <span class="spinner" id="spinnerInv"></span>
         </button>
@@ -699,6 +701,7 @@
 
   // Conversão Calendly → Meta Pixel + CAPI com mesmo event_id para deduplicação
   window.addEventListener('message', function(e) {
+    try {
     if (e.data && e.data.event === 'calendly.event_scheduled') {
       const eventId  = 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
       const eventUri = e.data.payload?.event?.uri
@@ -723,6 +726,7 @@
         }),
       }).catch(() => {})
     }
+    } catch (_) { /* mensagem externa malformada: ignora sem quebrar a página */ }
   })
 
   // Evento de OTIMIZAÇÃO — disparado quando a pessoa entrega o WhatsApp (etapa 2).
@@ -808,6 +812,7 @@
   }
 
   function nextFaturamento() {
+    if (!data.faturamento) { document.getElementById('eFat').style.display = 'block'; return }
     if (data.faturamento === 'Até R$ 30.000') {
       enviado = true
       fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado', fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) }).catch(()=>{})
@@ -821,10 +826,13 @@
     el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('sel'))
     el.classList.add('sel')
     data[key] = val
-    document.getElementById(btnId).disabled = false
+    // esconde o aviso "selecione uma opção" assim que a pessoa escolhe
+    const hint = el.closest('.card').querySelector('.field-error')
+    if (hint) hint.style.display = 'none'
   }
 
   async function submitForm() {
+    if (!data.investimento) { document.getElementById('eInv').style.display = 'block'; return }
     document.getElementById('btnInvLabel').style.display = 'none'
     document.getElementById('spinnerInv').style.display = 'block'
     document.getElementById('btnInv').disabled = true
