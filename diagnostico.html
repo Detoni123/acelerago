@@ -7,13 +7,9 @@
   <meta name="description" content="Descubra como sua clínica pode captar mais pacientes com tráfego pago especializado em saúde da mulher." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/logo-favicon.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://connect.facebook.net" />
-  <!-- Fonte carregada de forma assincrona (nao bloqueia a renderizacao); texto aparece na hora com fallback e troca para Inter ao carregar -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" /></noscript>
+  <!-- Fonte Inter hospedada no proprio dominio (sem dependencia do Google): variavel, subset latino, todos os pesos em um unico arquivo. @font-face fica no <style> abaixo. -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-var.woff2" crossorigin />
   <!-- Ícones agora são SVG inline (sem dependência externa que bloqueia o render).
        O CSS do Calendly é carregado sob demanda na etapa 7 (initCalendly). -->
 
@@ -29,6 +25,16 @@
   </script>
   <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3236771719838015&ev=PageView&noscript=1"/></noscript>
   <style>
+    /* Inter hospedada no proprio dominio: fonte variavel (todos os pesos), subset latino cobre os acentos do portugues */
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-var.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
