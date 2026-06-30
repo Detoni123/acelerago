@@ -9,7 +9,11 @@
   <link rel="icon" type="image/png" href="/logo-favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://connect.facebook.net" />
+  <!-- Fonte carregada de forma assincrona (nao bloqueia a renderizacao); texto aparece na hora com fallback e troca para Inter ao carregar -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" /></noscript>
   <!-- Ícones agora são SVG inline (sem dependência externa que bloqueia o render).
        O CSS do Calendly é carregado sob demanda na etapa 7 (initCalendly). -->
 
@@ -425,7 +429,7 @@
 
 <header class="site-header">
   <a href="/">
-    <img src="/acelerafundotransp.png" alt="AceleraGO" />
+    <img src="/acelerafundotransp.webp" alt="AceleraGO" width="100" height="36" />
   </a>
 </header>
 
