@@ -572,23 +572,19 @@
 
     <!-- ── FINAL ── -->
     <div class="step" id="s7">
-      <div class="card" style="padding:32px 28px 24px">
-        <div class="final-label" style="text-align:center;margin-bottom:6px">AceleraGO · Diagnóstico Gratuito</div>
-        <div style="text-align:center;margin-bottom:12px"><span style="display:inline-block;background:var(--orange);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px">Falta só 1 passo</span></div>
-        <h2 style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);text-align:center;line-height:1.25;margin-bottom:12px">Agende seu diagnóstico gratuito</h2>
-        <p style="text-align:center;font-size:1rem;color:var(--text-mid);line-height:1.65;margin-bottom:10px">
-          Recebemos suas respostas. Para confirmar sua análise gratuita com o nosso especialista, <strong>escolha abaixo o dia e o horário</strong>. Enquanto você não escolhe um horário, sua reunião não fica agendada.
+      <div class="card" style="padding:36px 28px 32px;text-align:center">
+        <div class="final-label" style="margin-bottom:8px">AceleraGO · Diagnóstico Gratuito</div>
+        <div style="margin-bottom:16px"><span style="display:inline-block;background:var(--orange);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px">Falta só 1 passo</span></div>
+        <div style="font-size:2.4rem;line-height:1;margin-bottom:10px">✅</div>
+        <h2 style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);line-height:1.25;margin-bottom:12px">Agora é só agendar seu horário</h2>
+        <p style="font-size:1rem;color:var(--text-mid);line-height:1.65;margin-bottom:26px">
+          Recebemos suas respostas. Toque no botão abaixo e <strong>escolha o melhor dia e horário</strong> para o seu diagnóstico gratuito.
         </p>
-        <p style="text-align:center;font-size:.92rem;color:var(--orange-dark);font-weight:700;margin-bottom:18px">
-          Atendemos poucas clínicas por semana. Toque em um horário disponível logo abaixo 👇
-        </p>
-        <div id="calendlyWidget"
-          class="calendly-inline-widget"
-          style="min-width:280px;height:660px;border-radius:12px;overflow:hidden"
-          data-url="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-de-diagnostico-acelerago">
-        </div>
-        <p style="text-align:center;font-size:.85rem;color:var(--text-muted);margin-top:18px">
-          Prefere conversar agora? <a href="https://wa.me/5511934619564?text=Ol%C3%A1!%20Acabei%20de%20fazer%20o%20diagn%C3%B3stico%20e%20gostaria%20de%20conversar%20pelo%20WhatsApp." target="_blank" rel="noopener" style="color:var(--teal);font-weight:700;text-decoration:none">Falar no WhatsApp &rarr;</a>
+        <button class="btn" onclick="openCalendly()" style="font-size:1.05rem">
+          📅 Agendar meu diagnóstico gratuito
+        </button>
+        <p style="font-size:.9rem;color:var(--orange-dark);font-weight:700;margin-top:16px">
+          Atendemos poucas clínicas por semana.
         </p>
       </div>
     </div>
@@ -624,7 +620,6 @@
     if (inp) setTimeout(() => inp.focus(), 300)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (n === 7) {
-      document.getElementById('formContainer').style.maxWidth = '820px'
       initCalendly()
     }
   }
@@ -653,8 +648,13 @@
     card.insertBefore(b, card.firstChild)
   })
 
+  function calendlyUrl() {
+    return 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-de-diagnostico-acelerago'
+      + '?name=' + encodeURIComponent(data.nome)
+  }
+
+  // Pré-carrega CSS + JS do Calendly ao chegar na última etapa, para o popup abrir na hora do toque.
   function initCalendly() {
-    // CSS do Calendly carregado sob demanda (não bloqueia o render inicial)
     if (!document.getElementById('calendly-css')) {
       const css = document.createElement('link')
       css.id = 'calendly-css'
@@ -662,17 +662,26 @@
       css.href = 'https://assets.calendly.com/assets/external/widget.css'
       document.head.appendChild(css)
     }
-    const url = 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-de-diagnostico-acelerago'
-      + '?name=' + encodeURIComponent(data.nome)
-    const widget = document.getElementById('calendlyWidget')
-    widget.setAttribute('data-url', url)
-    if (window.Calendly) {
-      Calendly.initInlineWidget({ url, parentElement: widget })
-    } else {
+    if (!window.Calendly && !document.getElementById('calendly-js')) {
       const s = document.createElement('script')
+      s.id = 'calendly-js'
       s.src = 'https://assets.calendly.com/assets/external/widget.js'
       document.head.appendChild(s)
     }
+  }
+
+  // Abre o Calendly em popup (overlay na mesma página — confiável no navegador do Instagram/iOS).
+  // Preserva o rastreamento: o popup dispara o mesmo evento calendly.event_scheduled.
+  // Fallback: se o script ainda não carregou, abre em nova aba.
+  function openCalendly() {
+    const url = calendlyUrl()
+    if (window.Calendly) {
+      Calendly.initPopupWidget({ url })
+    } else {
+      initCalendly()
+      window.open(url, '_blank', 'noopener')
+    }
+    return false
   }
 
   function sendBeaconLead(tipo) {
