@@ -95,7 +95,7 @@ export default async function handler(req, res) {
     const texto =
       `📅 *Reunião de diagnóstico agendada*\n\n` +
       `Olá, ${pnome}! Reservamos o seu horário com a AceleraGO${quando}.\n\n` +
-      `Este é um atendimento individual e as vagas são limitadas. Para confirmar a sua presença e manter a vaga reservada, responda esta mensagem com a palavra *CONFIRMO*.\n\n` +
+      `Para confirmar a sua presença, responda esta mensagem com a palavra *CONFIRMO*.\n\n` +
       `Se não puder comparecer, avise por aqui para que possamos liberar o horário para outra profissional.\n\n` +
       `Equipe AceleraGO`
     try {
