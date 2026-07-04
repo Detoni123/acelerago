@@ -93,11 +93,11 @@ export default async function handler(req, res) {
     const pnome    = nome ? nome.trim().split(/\s+/)[0] : ''
     const quando   = dataHora ? ` para ${dataHora}` : ''
     const texto =
-      `✅ *Reunião de diagnóstico confirmada*\n\n` +
-      `Olá, ${pnome}! Recebemos seu agendamento e sua reunião com a AceleraGO está confirmada${quando}.\n\n` +
-      `Este horário fica reservado exclusivamente para você. Nele, vamos mostrar como atrair mais pacientes qualificadas para a sua clínica sem depender de indicação.\n\n` +
-      `Se por algum motivo você não puder comparecer, pedimos que avise por aqui, assim conseguimos remarcar e liberar o horário para outra profissional.\n\n` +
-      `Até breve,\nEquipe AceleraGO`
+      `📅 *Reunião de diagnóstico agendada*\n\n` +
+      `Olá, ${pnome}! Reservamos o seu horário com a AceleraGO${quando}.\n\n` +
+      `Este é um atendimento individual e as vagas são limitadas. Para confirmar a sua presença e manter a vaga reservada, responda esta mensagem com a palavra *CONFIRMO*.\n\n` +
+      `Se não puder comparecer, avise por aqui para que possamos liberar o horário para outra profissional.\n\n` +
+      `Equipe AceleraGO`
     try {
       const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
         method:  'POST',
