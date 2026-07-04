@@ -63,7 +63,7 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
       background: var(--cream);
       color: var(--text-dark);
-      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     /* ── Barra de progresso (no topo do formulário) ── */
@@ -103,7 +103,7 @@
 
     /* ── Layout ── */
     .page {
-      min-height: calc(100vh - 68px);
+      min-height: calc(100dvh - 68px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -420,6 +420,21 @@
 
     @media (max-width: 480px) {
       .card, .final-card { padding: 28px 22px; }
+
+      /* Capa (s0) em tela cheia e sem moldura no mobile */
+      .page:has(#s0.active) { padding: 0; align-items: stretch; }
+      #s0.active {
+        min-height: calc(100dvh - 68px);
+        display: flex;
+        align-items: center;
+      }
+      #s0 .card {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 24px 24px 32px;
+        width: 100%;
+      }
     }
   </style>
   <!-- Microsoft Clarity -->
