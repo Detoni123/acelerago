@@ -81,6 +81,33 @@ export default async function handler(req, res) {
     } catch (_) {}
   }
 
+  // ── Follow-up automático no WhatsApp da lead (Evolution API, instância AceleraGO) ──
+  // Confirma o compromisso no horário agendado, no momento do agendamento.
+  // Fica dormente se as env vars não estiverem configuradas (não envia nada por engano).
+  const EVOLUTION_API_URL  = process.env.EVOLUTION_API_URL
+  const EVOLUTION_API_KEY  = process.env.EVOLUTION_API_KEY
+  const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
+  if (EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE && telefone) {
+    const waDigits = telefone.replace(/\D/g, '')
+    const waNumber = waDigits.startsWith('55') ? waDigits : `55${waDigits}`
+    const pnome    = nome ? nome.trim().split(/\s+/)[0] : ''
+    const quando   = dataHora ? ` para ${dataHora}` : ''
+    const texto =
+      `✅ *Reunião de diagnóstico confirmada*\n\n` +
+      `Olá, ${pnome}! Recebemos seu agendamento e sua reunião com a AceleraGO está confirmada${quando}.\n\n` +
+      `Este horário fica reservado exclusivamente para você. Nele, vamos mostrar como atrair mais pacientes qualificadas para a sua clínica sem depender de indicação.\n\n` +
+      `Se por algum motivo você não puder comparecer, pedimos que avise por aqui, assim conseguimos remarcar e liberar o horário para outra profissional.\n\n` +
+      `Até breve,\nEquipe AceleraGO`
+    try {
+      const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
+        body:    JSON.stringify({ number: waNumber, text: texto }),
+      })
+      if (!wa.ok) console.error(`[agendamento] WhatsApp follow-up falhou: HTTP ${wa.status}`)
+    } catch (e) { console.error('[agendamento] WhatsApp follow-up erro:', e) }
+  }
+
   const whatsappLink = telefone
     ? `https://wa.me/55${telefone.replace(/\D/g, '')}`
     : null
