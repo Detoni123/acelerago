@@ -114,6 +114,8 @@ export default async function handler(req, res) {
   const SB_URL = process.env.SUPABASE_URL
   const SB_KEY = process.env.SUPABASE_SECRET_KEY
   if (SB_URL && SB_KEY && telefone && startTimeIso) {
+    const telDigits = telefone.replace(/\D/g, '')
+    const telE164   = telDigits.startsWith('55') ? telDigits : `55${telDigits}`
     try {
       const ins = await fetch(`${SB_URL}/rest/v1/agendamentos`, {
         method:  'POST',
@@ -125,7 +127,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           nome:               nome || null,
-          telefone,
+          telefone:           telE164,
           reuniao_at:         startTimeIso,
           calendly_event_uri: eventUri || null,
         }),
