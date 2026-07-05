@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
   let dataHora = null
+  let startTimeIso = null
 
   if (CALENDLY_TOKEN && eventUri) {
     try {
@@ -22,6 +23,7 @@ export default async function handler(req, res) {
       })
       const json = await resp.json()
       const startTime = json.resource?.start_time
+      startTimeIso = startTime || null
       if (startTime) {
         dataHora = new Date(startTime).toLocaleString('pt-BR', {
           timeZone: 'America/Sao_Paulo',
@@ -106,6 +108,30 @@ export default async function handler(req, res) {
       })
       if (!wa.ok) console.error(`[agendamento] WhatsApp follow-up falhou: HTTP ${wa.status}`)
     } catch (e) { console.error('[agendamento] WhatsApp follow-up erro:', e) }
+  }
+
+  // ── Persiste o agendamento para o lembrete de 2h antes (cron /api/lembretes) ──
+  const SB_URL = process.env.SUPABASE_URL
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY
+  if (SB_URL && SB_KEY && telefone && startTimeIso) {
+    try {
+      const ins = await fetch(`${SB_URL}/rest/v1/agendamentos`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey:         SB_KEY,
+          Authorization:  `Bearer ${SB_KEY}`,
+          Prefer:         'return=minimal',
+        },
+        body: JSON.stringify({
+          nome:               nome || null,
+          telefone,
+          reuniao_at:         startTimeIso,
+          calendly_event_uri: eventUri || null,
+        }),
+      })
+      if (!ins.ok) console.error(`[agendamento] Supabase insert falhou: HTTP ${ins.status} — ${await ins.text()}`)
+    } catch (e) { console.error('[agendamento] Supabase insert erro:', e) }
   }
 
   const whatsappLink = telefone
