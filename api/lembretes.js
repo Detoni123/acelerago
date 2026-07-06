@@ -69,10 +69,17 @@ export default async function handler(req, res) {
       timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit',
     })
     const pnome = ag.nome ? String(ag.nome).trim().split(/\s+/)[0] : ''
-    const texto =
-      `⏰ *Lembrete: sua reunião é hoje*\n\n` +
-      `Olá, ${pnome}! Passando para lembrar da sua reunião de diagnóstico com a AceleraGO hoje, às ${hora}.\n\n` +
-      `Nos vemos em breve. Se precisar remarcar, avise por aqui.`
+
+    // Quem já respondeu CONFIRMO (confirmado_at preenchido) recebe um lembrete leve.
+    // Quem NÃO confirmou recebe um reforço pedindo confirmação ou aviso de ausência.
+    const texto = ag.confirmado_at
+      ? `⏰ *Lembrete: sua reunião é hoje*\n\n` +
+        `Olá, ${pnome}! Passando para lembrar da sua reunião de diagnóstico com a AceleraGO hoje, às ${hora}.\n\n` +
+        `Nos vemos em breve. Se precisar remarcar, avise por aqui.`
+      : `⏰ *Sua reunião com a AceleraGO é hoje, às ${hora}*\n\n` +
+        `Olá, ${pnome}! Ainda não recebemos a sua confirmação e o seu horário continua reservado.\n\n` +
+        `Como a agenda é limitada, precisamos saber se podemos contar com você. Para confirmar, responda com a palavra *CONFIRMO*.\n\n` +
+        `Se não puder comparecer, é só avisar por aqui que liberamos o horário.`
 
     let ok = false
     if (EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE && ag.telefone) {
