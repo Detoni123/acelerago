@@ -60,7 +60,8 @@ export default async function handler(req, res) {
   const sendWA = async (telefone, texto) => {
     const digits = String(telefone).replace(/\D/g, '')
     if (digits.length < 10) return false
-    const number = digits.startsWith('55') ? digits : `55${digits}`
+    // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
+    const number = digits.startsWith('55') && digits.length >= 12 ? digits : `55${digits}`
     try {
       const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
         method:  'POST',

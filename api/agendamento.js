@@ -91,7 +91,8 @@ export default async function handler(req, res) {
   const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
   if (EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE && telefone) {
     const waDigits = telefone.replace(/\D/g, '')
-    const waNumber = waDigits.startsWith('55') ? waDigits : `55${waDigits}`
+    // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
+    const waNumber = waDigits.startsWith('55') && waDigits.length >= 12 ? waDigits : `55${waDigits}`
     const pnome    = nome ? nome.trim().split(/\s+/)[0] : ''
     const quando   = dataHora ? ` para ${dataHora}` : ''
     const texto =
@@ -115,7 +116,7 @@ export default async function handler(req, res) {
   const SB_KEY = process.env.SUPABASE_SECRET_KEY
   if (SB_URL && SB_KEY && telefone && startTimeIso) {
     const telDigits = telefone.replace(/\D/g, '')
-    const telE164   = telDigits.startsWith('55') ? telDigits : `55${telDigits}`
+    const telE164   = telDigits.startsWith('55') && telDigits.length >= 12 ? telDigits : `55${telDigits}`
     try {
       const ins = await fetch(`${SB_URL}/rest/v1/agendamentos`, {
         method:  'POST',
