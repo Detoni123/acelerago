@@ -6,6 +6,7 @@
     { "source": "/gerador-carrossel.html", "destination": "https://gerador.acelerago.com.br/", "permanent": true }
   ],
   "crons": [
-    { "path": "/api/lembretes", "schedule": "*/15 * * * *" }
+    { "path": "/api/lembretes", "schedule": "*/15 * * * *" },
+    { "path": "/api/resgates", "schedule": "*/15 * * * *" }
   ]
 }
