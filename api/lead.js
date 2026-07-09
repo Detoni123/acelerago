@@ -106,6 +106,14 @@ export default async function handler(req, res) {
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const linha = (label, val) => val ? `${label} ${esc(val)}` : null
 
+  // Rastreio detalhado: origem, campanha, conjunto e anúncio em linhas separadas
+  const trackingLinhas = [
+    linha('📊 <b>Origem:</b>',   [utm_source, utm_medium].filter(Boolean).join(' / ') || null),
+    linha('📣 <b>Campanha:</b>', utm_campaign),
+    linha('🎯 <b>Conjunto:</b>', utm_term),
+    linha('🖼 <b>Anúncio:</b>',  utm_content),
+  ]
+
   let header, linhas
 
   if (tipo === 'abandono') {
@@ -116,7 +124,7 @@ export default async function handler(req, res) {
       linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
-      linha('📊 <b>Origem:</b>',     utmLabel),
+      ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
@@ -128,7 +136,7 @@ export default async function handler(req, res) {
       linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
-      linha('📊 <b>Origem:</b>',     utmLabel),
+      ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
@@ -145,7 +153,7 @@ export default async function handler(req, res) {
       linha('🌐 <b>Site:</b>',        site || 'Não informado'),
       linha('💰 <b>Faturamento:</b>', faturamento),
       linha('✅ <b>Investimento:</b>', investimento),
-      linha('📊 <b>Origem:</b>',      utmLabel),
+      ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
       `📅 <a href="https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go">Ver agenda</a>`,
@@ -225,6 +233,8 @@ export default async function handler(req, res) {
         investimento ? `Investimento: ${investimento}` : null,
         statusNota,
         utmLabel ? `UTM: ${utmLabel}` : null,
+        utm_term    ? `Conjunto: ${utm_term}` : null,
+        utm_content ? `Anúncio: ${utm_content}` : null,
         `Origem: Formulário /diagnostico`,
       ].filter(Boolean).join('\n')
 
@@ -248,8 +258,16 @@ export default async function handler(req, res) {
           const patch = await fetch(`${SUPABASE_URL}/rest/v1/prospects?id=eq.${existing[0].id}`, {
             method: 'PATCH',
             headers: { ...sbHeaders, Prefer: 'return=minimal' },
-            // fbc/fbp só entram quando chegam (não sobrescreve cookie já salvo com null)
-            body: JSON.stringify({ nome: nome || undefined, observacoes, ...(fbc && { fbc }), ...(fbp && { fbp }) }),
+            // fbc/fbp/utm só entram quando chegam (não sobrescrevem valor já salvo com null)
+            body: JSON.stringify({
+              nome: nome || undefined, observacoes,
+              ...(fbc && { fbc }), ...(fbp && { fbp }),
+              ...(utm_source   && { utm_source }),
+              ...(utm_medium   && { utm_medium }),
+              ...(utm_campaign && { utm_campaign }),
+              ...(utm_content  && { utm_content }),
+              ...(utm_term     && { utm_term }),
+            }),
           })
           if (!patch.ok) console.error(`[lead] CRM PATCH falhou (${tipo}): HTTP ${patch.status} — ${await patch.text()}`)
         } else {
@@ -267,6 +285,12 @@ export default async function handler(req, res) {
               // Cookies Meta p/ conversão offline depois (reunião/fechado no CRM)
               ...(fbc && { fbc }),
               ...(fbp && { fbp }),
+              // Rastreio de origem detalhado (campanha/conjunto/anúncio)
+              ...(utm_source   && { utm_source }),
+              ...(utm_medium   && { utm_medium }),
+              ...(utm_campaign && { utm_campaign }),
+              ...(utm_content  && { utm_content }),
+              ...(utm_term     && { utm_term }),
             }),
           })
           if (!insert.ok) console.error(`[lead] CRM INSERT falhou (${tipo}): HTTP ${insert.status} — ${await insert.text()}`)
