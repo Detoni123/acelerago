@@ -104,7 +104,7 @@ export default async function handler(req, res) {
         `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua reunião. ` +
         `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
         `Se preferir, me fala por aqui o melhor dia e horário que eu encaixo pra você.`
-      if (await sendWA(p.telefone, 'resgate_qualificada', [pnome])) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
+      if (await sendWA(p.telefone, 'resgate_qualificada_v2', [pnome])) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
       else falhas++
       continue
     }
