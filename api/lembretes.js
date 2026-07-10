@@ -1,6 +1,8 @@
 // Cron: lembrete de reunião ~2h antes.
 // Chamado pelo Vercel Cron a cada 15 min. Protegido por CRON_SECRET
 // (o Vercel envia automaticamente o header Authorization: Bearer ${CRON_SECRET}).
+import { sendTemplate } from './_whatsapp.js'
+
 export default async function handler(req, res) {
   const CRON_SECRET = process.env.CRON_SECRET
   const auth        = req.headers['authorization'] || ''
@@ -81,19 +83,10 @@ export default async function handler(req, res) {
         `Como a agenda é limitada, precisamos saber se podemos contar com você. Para confirmar, responda com a palavra *CONFIRMO*.\n\n` +
         `Se não puder comparecer, é só avisar por aqui que liberamos o horário.`
 
+    // Cloud API oficial: template aprovado lembrete_reuniao_2h (nome + hora)
     let ok = false
-    if (EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE && ag.telefone) {
-      const digits = String(ag.telefone).replace(/\D/g, '')
-      // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
-      const number = digits.startsWith('55') && digits.length >= 12 ? digits : `55${digits}`
-      try {
-        const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
-          body:    JSON.stringify({ number, text: texto }),
-        })
-        ok = wa.ok || wa.status === 201
-      } catch (_) { ok = false }
+    if (ag.telefone) {
+      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_2h', [pnome || 'Doutora', hora])
     }
 
     if (ok) { await markDone(ag.id); enviados++ }

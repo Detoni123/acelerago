@@ -8,6 +8,8 @@
 //
 // Idempotência: após enviar, anexa um marcador [auto:resgate-*] nas observações do prospect.
 // Janela máxima de 72h: leads mais antigas não recebem nada (resgate antigo é manual).
+import { sendTemplate } from './_whatsapp.js'
+
 export default async function handler(req, res) {
   const CRON_SECRET = process.env.CRON_SECRET
   const auth        = req.headers['authorization'] || ''
@@ -57,20 +59,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'query falhou', detail: String(e) })
   }
 
-  const sendWA = async (telefone, texto) => {
-    const digits = String(telefone).replace(/\D/g, '')
-    if (digits.length < 10) return false
-    // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
-    const number = digits.startsWith('55') && digits.length >= 12 ? digits : `55${digits}`
-    try {
-      const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
-        body:    JSON.stringify({ number, text: texto }),
-      })
-      return wa.ok || wa.status === 201
-    } catch (_) { return false }
-  }
+  // Envio via Cloud API oficial: sempre template aprovado (ver api/_whatsapp.js)
+  const sendWA = async (telefone, template, params) => sendTemplate(telefone, template, params)
 
   const marcar = (p, marcador) =>
     fetch(`${SB_URL}/rest/v1/prospects?id=eq.${p.id}`, {
@@ -114,7 +104,7 @@ export default async function handler(req, res) {
         `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua reunião. ` +
         `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
         `Se preferir, me fala por aqui o melhor dia e horário que eu encaixo pra você.`
-      if (await sendWA(p.telefone, texto)) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
+      if (await sendWA(p.telefone, 'resgate_qualificada', [pnome])) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
       else falhas++
       continue
     }
@@ -126,7 +116,7 @@ export default async function handler(req, res) {
         `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO ☺️\n\n` +
         `Vi que você preencheu o nosso diagnóstico. Cada médica vive um momento diferente, e o seu importa pra gente.\n\n` +
         `Me conta um pouco do seu momento e do seu consultório? Assim conseguimos te dar um direcionamento honesto do que faz sentido agora, sem compromisso.`
-      if (await sendWA(p.telefone, texto)) { await marcar(p, 'resgate-desqualificada'); desqualificadas++ }
+      if (await sendWA(p.telefone, 'resgate_desqualificada', [pnome])) { await marcar(p, 'resgate-desqualificada'); desqualificadas++ }
       else falhas++
       continue
     }
@@ -138,7 +128,7 @@ export default async function handler(req, res) {
         `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO ☺️\n\n` +
         `Vi que você começou o nosso diagnóstico e não chegou a concluir. Ficou alguma dúvida?\n\n` +
         `Se preferir, me conta por aqui mesmo o seu momento que a gente te direciona. E se quiser retomar, é rapidinho: acelerago.com.br/diagnostico`
-      if (await sendWA(p.telefone, texto)) { await marcar(p, 'resgate-abandono'); abandonos++ }
+      if (await sendWA(p.telefone, 'resgate_abandono', [pnome])) { await marcar(p, 'resgate-abandono'); abandonos++ }
       else falhas++
     }
   }

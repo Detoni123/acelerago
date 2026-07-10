@@ -1,5 +1,7 @@
 import crypto from 'crypto'
 
+import { sendTemplate } from './_whatsapp.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
@@ -89,26 +91,12 @@ export default async function handler(req, res) {
   const EVOLUTION_API_URL  = process.env.EVOLUTION_API_URL
   const EVOLUTION_API_KEY  = process.env.EVOLUTION_API_KEY
   const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
-  if (EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE && telefone) {
-    const waDigits = telefone.replace(/\D/g, '')
-    // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
-    const waNumber = waDigits.startsWith('55') && waDigits.length >= 12 ? waDigits : `55${waDigits}`
-    const pnome    = nome ? nome.trim().split(/\s+/)[0] : ''
-    const quando   = dataHora ? ` para ${dataHora}` : ''
-    const texto =
-      `📅 *Reunião de diagnóstico agendada*\n\n` +
-      `Olá, ${pnome}! Reservamos o seu horário com a AceleraGO${quando}.\n\n` +
-      `Para confirmar a sua presença, responda esta mensagem com a palavra *CONFIRMO*.\n\n` +
-      `Se não puder comparecer, avise por aqui para que possamos liberar o horário para outra profissional.\n\n` +
-      `Equipe AceleraGO`
-    try {
-      const wa = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
-        body:    JSON.stringify({ number: waNumber, text: texto }),
-      })
-      if (!wa.ok) console.error(`[agendamento] WhatsApp follow-up falhou: HTTP ${wa.status}`)
-    } catch (e) { console.error('[agendamento] WhatsApp follow-up erro:', e) }
+  if (telefone) {
+    // Cloud API oficial: template aprovado confirmacao_agendamento (nome + data/hora)
+    const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
+    const quando = dataHora || 'em breve'
+    const ok = await sendTemplate(telefone, 'confirmacao_agendamento', [pnome, quando])
+    if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 
   // ── Persiste o agendamento para o lembrete de 2h antes (cron /api/lembretes) ──
