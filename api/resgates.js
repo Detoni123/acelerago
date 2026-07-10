@@ -128,7 +128,7 @@ export default async function handler(req, res) {
         `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO ☺️\n\n` +
         `Vi que você começou o nosso diagnóstico e não chegou a concluir. Ficou alguma dúvida?\n\n` +
         `Se preferir, me conta por aqui mesmo o seu momento que a gente te direciona. E se quiser retomar, é rapidinho: acelerago.com.br/diagnostico`
-      if (await sendWA(p.telefone, 'resgate_abandono', [pnome])) { await marcar(p, 'resgate-abandono'); abandonos++ }
+      if (await sendWA(p.telefone, 'resgate_abandono_v2', [pnome])) { await marcar(p, 'resgate-abandono'); abandonos++ }
       else falhas++
     }
   }
