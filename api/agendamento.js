@@ -95,7 +95,7 @@ export default async function handler(req, res) {
     // Cloud API oficial: template aprovado confirmacao_agendamento (nome + data/hora)
     const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'
-    const ok = await sendTemplate(telefone, 'confirmacao_agendamento', [pnome, quando])
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando])
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 

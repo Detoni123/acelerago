@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     // Cloud API oficial: template aprovado lembrete_reuniao_2h (nome + hora)
     let ok = false
     if (ag.telefone) {
-      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_2h', [pnome || 'Doutora', hora])
+      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora])
     }
 
     if (ok) { await markDone(ag.id); enviados++ }
