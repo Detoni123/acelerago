@@ -18,8 +18,6 @@
 import { alertaTelegram, sendTemplate, volumeAnormal } from './_whatsapp.js'
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
 
-const CALENDLY = 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go'
-
 export default async function handler(req, res) {
   const CRON_SECRET = process.env.CRON_SECRET
   const auth        = req.headers['authorization'] || ''
@@ -116,31 +114,31 @@ export default async function handler(req, res) {
       if (idadeMin < 3) continue
       if (await temAgendamento(p.telefone)) { await marcar(p, 'resgate-desnecessario'); await moverParaReuniao(p); continue }
 
+      // Política de 11/07: NENHUM link em mensagem automática de venda. A abordagem
+      // abre CONVERSA (fecho "quer os horários? dúvidas, estou por aqui"); o link do
+      // Calendly vai manual pelo /whatsapp quando a lead responder (janela de 24h aberta).
       if (/Investimento: Sim/i.test(o)) {
-        // Quer investir: oferece a agenda direto
         const preview =
-          `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-          `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua conversa com o Ronaldo, nosso estrategista. ` +
-          `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
-          `Se preferir, me fala por aqui o melhor dia e horário que eu reservo para você.`
-        if (await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
+          `Oi, ${pnome}! Tudo bem? Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+          `Somos um programa de aceleração digital especializado em médicas e profissionais da saúde da mulher. ` +
+          `Vi que você preencheu o nosso diagnóstico e ficou faltando só agendar a sua sessão com o nosso estrategista.\n\n` +
+          `Nessa sessão, você vê ponto por ponto o que está te impedindo de atrair mais pacientes e o que fazer em cada frente. ` +
+          `E mesmo que a gente não caminhe junto depois, você sai com uma clareza que economiza meses de tentativa e erro.\n\n` +
+          `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
+        if (await sendTemplate(p.telefone, 'abordagem_qualificada_v1', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
         else falhas++
       } else {
-        // "Ainda não é o momento de investir": acolhe a pessoa (não o negócio), sem pressão.
-        // A oferta é concreta: sessão de diagnóstico completo do posicionamento dela no
-        // digital, com apontamentos e soluções — e a parceria fica pro futuro dela.
+        // "Ainda não é o momento de investir": acolhe a pessoa, oferta concreta da sessão,
+        // mesmo fecho conversacional (sem link)
         const preview =
           `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
           `Vi que você concluiu o diagnóstico e sinalizou que ainda não é o momento de investir. ` +
           `Tudo bem, esse tempo é seu e a gente respeita.\n\n` +
-          `Mesmo assim, quero te deixar um convite: uma sessão de diagnóstico completo com o Ronaldo, nosso estrategista, sem custo nenhum. ` +
+          `Mesmo assim, quero te deixar um convite: uma sessão de diagnóstico completo com o nosso estrategista, sem custo nenhum. ` +
           `Em 30 minutos ele analisa o seu posicionamento e o seu momento atual no digital, te aponta o que pode melhorar e as soluções pra cada ponto. ` +
           `Você sai com clareza do caminho, e quando o seu momento chegar, quem sabe não nasce uma parceria?\n\n` +
-          `Se topar, a agenda está aqui: ${CALENDLY}`
-        // Fallback: enquanto a Meta não aprova o resgate_ainda_nao_v3, vai o convite de agenda padrão
-        const ok = await sendTemplate(p.telefone, 'resgate_ainda_nao_v3', [pnome], preview)
-          || await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)
-        if (ok) { await marcar(p, 'resgate-ainda-nao'); await moverParaContato(p); aindaNao++ }
+          `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
+        if (await sendTemplate(p.telefone, 'resgate_ainda_nao_v4', [pnome], preview)) { await marcar(p, 'resgate-ainda-nao'); await moverParaContato(p); aindaNao++ }
         else falhas++
       }
       continue
