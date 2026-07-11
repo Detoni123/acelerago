@@ -74,10 +74,12 @@ export default async function handler(req, res) {
       `Oi, ${pnome || 'Doutora'}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
       `O link da chamada é o do convite que chegou no seu e-mail. Podemos contar com você?`
 
-    // Cloud API oficial: template aprovado lembrete_reuniao_v2 (nome + hora)
+    // v3 tem só o botão "Confirmo" (sem "Preciso remarcar" — decisão de 11/07:
+    // botão de remarcar abre margem pra remarcação). Fallback v2 até a Meta aprovar.
     let ok = false
     if (ag.telefone) {
-      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora], preview)
+      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v3', [pnome || 'Doutora', hora], preview)
+        || await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora], preview)
     }
 
     if (ok) { await markDone(ag.id); enviados++ }

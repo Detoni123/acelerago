@@ -94,7 +94,10 @@ export default async function handler(req, res) {
     const preview =
       `Oi, ${pnome}! Sua reunião de diagnóstico com o Ronaldo, da AceleraGO, está confirmada para ${quando}.\n\n` +
       `O link da chamada chega no seu e-mail. Podemos contar com você?`
-    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], preview)
+    // v3 tem só o botão "Confirmo" (sem "Preciso remarcar" — decisão de 11/07:
+    // botão de remarcar abre margem pra remarcação). Fallback v2 até a Meta aprovar.
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v3', [pnome, quando], preview)
+      || await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], preview)
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 

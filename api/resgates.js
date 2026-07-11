@@ -2,8 +2,10 @@
 // Roda a cada minuto (Vercel Cron, protegido por CRON_SECRET), 24h por dia:
 // resposta imediata sinaliza estrutura por trás (decisão de 11/07).
 //
-// Três resgates, todos sobre prospects gravados pelo /api/lead:
-//  1. COMPLETOU o formulário (qualquer resposta de investimento) e não agendou (+3 min) → oferece a agenda
+// Quatro resgates, todos sobre prospects gravados pelo /api/lead:
+//  1a. COMPLETOU querendo investir e não agendou (+3 min) → oferece a agenda
+//  1b. COMPLETOU mas "ainda não é o momento de investir" (+3 min) → acolhe e convida
+//      pros 30 min sem custo (relacionamento pra parceria futura)
 //  2. DESQUALIFICADA por faturamento (+3 min) → rede de segurança: o /api/lead já envia na hora;
 //     este caminho só pega quem ficou sem marcador (falha no envio imediato)
 //  3. ABANDONO de formulário (+10 min) → convite pra tirar dúvida / retomar
@@ -75,7 +77,7 @@ export default async function handler(req, res) {
 
   const pnomeDe = (nome) => nome ? String(nome).trim().split(/\s+/)[0] : ''
 
-  let qualificadas = 0, desqualificadas = 0, abandonos = 0, falhas = 0
+  let qualificadas = 0, aindaNao = 0, desqualificadas = 0, abandonos = 0, falhas = 0
 
   for (const p of prospects) {
     const o = p.observacoes || ''
@@ -84,17 +86,38 @@ export default async function handler(req, res) {
     const idadeMin = (now - new Date(p.created_at).getTime()) / 60000
     const pnome = pnomeDe(p.nome)
 
-    // 1. Completou o formulário (Investimento respondido, Sim ou Ainda não) e não agendou — espera 3 min
+    // 1. Completou o formulário e não agendou — espera 3 min
     if (/Investimento:/i.test(o) && !/Status:/i.test(o)) {
       if (idadeMin < 3) continue
       if (await temAgendamento(p.telefone)) { await marcar(p, 'resgate-desnecessario'); continue }
-      const preview =
-        `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-        `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua conversa com o Ronaldo, nosso estrategista. ` +
-        `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
-        `Se preferir, me fala por aqui o melhor dia e horário que eu reservo para você.`
-      if (await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
-      else falhas++
+
+      if (/Investimento: Sim/i.test(o)) {
+        // Quer investir: oferece a agenda direto
+        const preview =
+          `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+          `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua conversa com o Ronaldo, nosso estrategista. ` +
+          `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
+          `Se preferir, me fala por aqui o melhor dia e horário que eu reservo para você.`
+        if (await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
+        else falhas++
+      } else {
+        // "Ainda não é o momento de investir": acolhe a pessoa (não o negócio), sem pressão.
+        // A conversa de 30 min é o produto: ela sai com clareza, conhece o trabalho,
+        // e a parceria fica pro futuro dela.
+        const preview =
+          `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+          `Vi que você concluiu o diagnóstico e sinalizou que ainda não é o momento de investir. ` +
+          `Tudo bem, esse tempo é seu e a gente respeita.\n\n` +
+          `Mesmo assim, quero te deixar um convite: uma conversa de 30 minutos com o Ronaldo, nosso estrategista, sem custo e sem compromisso. ` +
+          `No mínimo você sai sabendo exatamente o que precisa melhorar no seu marketing e já conhece o nosso trabalho de perto. ` +
+          `E quando o seu momento chegar, quem sabe não nasce uma parceria?\n\n` +
+          `Se topar, a agenda está aqui: ${CALENDLY}`
+        // Fallback: enquanto a Meta não aprova o resgate_ainda_nao_v2, vai o convite de agenda padrão
+        const ok = await sendTemplate(p.telefone, 'resgate_ainda_nao_v2', [pnome], preview)
+          || await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)
+        if (ok) { await marcar(p, 'resgate-ainda-nao'); aindaNao++ }
+        else falhas++
+      }
       continue
     }
 
@@ -120,6 +143,6 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     ok: true, analisados: prospects.length,
-    enviados: { qualificadas, desqualificadas, abandonos }, falhas,
+    enviados: { qualificadas, aindaNao, desqualificadas, abandonos }, falhas,
   })
 }
