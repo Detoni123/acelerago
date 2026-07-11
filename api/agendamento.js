@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 
-import { sendTemplate } from './_whatsapp.js'
+import { sendTemplate, volumeAnormal } from './_whatsapp.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -87,7 +87,11 @@ export default async function handler(req, res) {
   }
 
   // ── Confirmação automática no WhatsApp da lead, no momento do agendamento ──
-  if (telefone) {
+  // Disjuntor anti-abuso: endpoint é público; volume anormal de agendamentos
+  // suspende o envio (o registro continua sendo gravado normalmente).
+  const inundado = telefone ? await volumeAnormal('agendamentos', 'criado_em', 15, 6) : false
+  if (inundado) console.error('[agendamento] volume anormal — confirmação suspensa')
+  if (telefone && !inundado) {
     // Cloud API oficial: template aprovado confirmacao_reuniao_v2 (nome + data/hora)
     const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'

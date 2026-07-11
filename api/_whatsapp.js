@@ -97,3 +97,37 @@ export async function sendText(telefone, texto) {
   if (wamid) await registrarEnvio(to, wamid, texto)
   return wamid
 }
+
+// ── Proteção anti-abuso dos endpoints públicos ──────────────────────────────
+// /api/lead e /api/agendamento aceitam POST sem autenticação (são o funil).
+// Se alguém forjar requisições em massa, cada uma dispararia um template PAGO
+// do número oficial (custo + risco de bloqueio por spam). Este disjuntor
+// suspende os envios quando o volume recente foge do normal; os registros
+// continuam sendo gravados e os resgates retomam quando o volume normaliza.
+export async function volumeAnormal(tabela, colunaData, minutos = 15, limite = 12) {
+  const SB_URL = process.env.SUPABASE_URL
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY
+  if (!SB_URL || !SB_KEY) return false
+  try {
+    const desde = new Date(Date.now() - minutos * 60000).toISOString()
+    const r = await fetch(
+      `${SB_URL}/rest/v1/${tabela}?select=id&${colunaData}=gte.${encodeURIComponent(desde)}&limit=${limite + 1}`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+    )
+    const rows = r.ok ? await r.json() : []
+    return rows.length > limite
+  } catch (_) { return false }
+}
+
+export async function alertaTelegram(texto) {
+  const bot = process.env.TELEGRAM_BOT_TOKEN
+  const chat = process.env.TELEGRAM_CHAT_ID
+  if (!bot || !chat) return
+  try {
+    await fetch(`https://api.telegram.org/bot${bot}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chat, text: texto }),
+    })
+  } catch (_) {}
+}

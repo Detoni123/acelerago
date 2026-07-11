@@ -15,7 +15,7 @@
 //
 // Os textos abaixo são o PREVIEW gravado no inbox do CRM. O que a lead recebe é o
 // template aprovado na Meta — mantenha os dois em sincronia ao editar.
-import { sendTemplate } from './_whatsapp.js'
+import { alertaTelegram, sendTemplate, volumeAnormal } from './_whatsapp.js'
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
 
 const CALENDLY = 'https://calendly.com/ronaldo-detonimarketingdigital/reuniao-diagnostico-acelera-go'
@@ -36,6 +36,14 @@ export default async function handler(req, res) {
     'Content-Type': 'application/json',
     apikey:         SB_KEY,
     Authorization:  `Bearer ${SB_KEY}`,
+  }
+
+  // Disjuntor anti-abuso: volume anormal de leads = possível ataque ao /api/lead.
+  // Suspende TODOS os envios desta rodada (nada é marcado, então nada se perde:
+  // o cron retoma de onde parou quando o volume normalizar).
+  if (await volumeAnormal('prospects', 'created_at')) {
+    await alertaTelegram('🚨 Volume anormal de leads nos últimos 15 min — resgates suspensos nesta rodada (possível abuso do /api/lead). Verificar prospects recentes no CRM.')
+    return res.status(200).json({ ok: true, skipped: 'volume anormal de prospects' })
   }
 
   const now      = Date.now()

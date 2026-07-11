@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
+import { volumeAnormal } from './_whatsapp.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -250,6 +251,9 @@ export default async function handler(req, res) {
 
         if (marcadorAntigo) {
           marcadorResgate = marcadorAntigo
+        } else if (await volumeAnormal('prospects', 'created_at')) {
+          // Disjuntor anti-abuso: sem envio agora; o cron retoma quando o volume normalizar
+          console.error('[lead] volume anormal de prospects — envio imediato suspenso')
         } else {
           const pnome = nome ? String(nome).trim().split(/\s+/)[0] : ''
           const ok = await enviarResgateDesqualificada(telefone, pnome).catch(() => false)
