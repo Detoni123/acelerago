@@ -102,18 +102,18 @@ export default async function handler(req, res) {
         else falhas++
       } else {
         // "Ainda não é o momento de investir": acolhe a pessoa (não o negócio), sem pressão.
-        // A conversa de 30 min é o produto: ela sai com clareza, conhece o trabalho,
-        // e a parceria fica pro futuro dela.
+        // A oferta é concreta: sessão de diagnóstico completo do posicionamento dela no
+        // digital, com apontamentos e soluções — e a parceria fica pro futuro dela.
         const preview =
           `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
           `Vi que você concluiu o diagnóstico e sinalizou que ainda não é o momento de investir. ` +
           `Tudo bem, esse tempo é seu e a gente respeita.\n\n` +
-          `Mesmo assim, quero te deixar um convite: uma conversa de 30 minutos com o Ronaldo, nosso estrategista, sem custo e sem compromisso. ` +
-          `No mínimo você sai sabendo exatamente o que precisa melhorar no seu marketing e já conhece o nosso trabalho de perto. ` +
-          `E quando o seu momento chegar, quem sabe não nasce uma parceria?\n\n` +
+          `Mesmo assim, quero te deixar um convite: uma sessão de diagnóstico completo com o Ronaldo, nosso estrategista, sem custo nenhum. ` +
+          `Em 30 minutos ele analisa o seu posicionamento e o seu momento atual no digital, te aponta o que pode melhorar e as soluções pra cada ponto. ` +
+          `Você sai com clareza do caminho, e quando o seu momento chegar, quem sabe não nasce uma parceria?\n\n` +
           `Se topar, a agenda está aqui: ${CALENDLY}`
-        // Fallback: enquanto a Meta não aprova o resgate_ainda_nao_v2, vai o convite de agenda padrão
-        const ok = await sendTemplate(p.telefone, 'resgate_ainda_nao_v2', [pnome], preview)
+        // Fallback: enquanto a Meta não aprova o resgate_ainda_nao_v3, vai o convite de agenda padrão
+        const ok = await sendTemplate(p.telefone, 'resgate_ainda_nao_v3', [pnome], preview)
           || await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)
         if (ok) { await marcar(p, 'resgate-ainda-nao'); aindaNao++ }
         else falhas++
