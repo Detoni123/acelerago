@@ -505,15 +505,12 @@
     <div class="step" id="s2.5">
       <div class="card">
         <h2 class="step-question">Qual a sua especialidade?</h2>
-        <p class="step-hint" style="margin-bottom:20px">Assim o diagnóstico fala a língua da sua atuação.</p>
-        <div class="choices">
-          <div class="choice" onclick="pickEspecialidade(this,'Ginecologista e Obstetra')"><span class="badge">A</span><span class="choice-label">Ginecologista e Obstetra</span></div>
-          <div class="choice" onclick="pickEspecialidade(this,'Ginecologista')"><span class="badge">B</span><span class="choice-label">Ginecologista</span></div>
-          <div class="choice" onclick="pickEspecialidade(this,'Obstetra')"><span class="badge">C</span><span class="choice-label">Obstetra</span></div>
-          <div class="choice" onclick="pickEspecialidade(this,'Fisioterapeuta Pélvica')"><span class="badge">D</span><span class="choice-label">Fisioterapeuta Pélvica</span></div>
-          <div class="choice" onclick="pickEspecialidade(this,'Enfermeira Obstétrica')"><span class="badge">E</span><span class="choice-label">Enfermeira Obstétrica</span></div>
-          <div class="choice" onclick="pickEspecialidade(this,'Outra área da saúde da mulher')"><span class="badge">F</span><span class="choice-label">Outra área da saúde da mulher</span></div>
+        <p class="step-hint" style="margin-bottom:20px">Ex: ginecologista e obstetra, fisioterapeuta pélvica, enfermeira obstétrica...</p>
+        <div class="input-wrap">
+          <input class="field" id="fEspecialidade" type="text" placeholder="Sua especialidade" autocomplete="off" />
         </div>
+        <span class="field-error" id="eEspecialidade">Por favor, informe sua especialidade.</span>
+        <button class="btn" onclick="nextText('fEspecialidade','eEspecialidade',3)">Avançar →</button>
       </div>
     </div>
 
@@ -852,7 +849,7 @@
       errEl.style.display = 'block'; return
     }
     errEl.style.display = 'none'
-    const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram' }[fieldId]
+    const key = { fNome:'nome', fTelefone:'telefone', fInstagram:'instagram', fEspecialidade:'especialidade' }[fieldId]
     if (key) data[key] = key === 'instagram' ? val.replace(/^@/,'') : val
     if (fieldId === 'fTelefone') fireLead()   // etapa 2: deu o WhatsApp → evento Lead
     go(next)
@@ -889,13 +886,6 @@
     if (hint) hint.style.display = 'none'
   }
 
-  // Especialidade avança direto ao toque (sem botão): menos fricção logo após o telefone
-  function pickEspecialidade(el, val) {
-    el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('sel'))
-    el.classList.add('sel')
-    data.especialidade = val
-    setTimeout(() => go(3), 180)
-  }
 
   async function submitForm() {
     if (!data.investimento) { document.getElementById('eInv').style.display = 'block'; return }
