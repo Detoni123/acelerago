@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, investimento, tipo, eventId,
+  const { nome, telefone, instagram, site, faturamento, investimento, especialidade, tipo, eventId,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -152,6 +152,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',        nome),
       linha('📱 <b>WhatsApp:</b>',    telefone),
+      linha('🩺 <b>Especialidade:</b>', especialidade),
       linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
       linha('🌐 <b>Site:</b>',        site || 'Não informado'),
       linha('💰 <b>Faturamento:</b>', faturamento),
@@ -301,6 +302,7 @@ export default async function handler(req, res) {
             // fbc/fbp/utm só entram quando chegam (não sobrescrevem valor já salvo com null)
             body: JSON.stringify({
               nome: nome || undefined, observacoes,
+              ...(especialidade && { especialidade }),
               ...(fbc && { fbc }), ...(fbp && { fbp }),
               ...(utm_source   && { utm_source }),
               ...(utm_medium   && { utm_medium }),
@@ -317,7 +319,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               nome,
               telefone,
-              especialidade: 'Médica / Saúde da Mulher',
+              especialidade: especialidade || 'Médica / Saúde da Mulher',
               cidade:        'Não informado',
               origem_lead:   origemLead,
               etapa:         'prospeccao',

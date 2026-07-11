@@ -5,7 +5,7 @@ import { sendTemplate, volumeAnormal } from './_whatsapp.js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento,
+  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento, especialidade,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -166,6 +166,7 @@ export default async function handler(req, res) {
     '',
     linha('👤 <b>Nome:</b>',        nome),
     linha('📱 <b>WhatsApp:</b>',    telefone),
+    linha('🩺 <b>Especialidade:</b>', especialidade),
     linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
     linha('🌐 <b>Site:</b>',        site || 'Não informado'),
     linha('💰 <b>Faturamento:</b>', faturamento),
