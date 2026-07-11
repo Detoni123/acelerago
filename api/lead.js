@@ -235,6 +235,7 @@ export default async function handler(req, res) {
       // então o cron /api/resgates não duplica; se o envio falhar, fica sem marcador
       // e o cron reenvia em ~3 min como rede de segurança.
       let marcadorResgate = null
+      let resgateEnviadoAgora = false
       if (tipo === 'desqualificado') {
         // Se ela refez o formulário e já foi resgatada antes, não envia de novo
         // (o PATCH de dedup abaixo sobrescreve as observações, então o marcador
@@ -257,7 +258,10 @@ export default async function handler(req, res) {
         } else {
           const pnome = nome ? String(nome).trim().split(/\s+/)[0] : ''
           const ok = await enviarResgateDesqualificada(telefone, pnome).catch(() => false)
-          if (ok) marcadorResgate = `[auto:resgate-desqualificada] ${new Date().toISOString()}`
+          if (ok) {
+            marcadorResgate = `[auto:resgate-desqualificada] ${new Date().toISOString()}`
+            resgateEnviadoAgora = true
+          }
         }
       }
 
@@ -332,6 +336,15 @@ export default async function handler(req, res) {
           if (!insert.ok) console.error(`[lead] CRM INSERT falhou (${tipo}): HTTP ${insert.status} — ${await insert.text()}`)
         }
       } catch (e) { console.error(`[lead] CRM erro (${tipo}):`, e) }
+
+      // Robô acabou de fazer o primeiro toque → card sai de "prospecção" pra "contato"
+      if (resgateEnviadoAgora) {
+        await fetch(`${SUPABASE_URL}/rest/v1/prospects?telefone=eq.${encodeURIComponent(telefone)}&etapa=eq.prospeccao`, {
+          method:  'PATCH',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body:    JSON.stringify({ etapa: 'contato' }),
+        }).catch(() => {})
+      }
     }
   }
 

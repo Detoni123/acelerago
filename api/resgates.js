@@ -69,6 +69,23 @@ export default async function handler(req, res) {
       body:    JSON.stringify({ observacoes: `${p.observacoes}\n[auto:${marcador}] ${new Date().toISOString()}` }),
     }).catch(() => {})
 
+  // Kanban do CRM acompanha o funil sozinho (decisão de 11/07):
+  // primeiro toque do robô → "contato"; lead com reunião marcada → "reuniao".
+  // Filtro por etapa atual evita regredir card que o Ronaldo já avançou.
+  const moverParaContato = (p) =>
+    fetch(`${SB_URL}/rest/v1/prospects?id=eq.${p.id}&etapa=eq.prospeccao`, {
+      method:  'PATCH',
+      headers: { ...sbHeaders, Prefer: 'return=minimal' },
+      body:    JSON.stringify({ etapa: 'contato' }),
+    }).catch(() => {})
+
+  const moverParaReuniao = (p) =>
+    fetch(`${SB_URL}/rest/v1/prospects?id=eq.${p.id}&etapa=in.(prospeccao,contato)`, {
+      method:  'PATCH',
+      headers: { ...sbHeaders, Prefer: 'return=minimal' },
+      body:    JSON.stringify({ etapa: 'reuniao' }),
+    }).catch(() => {})
+
   // Já tem reunião marcada? (compara pelos 8 últimos dígitos do telefone)
   const temAgendamento = async (telefone) => {
     const last8 = String(telefone).replace(/\D/g, '').slice(-8)
@@ -97,7 +114,7 @@ export default async function handler(req, res) {
     // 1. Completou o formulário e não agendou — espera 3 min
     if (/Investimento:/i.test(o) && !/Status:/i.test(o)) {
       if (idadeMin < 3) continue
-      if (await temAgendamento(p.telefone)) { await marcar(p, 'resgate-desnecessario'); continue }
+      if (await temAgendamento(p.telefone)) { await marcar(p, 'resgate-desnecessario'); await moverParaReuniao(p); continue }
 
       if (/Investimento: Sim/i.test(o)) {
         // Quer investir: oferece a agenda direto
@@ -106,7 +123,7 @@ export default async function handler(req, res) {
           `Vi que você concluiu o diagnóstico e ficou faltando só escolher o horário da sua conversa com o Ronaldo, nosso estrategista. ` +
           `A agenda desta semana está aqui: ${CALENDLY}\n\n` +
           `Se preferir, me fala por aqui o melhor dia e horário que eu reservo para você.`
-        if (await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); qualificadas++ }
+        if (await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
         else falhas++
       } else {
         // "Ainda não é o momento de investir": acolhe a pessoa (não o negócio), sem pressão.
@@ -123,7 +140,7 @@ export default async function handler(req, res) {
         // Fallback: enquanto a Meta não aprova o resgate_ainda_nao_v3, vai o convite de agenda padrão
         const ok = await sendTemplate(p.telefone, 'resgate_ainda_nao_v3', [pnome], preview)
           || await sendTemplate(p.telefone, 'resgate_qualificada_v2', [pnome], preview)
-        if (ok) { await marcar(p, 'resgate-ainda-nao'); aindaNao++ }
+        if (ok) { await marcar(p, 'resgate-ainda-nao'); await moverParaContato(p); aindaNao++ }
         else falhas++
       }
       continue
@@ -132,7 +149,7 @@ export default async function handler(req, res) {
     // 2. Desqualificada — rede de segurança do envio imediato do /api/lead (espera 3 min)
     if (/Status: Desqualificado/i.test(o)) {
       if (idadeMin < 3) continue
-      if (await enviarResgateDesqualificada(p.telefone, pnome)) { await marcar(p, 'resgate-desqualificada'); desqualificadas++ }
+      if (await enviarResgateDesqualificada(p.telefone, pnome)) { await marcar(p, 'resgate-desqualificada'); await moverParaContato(p); desqualificadas++ }
       else falhas++
       continue
     }
@@ -144,7 +161,7 @@ export default async function handler(req, res) {
         `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
         `Vi que você começou o nosso diagnóstico e não chegou a concluir. ` +
         `Se travou em alguma pergunta ou ficou com dúvida, me fala por aqui que eu te ajudo direto, sem precisar refazer nada.`
-      if (await sendTemplate(p.telefone, 'resgate_abandono_v2', [pnome], preview)) { await marcar(p, 'resgate-abandono'); abandonos++ }
+      if (await sendTemplate(p.telefone, 'resgate_abandono_v2', [pnome], preview)) { await marcar(p, 'resgate-abandono'); await moverParaContato(p); abandonos++ }
       else falhas++
     }
   }

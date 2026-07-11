@@ -129,6 +129,25 @@ export default async function handler(req, res) {
         }),
       })
       if (!ins.ok) console.error(`[agendamento] Supabase insert falhou: HTTP ${ins.status} — ${await ins.text()}`)
+
+      // Kanban acompanha o funil: lead agendou → card vai pra "reuniao"
+      // (match pelos últimos 8 dígitos; não regride card já em proposta/fechado)
+      const last8 = telDigits.slice(-8)
+      if (last8.length === 8) {
+        await fetch(
+          `${SB_URL}/rest/v1/prospects?telefone=ilike.${encodeURIComponent('%' + last8 + '%')}&etapa=in.(prospeccao,contato)`,
+          {
+            method:  'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey:         SB_KEY,
+              Authorization:  `Bearer ${SB_KEY}`,
+              Prefer:         'return=minimal',
+            },
+            body: JSON.stringify({ etapa: 'reuniao' }),
+          },
+        ).catch(() => {})
+      }
     } catch (e) { console.error('[agendamento] Supabase insert erro:', e) }
   }
 
