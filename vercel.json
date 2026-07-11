@@ -7,6 +7,6 @@
   ],
   "crons": [
     { "path": "/api/lembretes", "schedule": "*/15 * * * *" },
-    { "path": "/api/resgates", "schedule": "*/15 * * * *" }
+    { "path": "/api/resgates", "schedule": "* * * * *" }
   ]
 }

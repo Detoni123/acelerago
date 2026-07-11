@@ -1,5 +1,7 @@
 import crypto from 'crypto'
 
+import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -226,6 +228,35 @@ export default async function handler(req, res) {
         : tipo === 'abandono'     ? 'Status: ABANDONOU o formulário (dados parciais — abordar)'
         : null
 
+      // Resgate IMEDIATO da desqualificada: a mensagem do Gabriel chega enquanto ela
+      // ainda está na tela final do diagnóstico (decisão de 11/07: resposta na hora
+      // sinaliza estrutura por trás). O marcador entra nas observações já no insert,
+      // então o cron /api/resgates não duplica; se o envio falhar, fica sem marcador
+      // e o cron reenvia em ~3 min como rede de segurança.
+      let marcadorResgate = null
+      if (tipo === 'desqualificado') {
+        // Se ela refez o formulário e já foi resgatada antes, não envia de novo
+        // (o PATCH de dedup abaixo sobrescreve as observações, então o marcador
+        // antigo precisa ser checado e re-anexado aqui).
+        let marcadorAntigo = null
+        try {
+          const chk = await fetch(
+            `${SUPABASE_URL}/rest/v1/prospects?select=observacoes&telefone=eq.${encodeURIComponent(telefone)}`,
+            { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } },
+          )
+          const rows = chk.ok ? await chk.json() : []
+          marcadorAntigo = (rows[0]?.observacoes || '').match(/\[auto:resgate-desqualificada\][^\n]*/)?.[0] ?? null
+        } catch (_) {}
+
+        if (marcadorAntigo) {
+          marcadorResgate = marcadorAntigo
+        } else {
+          const pnome = nome ? String(nome).trim().split(/\s+/)[0] : ''
+          const ok = await enviarResgateDesqualificada(telefone, pnome).catch(() => false)
+          if (ok) marcadorResgate = `[auto:resgate-desqualificada] ${new Date().toISOString()}`
+        }
+      }
+
       const observacoes = [
         instagram    ? `Instagram: @${instagram}` : null,
         site         ? `Site: ${site}` : null,
@@ -236,6 +267,7 @@ export default async function handler(req, res) {
         utm_term    ? `Conjunto: ${utm_term}` : null,
         utm_content ? `Anúncio: ${utm_content}` : null,
         `Origem: Formulário /diagnostico`,
+        marcadorResgate,
       ].filter(Boolean).join('\n')
 
       const sbHeaders = {

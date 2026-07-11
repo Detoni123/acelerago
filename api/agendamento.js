@@ -85,17 +85,16 @@ export default async function handler(req, res) {
     } catch (_) {}
   }
 
-  // ── Follow-up automático no WhatsApp da lead (Evolution API, instância AceleraGO) ──
-  // Confirma o compromisso no horário agendado, no momento do agendamento.
-  // Fica dormente se as env vars não estiverem configuradas (não envia nada por engano).
-  const EVOLUTION_API_URL  = process.env.EVOLUTION_API_URL
-  const EVOLUTION_API_KEY  = process.env.EVOLUTION_API_KEY
-  const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
+  // ── Confirmação automática no WhatsApp da lead, no momento do agendamento ──
   if (telefone) {
-    // Cloud API oficial: template aprovado confirmacao_agendamento (nome + data/hora)
+    // Cloud API oficial: template aprovado confirmacao_reuniao_v2 (nome + data/hora)
     const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'
-    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando])
+    // Preview gravado no inbox do CRM — manter em sincronia com o template na Meta
+    const preview =
+      `Oi, ${pnome}! Sua reunião de diagnóstico com o Ronaldo, da AceleraGO, está confirmada para ${quando}.\n\n` +
+      `O link da chamada chega no seu e-mail. Podemos contar com você?`
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], preview)
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 

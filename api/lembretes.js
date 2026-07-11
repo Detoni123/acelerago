@@ -11,12 +11,9 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'unauthorized' })
   }
 
-  const SB_URL             = process.env.SUPABASE_URL
-  const SB_KEY             = process.env.SUPABASE_SECRET_KEY
-  const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
-  const EVOLUTION_API_URL  = process.env.EVOLUTION_API_URL
-  const EVOLUTION_API_KEY  = process.env.EVOLUTION_API_KEY
-  const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
+  const SB_URL         = process.env.SUPABASE_URL
+  const SB_KEY         = process.env.SUPABASE_SECRET_KEY
+  const CALENDLY_TOKEN = process.env.CALENDLY_TOKEN
   if (!SB_URL || !SB_KEY) return res.status(500).json({ error: 'supabase nao configurado' })
 
   const sbHeaders = {
@@ -72,21 +69,15 @@ export default async function handler(req, res) {
     })
     const pnome = ag.nome ? String(ag.nome).trim().split(/\s+/)[0] : ''
 
-    // Quem já respondeu CONFIRMO (confirmado_at preenchido) recebe um lembrete leve.
-    // Quem NÃO confirmou recebe um reforço pedindo confirmação ou aviso de ausência.
-    const texto = ag.confirmado_at
-      ? `⏰ *Lembrete: sua reunião é hoje*\n\n` +
-        `Olá, ${pnome}! Passando para lembrar da sua reunião de diagnóstico com a AceleraGO hoje, às ${hora}.\n\n` +
-        `Nos vemos em breve. Se precisar remarcar, avise por aqui.`
-      : `⏰ *Sua reunião com a AceleraGO é hoje, às ${hora}*\n\n` +
-        `Olá, ${pnome}! Ainda não recebemos a sua confirmação e o seu horário continua reservado.\n\n` +
-        `Como a agenda é limitada, precisamos saber se podemos contar com você. Para confirmar, responda com a palavra *CONFIRMO*.\n\n` +
-        `Se não puder comparecer, é só avisar por aqui que liberamos o horário.`
+    // Preview gravado no inbox do CRM — manter em sincronia com o template na Meta
+    const preview =
+      `Oi, ${pnome || 'Doutora'}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
+      `O link da chamada é o do convite que chegou no seu e-mail. Podemos contar com você?`
 
-    // Cloud API oficial: template aprovado lembrete_reuniao_2h (nome + hora)
+    // Cloud API oficial: template aprovado lembrete_reuniao_v2 (nome + hora)
     let ok = false
     if (ag.telefone) {
-      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora])
+      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora], preview)
     }
 
     if (ok) { await markDone(ag.id); enviados++ }
