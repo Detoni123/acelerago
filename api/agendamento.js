@@ -96,17 +96,19 @@ export default async function handler(req, res) {
     const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'
     // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
-    // v5 = copy aprovada pelo Ronaldo em 11/07 (valor da sessão, sem citar o Ronaldo).
-    const previewV5 =
+    // v6 = copy final aprovada pelo Ronaldo em 11/07 (valor da sessão, sem citar o
+    // Ronaldo; o "te enviarei por aqui também" é honrado pelo lembrete 2h com o Zoom).
+    const previewV6 =
       `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
       `Sua sessão de diagnóstico está confirmada para ${quando}, e ela será preparada especialmente pra você.\n\n` +
-      `Reserve esses 30 minutos com atenção: o nosso estrategista vai te mostrar, ponto por ponto, o que está impedindo o seu consultório de atrair mais pacientes e o que fazer em cada frente. ` +
+      `Reserve esses 30 minutos com atenção: o nosso estrategista vai te mostrar, ponto por ponto, o que está te impedindo de atrair mais pacientes e o que fazer em cada frente. ` +
       `É o tipo de clareza que economiza meses de tentativa e erro.\n\n` +
-      `O convite com o link da chamada chegou no seu e-mail. Posso confirmar a sua presença?`
+      `O convite com o link da chamada chegará no seu e-mail e eu te enviarei por aqui também para facilitar. ` +
+      `Posso confirmar a sua presença? Aperte no botão abaixo para confirmar.`
     const previewV3 =
       `Oi, ${pnome}! Sua reunião de diagnóstico com o Ronaldo, da AceleraGO, está confirmada para ${quando}.\n\n` +
       `O link da chamada chega no seu e-mail. Podemos contar com você?`
-    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v5', [pnome, quando], previewV5)
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v6', [pnome, quando], previewV6)
       || await sendTemplate(telefone, 'confirmacao_reuniao_v3', [pnome, quando], previewV3)
       || await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], previewV3)
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
