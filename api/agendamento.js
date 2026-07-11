@@ -11,7 +11,8 @@ export default async function handler(req, res) {
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress
 
-  const CALENDLY_TOKEN     = process.env.CALENDLY_TOKEN
+  // trim(): o token já foi salvo na Vercel com \n no final e quebrou a auth em silêncio (11/07)
+  const CALENDLY_TOKEN     = (process.env.CALENDLY_TOKEN || '').trim()
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 

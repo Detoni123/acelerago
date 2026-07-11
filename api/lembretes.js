@@ -13,7 +13,8 @@ export default async function handler(req, res) {
 
   const SB_URL         = process.env.SUPABASE_URL
   const SB_KEY         = process.env.SUPABASE_SECRET_KEY
-  const CALENDLY_TOKEN = process.env.CALENDLY_TOKEN
+  // trim(): o token já foi salvo na Vercel com \n no final e quebrou a auth em silêncio (11/07)
+  const CALENDLY_TOKEN = (process.env.CALENDLY_TOKEN || '').trim()
   if (!SB_URL || !SB_KEY) return res.status(500).json({ error: 'supabase nao configurado' })
 
   const sbHeaders = {
@@ -50,7 +51,9 @@ export default async function handler(req, res) {
   let enviados = 0, cancelados = 0, falhas = 0
 
   for (const ag of due) {
-    // Não lembra reunião cancelada no Calendly.
+    // Consulta o Calendly: pula reunião cancelada e aproveita pra pegar o link da chamada
+    // (location.join_url — Zoom/Meet), que vai direto no corpo do lembrete.
+    let linkReuniao = null
     if (CALENDLY_TOKEN && ag.calendly_event_uri) {
       try {
         const ev  = await fetch(ag.calendly_event_uri, { headers: { Authorization: `Bearer ${CALENDLY_TOKEN}` } })
@@ -61,6 +64,7 @@ export default async function handler(req, res) {
           cancelados++
           continue
         }
+        linkReuniao = evj?.resource?.location?.join_url ?? null
       } catch (_) { /* se a checagem falhar, segue e envia mesmo assim */ }
     }
 
@@ -69,17 +73,27 @@ export default async function handler(req, res) {
     })
     const pnome = ag.nome ? String(ag.nome).trim().split(/\s+/)[0] : ''
 
-    // Preview gravado no inbox do CRM — manter em sincronia com o template na Meta
-    const preview =
-      `Oi, ${pnome || 'Doutora'}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
+    // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
+    // v4 leva o link do Zoom no corpo; v3/v2 apontam pro convite do e-mail.
+    const nomeParam = pnome || 'Doutora'
+    const previewComLink =
+      `Oi, ${nomeParam}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
+      `O link da chamada é este: ${linkReuniao}\n\nPodemos contar com você?`
+    const previewSemLink =
+      `Oi, ${nomeParam}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
       `O link da chamada é o do convite que chegou no seu e-mail. Podemos contar com você?`
 
-    // v3 tem só o botão "Confirmo" (sem "Preciso remarcar" — decisão de 11/07:
-    // botão de remarcar abre margem pra remarcação). Fallback v2 até a Meta aprovar.
+    // Todos só com o botão "Confirmo" (sem "Preciso remarcar" — decisão de 11/07).
+    // Cadeia de fallback enquanto a Meta não aprova os novos.
     let ok = false
     if (ag.telefone) {
-      ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v3', [pnome || 'Doutora', hora], preview)
-        || await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [pnome || 'Doutora', hora], preview)
+      if (linkReuniao) {
+        ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v4', [nomeParam, hora, linkReuniao], previewComLink)
+      }
+      if (!ok) {
+        ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v3', [nomeParam, hora], previewSemLink)
+          || await sendTemplate(ag.telefone, 'lembrete_reuniao_v2', [nomeParam, hora], previewSemLink)
+      }
     }
 
     if (ok) { await markDone(ag.id); enviados++ }
