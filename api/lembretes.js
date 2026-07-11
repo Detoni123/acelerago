@@ -74,9 +74,14 @@ export default async function handler(req, res) {
     const pnome = ag.nome ? String(ag.nome).trim().split(/\s+/)[0] : ''
 
     // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
-    // v4 leva o link do Zoom no corpo; v3/v2 apontam pro convite do e-mail.
+    // v5 (copy aprovada 11/07, persona Gabriel, sem citar o Ronaldo) e v4 levam o link
+    // do Zoom no corpo; v3/v2 apontam pro convite do e-mail.
     const nomeParam = pnome || 'Doutora'
-    const previewComLink =
+    const previewV5 =
+      `Oi, ${nomeParam}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+      `Passando para lembrar da sua sessão de diagnóstico hoje às ${hora}.\n\n` +
+      `O link da chamada é este: ${linkReuniao}\n\nPodemos contar com você?`
+    const previewV4 =
       `Oi, ${nomeParam}! Passando para lembrar da sua reunião de diagnóstico com o Ronaldo, da AceleraGO, hoje às ${hora}.\n\n` +
       `O link da chamada é este: ${linkReuniao}\n\nPodemos contar com você?`
     const previewSemLink =
@@ -88,7 +93,8 @@ export default async function handler(req, res) {
     let ok = false
     if (ag.telefone) {
       if (linkReuniao) {
-        ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v4', [nomeParam, hora, linkReuniao], previewComLink)
+        ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v5', [nomeParam, hora, linkReuniao], previewV5)
+          || await sendTemplate(ag.telefone, 'lembrete_reuniao_v4', [nomeParam, hora, linkReuniao], previewV4)
       }
       if (!ok) {
         ok = await sendTemplate(ag.telefone, 'lembrete_reuniao_v3', [nomeParam, hora], previewSemLink)

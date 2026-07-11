@@ -95,14 +95,20 @@ export default async function handler(req, res) {
     // Cloud API oficial: template aprovado confirmacao_reuniao_v2 (nome + data/hora)
     const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'
-    // Preview gravado no inbox do CRM — manter em sincronia com o template na Meta
-    const preview =
+    // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
+    // v5 = copy aprovada pelo Ronaldo em 11/07 (valor da sessão, sem citar o Ronaldo).
+    const previewV5 =
+      `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+      `Sua sessão de diagnóstico está confirmada para ${quando}, e ela será preparada especialmente pra você.\n\n` +
+      `Reserve esses 30 minutos com atenção: o nosso estrategista vai te mostrar, ponto por ponto, o que está impedindo o seu consultório de atrair mais pacientes e o que fazer em cada frente. ` +
+      `É o tipo de clareza que economiza meses de tentativa e erro.\n\n` +
+      `O convite com o link da chamada chegou no seu e-mail. Posso confirmar a sua presença?`
+    const previewV3 =
       `Oi, ${pnome}! Sua reunião de diagnóstico com o Ronaldo, da AceleraGO, está confirmada para ${quando}.\n\n` +
       `O link da chamada chega no seu e-mail. Podemos contar com você?`
-    // v3 tem só o botão "Confirmo" (sem "Preciso remarcar" — decisão de 11/07:
-    // botão de remarcar abre margem pra remarcação). Fallback v2 até a Meta aprovar.
-    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v3', [pnome, quando], preview)
-      || await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], preview)
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v5', [pnome, quando], previewV5)
+      || await sendTemplate(telefone, 'confirmacao_reuniao_v3', [pnome, quando], previewV3)
+      || await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], previewV3)
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 
