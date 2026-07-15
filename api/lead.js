@@ -117,6 +117,13 @@ export default async function handler(req, res) {
     linha('🖼 <b>Anúncio:</b>',  utm_content),
   ]
 
+  // Respostas do funil — vão em todos os alertas (objetivo, desafio, histórico)
+  const funilLinhas = [
+    linha('🎯 <b>Objetivo:</b>', objetivo),
+    linha('🧩 <b>Desafio:</b>', desafio),
+    linha('📊 <b>Já investiu antes:</b>', ja_investiu),
+  ]
+
   let header, linhas
 
   if (tipo === 'abandono') {
@@ -127,6 +134,7 @@ export default async function handler(req, res) {
       linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
+      ...funilLinhas,
       ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
@@ -139,6 +147,7 @@ export default async function handler(req, res) {
       linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
+      ...funilLinhas,
       ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
@@ -152,11 +161,9 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',        nome),
       linha('📱 <b>WhatsApp:</b>',    telefone),
-      linha('🩺 <b>Especialidade:</b>', especialidade),
       linha('📸 <b>Instagram:</b>',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
-      linha('🌐 <b>Site:</b>',        site || 'Não informado'),
       linha('💰 <b>Faturamento:</b>', faturamento),
-      linha('📊 <b>Já investiu antes:</b>', ja_investiu),
+      ...funilLinhas,
       ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
