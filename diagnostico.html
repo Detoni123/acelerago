@@ -564,10 +564,12 @@
     <div class="step" id="s8">
       <div class="card">
         <div class="step-progress">Última pergunta</div>
-        <h2 class="step-question">Além da verba de anúncios, <strong>nossa gestão se inicia em R$ 1.500/mês.</strong> Você tem disposição para investir nisso e atrair mais pacientes qualificadas?</h2>
+        <h2 class="step-question">Você já investiu em marketing antes?</h2>
         <div class="choices">
-          <div class="choice" onclick="pick('investimento',this,'Sim, é o que preciso para crescer!','btnInv')"><span class="badge">A</span><span class="choice-label">Sim, é o que preciso para crescer!</span></div>
-          <div class="choice" onclick="pick('investimento',this,'Ainda não é o momento de investir.','btnInv')"><span class="badge">B</span><span class="choice-label">Ainda não é o momento de investir.</span></div>
+          <div class="choice" onclick="pick('ja_investiu',this,'Ainda não invisto, mas sei que preciso','btnInv')"><span class="badge">A</span><span class="choice-label">Ainda não invisto, mas sei que preciso</span></div>
+          <div class="choice" onclick="pick('ja_investiu',this,'Já tentei por conta própria','btnInv')"><span class="badge">B</span><span class="choice-label">Já tentei por conta própria</span></div>
+          <div class="choice" onclick="pick('ja_investiu',this,'Tenho ou tive agência, mas sem resultados','btnInv')"><span class="badge">C</span><span class="choice-label">Tenho ou tive agência, mas sem resultados</span></div>
+          <div class="choice" onclick="pick('ja_investiu',this,'Já tive experiências ruins e parei','btnInv')"><span class="badge">D</span><span class="choice-label">Já tive experiências ruins e parei</span></div>
         </div>
         <span class="field-error" id="eInv">Selecione uma opção para continuar.</span>
         <button class="btn" id="btnInv" onclick="submitForm()">
@@ -624,7 +626,7 @@
 </div>
 
 <script>
-  const data = { nome:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', investimento:'' }
+  const data = { nome:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
   let current = 0
   let enviado = false
 
@@ -904,7 +906,7 @@
 
 
   async function submitForm() {
-    if (!data.investimento) { document.getElementById('eInv').style.display = 'block'; return }
+    if (!data.ja_investiu) { document.getElementById('eInv').style.display = 'block'; return }
     document.getElementById('btnInvLabel').style.display = 'none'
     document.getElementById('spinnerInv').style.display = 'block'
     document.getElementById('btnInv').disabled = true

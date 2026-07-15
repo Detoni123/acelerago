@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, investimento, especialidade, objetivo, desafio, tipo, eventId,
+  const { nome, telefone, instagram, site, faturamento, ja_investiu, especialidade, objetivo, desafio, tipo, eventId,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -145,7 +145,7 @@ export default async function handler(req, res) {
     ]
   } else {
     // completo
-    const qualificado = investimento && investimento.startsWith('Sim')
+    const qualificado = true // sem gate de preço no form: quem completa já passou pelo faturamento
     header = qualificado
       ? '🟢 <b>Lead QUALIFICADO — AceleraGO</b>\n<i>(terminou o formulário — confirme se agendou)</i>'
       : '🔴 <b>Lead Concluído — AceleraGO</b>\n<i>(não aceitou o investimento)</i>'
@@ -156,7 +156,7 @@ export default async function handler(req, res) {
       linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
       linha('🌐 <b>Site:</b>',        site || 'Não informado'),
       linha('💰 <b>Faturamento:</b>', faturamento),
-      linha('✅ <b>Investimento:</b>', investimento),
+      linha('📊 <b>Já investiu antes:</b>', ja_investiu),
       ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
     const subjects = {
       abandono:       `⚠️ Abandonou: ${nome || 'sem nome'}`,
       desqualificado: `🟡 Desqualificado: ${nome}`,
-      completo:       `${investimento?.startsWith('Sim') ? '🟢' : '🔴'} Lead: ${nome}`,
+      completo:       `🟢 Lead: ${nome}`,
     }
     const rows = (pairs) => pairs.filter(([,v]) => v)
       .map(([l,v]) => `<tr><td style="padding:5px 16px 5px 0;font-weight:600">${l}</td><td>${v}</td></tr>`)
@@ -208,7 +208,7 @@ export default async function handler(req, res) {
                 ['Instagram',   instagram ? `@${instagram}` : null],
                 ['Site',        site],
                 ['Faturamento', faturamento],
-                ['Investimento',investimento],
+                ['Já investiu antes', ja_investiu],
               ])}
             </table>`,
         }),
@@ -273,7 +273,7 @@ export default async function handler(req, res) {
         instagram    ? `Instagram: @${instagram}` : null,
         site         ? `Site: ${site}` : null,
         faturamento  ? `Faturamento: ${faturamento}` : null,
-        investimento ? `Investimento: ${investimento}` : null,
+        ja_investiu ? `Já investiu antes: ${ja_investiu}` : null,
         statusNota,
         utmLabel ? `UTM: ${utmLabel}` : null,
         utm_term    ? `Conjunto: ${utm_term}` : null,
