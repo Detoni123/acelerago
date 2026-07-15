@@ -167,7 +167,7 @@ export default async function handler(req, res) {
       ...trackingLinhas,
       '',
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
-      `📅 <a href="https://calendly.com/acelerago/reuniao-de-diagnostico-acelerago">Ver agenda</a>`,
+      `📅 <a href="https://calendly.com/acelerago/diagnostico">Ver agenda</a>`,
     ]
   }
 
