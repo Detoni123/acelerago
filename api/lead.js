@@ -214,6 +214,8 @@ export default async function handler(req, res) {
                 ['WhatsApp',    telefone],
                 ['Instagram',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null],
                 ['Site',        site],
+                ['Objetivo',    objetivo],
+                ['Desafio',     desafio],
                 ['Faturamento', faturamento],
                 ['Já investiu antes', ja_investiu],
               ])}
