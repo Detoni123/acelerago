@@ -124,7 +124,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
-      linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
+      linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
       ...trackingLinhas,
@@ -136,7 +136,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
-      linha('📸 <b>Instagram:</b>',  instagram ? `@${instagram}` : null),
+      linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
       ...trackingLinhas,
@@ -153,7 +153,7 @@ export default async function handler(req, res) {
       linha('👤 <b>Nome:</b>',        nome),
       linha('📱 <b>WhatsApp:</b>',    telefone),
       linha('🩺 <b>Especialidade:</b>', especialidade),
-      linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
+      linha('📸 <b>Instagram:</b>',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',        site || 'Não informado'),
       linha('💰 <b>Faturamento:</b>', faturamento),
       linha('📊 <b>Já investiu antes:</b>', ja_investiu),
@@ -205,7 +205,7 @@ export default async function handler(req, res) {
               ${rows([
                 ['Nome',        nome],
                 ['WhatsApp',    telefone],
-                ['Instagram',   instagram ? `@${instagram}` : null],
+                ['Instagram',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null],
                 ['Site',        site],
                 ['Faturamento', faturamento],
                 ['Já investiu antes', ja_investiu],

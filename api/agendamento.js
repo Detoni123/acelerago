@@ -175,7 +175,7 @@ export default async function handler(req, res) {
     linha('👤 <b>Nome:</b>',        nome),
     linha('📱 <b>WhatsApp:</b>',    telefone),
     linha('🩺 <b>Especialidade:</b>', especialidade),
-    linha('📸 <b>Instagram:</b>',   instagram ? `@${instagram}` : null),
+    linha('📸 <b>Instagram:</b>',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
     linha('🌐 <b>Site:</b>',        site || 'Não informado'),
     linha('💰 <b>Faturamento:</b>', faturamento),
     linha('✅ <b>Investimento:</b>', investimento),
