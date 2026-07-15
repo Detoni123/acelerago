@@ -463,20 +463,15 @@
     <div class="step active" id="s0">
       <div class="card">
         <span class="cover-tag">AceleraGO · Marketing para Saúde da Mulher</span>
-        <h1 class="cover-title">Mais pacientes qualificadas chegando até você, <em>sem depender de indicação</em></h1>
-        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:24px;margin-top:-12px">Torne-se a primeira opção em saúde da mulher na sua região.</p>
-        <ul class="cover-bullets">
-          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span><span><strong>Mais pacientes qualificadas</strong> todo mês</span></li>
-          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span><strong>Apareça para quem procura</strong> uma referência em saúde da mulher</span></li>
-          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span><span><strong>Mais visibilidade</strong> nas buscas do Google</span></li>
-          <li><span class="bullet-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 1.8 3 .3 1 2.8 2.2 2-1 2.8 1 2.8-2.2 2-1 2.8-3 .3L12 22l-2.4-1.8-3-.3-1-2.8-2.2-2 1-2.8-1-2.8 2.2-2 1-2.8 3-.3z"/><polyline points="9 12 11.5 14.5 16 9.5"/></svg></span><span><strong>Método validado</strong> com +90 médicas de saúde da mulher</span></li>
-        </ul>
-        <p class="cover-note">→ Exclusivo para médicas que investem (ou pretendem investir) a partir de <strong>R$ 2.000/mês em anúncios</strong>.</p>
-        <button class="btn" onclick="go(1)">QUERO MAIS PACIENTES →</button>
+        <h1 class="cover-title">Doutora, <em>bem-vinda</em>.</h1>
+        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;margin-top:-4px;line-height:1.6">Há mais de <strong>6 anos</strong> a AceleraGO é a estrutura de marketing <strong>exclusiva de saúde da mulher</strong>. Ajudamos médicas a se tornarem referência na sua região e a atrair mais pacientes particulares, sem depender de indicação.</p>
+        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;line-height:1.6">Para manter um trabalho próximo e estratégico, abrimos <strong>apenas 4 vagas por mês</strong> para novas médicas.</p>
+        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:20px;line-height:1.6">Responda algumas perguntas rápidas, leva <strong>menos de 1 minuto</strong>. Ao final você recebe um diagnóstico do seu marketing e, se fizer sentido, os próximos passos em até 24h.</p>
+        <button class="btn" onclick="go(1)">Começar meu diagnóstico →</button>
       </div>
     </div>
 
-    <!-- ── NOME ── -->
+    <!-- ── NOME (s1) ── -->
     <div class="step" id="s1">
       <div class="card">
         <h2 class="step-question" style="margin-bottom:20px">Qual o seu nome?</h2>
@@ -488,8 +483,40 @@
       </div>
     </div>
 
-    <!-- ── WHATSAPP ── -->
+    <!-- ── OBJETIVO (s2) ── -->
     <div class="step" id="s2">
+      <div class="card">
+        <h2 class="step-question" style="margin-bottom:20px">Qual o seu principal objetivo agora?</h2>
+        <div class="choices">
+          <div class="choice" onclick="pick('objetivo',this,'Atrair mais pacientes particulares','btnObj')"><span class="badge">A</span><span class="choice-label">Atrair mais pacientes particulares</span></div>
+          <div class="choice" onclick="pick('objetivo',this,'Ser referência em saúde da mulher na região','btnObj')"><span class="badge">B</span><span class="choice-label">Ser referência em saúde da mulher na região</span></div>
+          <div class="choice" onclick="pick('objetivo',this,'Ter previsibilidade na agenda','btnObj')"><span class="badge">C</span><span class="choice-label">Ter previsibilidade na agenda</span></div>
+          <div class="choice" onclick="pick('objetivo',this,'Sair da dependência de convênio','btnObj')"><span class="badge">D</span><span class="choice-label">Sair da dependência de convênio</span></div>
+        </div>
+        <span class="field-error" id="eObj">Selecione uma opção para continuar.</span>
+        <button class="btn" id="btnObj" onclick="nextChoice('objetivo','eObj',3)">Avançar</button>
+      </div>
+    </div>
+
+    <!-- ── DESAFIO (s3) ── -->
+    <div class="step" id="s3">
+      <div class="card">
+        <h2 class="step-question">Qual o principal desafio que trava seu crescimento hoje?</h2>
+        <p class="step-hint" style="margin-bottom:20px">No diagnóstico, mostramos como resolvemos isso com médicas parecidas com você.</p>
+        <div class="choices">
+          <div class="choice" onclick="pick('desafio',this,'Agenda com horários vagos','btnDes')"><span class="badge">A</span><span class="choice-label">Agenda com horários vagos</span></div>
+          <div class="choice" onclick="pick('desafio',this,'Dependo muito de indicação','btnDes')"><span class="badge">B</span><span class="choice-label">Dependo muito de indicação</span></div>
+          <div class="choice" onclick="pick('desafio',this,'Muitos contatos que não viram consulta','btnDes')"><span class="badge">C</span><span class="choice-label">Muitos contatos que não viram consulta</span></div>
+          <div class="choice" onclick="pick('desafio',this,'Concorrência forte na região','btnDes')"><span class="badge">D</span><span class="choice-label">Concorrência forte na região</span></div>
+          <div class="choice" onclick="pick('desafio',this,'Pouca autoridade digital','btnDes')"><span class="badge">E</span><span class="choice-label">Pouca autoridade digital</span></div>
+        </div>
+        <span class="field-error" id="eDes">Selecione uma opção para continuar.</span>
+        <button class="btn" id="btnDes" onclick="nextChoice('desafio','eDes',5)">Avançar</button>
+      </div>
+    </div>
+
+    <!-- ── WHATSAPP (s5) — InitiateCheckout dispara aqui ── -->
+    <div class="step" id="s5">
       <div class="card">
         <h2 class="step-question">Qual o seu WhatsApp?</h2>
         <p class="step-hint" style="margin-bottom:20px">É por onde você recebe o resultado do diagnóstico.</p>
@@ -497,70 +524,44 @@
           <input class="field" id="fTelefone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
         </div>
         <span class="field-error" id="eTelefone">Por favor, informe seu WhatsApp.</span>
-        <button class="btn" onclick="nextText('fTelefone','eTelefone',2.5)">Avançar →</button>
+        <button class="btn" onclick="nextText('fTelefone','eTelefone',6)">Avançar →</button>
       </div>
     </div>
 
-    <!-- ── ESPECIALIDADE ── -->
-    <div class="step" id="s2.5">
-      <div class="card">
-        <h2 class="step-question">Qual a sua especialidade?</h2>
-        <p class="step-hint" style="margin-bottom:20px">Ex: ginecologista e obstetra, fisioterapeuta pélvica, enfermeira obstétrica...</p>
-        <div class="input-wrap">
-          <input class="field" id="fEspecialidade" type="text" placeholder="Sua especialidade" autocomplete="off" />
-        </div>
-        <span class="field-error" id="eEspecialidade">Por favor, informe sua especialidade.</span>
-        <button class="btn" onclick="nextText('fEspecialidade','eEspecialidade',3)">Avançar →</button>
-      </div>
-    </div>
-
-    <!-- ── INSTAGRAM ── -->
-    <div class="step" id="s3">
+    <!-- ── INSTAGRAM (s6, opcional) ── -->
+    <div class="step" id="s6">
       <div class="card">
         <h2 class="step-question">Qual o @ do seu Instagram?</h2>
-        <p class="step-hint" style="margin-bottom:20px">Para analisarmos seu posicionamento atual.</p>
+        <p class="step-hint" style="margin-bottom:20px">Para analisarmos seu posicionamento. Se preferir, é só avançar.</p>
         <div class="input-wrap">
           <span class="input-at">@</span>
           <input class="field has-at" id="fInstagram" type="text" placeholder="seuinstagram" autocomplete="off" />
         </div>
-        <span class="field-error" id="eInstagram">Por favor, informe seu Instagram.</span>
-        <button class="btn" onclick="nextText('fInstagram','eInstagram',4)">Avançar →</button>
+        <span class="field-error" id="eInstagram">Informe um @ válido, sem espaços. Ex: draanapaula</span>
+        <button class="btn" onclick="nextInstagram()">Avançar →</button>
       </div>
     </div>
 
-    <!-- ── SITE ── -->
-    <div class="step" id="s4">
-      <div class="card">
-        <div class="step-progress">Falta pouco</div>
-        <h2 class="step-question">Qual o seu site?</h2>
-        <p class="step-hint" style="margin-bottom:20px">Se não tiver site, pode deixar em branco.</p>
-        <div class="input-wrap">
-          <input class="field" id="fSite" type="url" placeholder="www.seusite.com.br" autocomplete="url" />
-        </div>
-        <span class="field-error" id="eSite">Informe um site válido ou deixe em branco.</span>
-        <button class="btn" onclick="nextSite()">Avançar →</button>
-      </div>
-    </div>
-
-    <!-- ── FATURAMENTO ── -->
-    <div class="step" id="s5">
+    <!-- ── FATURAMENTO (s7) ── -->
+    <div class="step" id="s7">
       <div class="card">
         <div class="step-progress">Quase lá</div>
         <h2 class="step-question">Qual o seu faturamento médio mensal?</h2>
+        <p class="step-hint" style="margin-bottom:20px">Pedimos isso para montar um diagnóstico e um plano que caibam no seu momento.</p>
         <div class="choices">
-          <div class="choice" onclick="pick('faturamento',this,'Até R$ 30.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 30.000</span></div>
-          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 30.000 e R$ 50.000','btnFat')"><span class="badge">B</span><span class="choice-label">Entre R$ 30.000 e R$ 50.000</span></div>
-          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 50.000 e R$ 100.000','btnFat')"><span class="badge">C</span><span class="choice-label">Entre R$ 50.000 e R$ 100.000</span></div>
-          <div class="choice" onclick="pick('faturamento',this,'Entre R$ 100.000 e R$ 150.000','btnFat')"><span class="badge">D</span><span class="choice-label">Entre R$ 100.000 e R$ 150.000</span></div>
-          <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 150.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 150.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Até R$ 15.000','btnFat')"><span class="badge">A</span><span class="choice-label">Até R$ 15.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'R$ 15.000 a R$ 30.000','btnFat')"><span class="badge">B</span><span class="choice-label">R$ 15.000 a R$ 30.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'R$ 30.000 a R$ 50.000','btnFat')"><span class="badge">C</span><span class="choice-label">R$ 30.000 a R$ 50.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'R$ 50.000 a R$ 100.000','btnFat')"><span class="badge">D</span><span class="choice-label">R$ 50.000 a R$ 100.000</span></div>
+          <div class="choice" onclick="pick('faturamento',this,'Acima de R$ 100.000','btnFat')"><span class="badge">E</span><span class="choice-label">Acima de R$ 100.000</span></div>
         </div>
         <span class="field-error" id="eFat">Selecione uma opção para continuar.</span>
         <button class="btn" id="btnFat" onclick="nextFaturamento()">Avançar</button>
       </div>
     </div>
 
-    <!-- ── INVESTIMENTO ── -->
-    <div class="step" id="s6">
+    <!-- ── INVESTIMENTO (s8) ── -->
+    <div class="step" id="s8">
       <div class="card">
         <div class="step-progress">Última pergunta</div>
         <h2 class="step-question">Além da verba de anúncios, <strong>nossa gestão se inicia em R$ 1.500/mês.</strong> Você tem disposição para investir nisso e atrair mais pacientes qualificadas?</h2>
@@ -576,8 +577,8 @@
       </div>
     </div>
 
-    <!-- ── DESQUALIFICADO ── -->
-    <div class="step" id="s8">
+    <!-- ── DESQUALIFICADO (s10) ── -->
+    <div class="step" id="s10">
       <div class="card final-card">
         <div class="final-label">AceleraGO · Marketing para Saúde da Mulher</div>
         <h2 style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);margin-bottom:24px;line-height:1.2">
@@ -598,15 +599,15 @@
       </div>
     </div>
 
-    <!-- ── FINAL ── -->
-    <div class="step" id="s7">
+    <!-- ── FINAL (s9) ── -->
+    <div class="step" id="s9">
       <div class="card" style="padding:36px 28px 32px;text-align:center">
         <div class="final-label" style="margin-bottom:8px">AceleraGO · Diagnóstico Gratuito</div>
         <div style="margin-bottom:16px"><span style="display:inline-block;background:var(--orange);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px">Falta só 1 passo</span></div>
         <div style="font-size:2.4rem;line-height:1;margin-bottom:10px">✅</div>
-        <h2 style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);line-height:1.25;margin-bottom:12px">Agora é só agendar seu horário</h2>
+        <h2 style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);line-height:1.25;margin-bottom:12px">Parabéns por chegar até aqui</h2>
         <p style="font-size:1rem;color:var(--text-mid);line-height:1.65;margin-bottom:20px">
-          Recebemos suas respostas. Toque no botão abaixo e <strong>escolha o melhor dia e horário</strong> para o seu diagnóstico gratuito.
+          Você faz parte de um grupo seleto de médicas que levam o digital a sério. Recebemos suas respostas. Agora toque no botão e <strong>escolha o melhor dia e horário</strong> para o seu diagnóstico gratuito.
         </p>
         <div style="background:var(--cream);border-left:4px solid var(--orange);border-radius:12px;padding:16px 18px;text-align:left;margin-bottom:24px">
           <p style="font-size:.92rem;color:var(--text-dark);line-height:1.6;margin:0">
@@ -623,7 +624,7 @@
 </div>
 
 <script>
-  const data = { nome:'', telefone:'', instagram:'', site:'', faturamento:'', investimento:'' }
+  const data = { nome:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', investimento:'' }
   let current = 0
   let enviado = false
 
@@ -638,18 +639,17 @@
   const navHistory = []
 
   function go(n) {
-    if (n === 5) data.site = document.getElementById('fSite').value.trim()
     navHistory.push(current)   // registra de onde veio, para o botão Voltar
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + n).classList.add('active')
     current = n
-    const pct = n === 0 ? 2 : n >= 7 ? 100 : Math.round((n / 6) * 96) + 2
+    const pct = n === 0 ? 2 : n >= 9 ? 100 : Math.round(((n > 4 ? n - 1 : n) / 7) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
     document.getElementById('progressTrack').style.display = n === 0 ? 'none' : 'block'
     const inp = document.querySelector('#s' + n + ' .field')
     if (inp) setTimeout(() => inp.focus(), 300)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    if (n === 7) {
+    if (n === 9) {
       initCalendly()
     }
   }
@@ -660,14 +660,14 @@
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + prev).classList.add('active')
     current = prev
-    const pct = prev === 0 ? 2 : prev >= 7 ? 100 : Math.round((prev / 6) * 96) + 2
+    const pct = prev === 0 ? 2 : prev >= 9 ? 100 : Math.round(((prev > 4 ? prev - 1 : prev) / 7) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
     document.getElementById('progressTrack').style.display = prev === 0 ? 'none' : 'block'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Injeta o botão "Voltar" nas etapas do formulário (1 a 6)
-  ;['1','2','3','4','5','6'].forEach(id => {
+  ;['1','2','3','5','6','7','8'].forEach(id => {
     const card = document.querySelector('#s' + id + ' .card')
     if (!card) return
     const b = document.createElement('button')
@@ -728,7 +728,7 @@
   // Abandono: só dispara ao fechar/navegar para fora, e apenas se passou da etapa do WhatsApp
   function onAbandon() {
     if (enviado) return
-    if (current < 3) return   // ainda não passou da etapa de WhatsApp
+    if (current < 6) return   // ainda não passou da etapa de WhatsApp (agora s5)
     if (!data.telefone) return
     enviado = true
     sendBeaconLead('abandono')
@@ -866,14 +866,30 @@
     go(5)
   }
 
+  function nextChoice(key, errId, next) {
+    if (!data[key]) { document.getElementById(errId).style.display = 'block'; return }
+    document.getElementById(errId).style.display = 'none'
+    go(next)
+  }
+
+  // Instagram é opcional: em branco passa. Se digitar, valida o formato.
+  function nextInstagram() {
+    const v = document.getElementById('fInstagram').value.trim()
+    const errEl = document.getElementById('eInstagram')
+    if (v && !isValidInstagram(v)) { errEl.style.display = 'block'; return }
+    errEl.style.display = 'none'
+    data.instagram = v.replace(/^@/, '')
+    go(7)
+  }
+
   function nextFaturamento() {
     if (!data.faturamento) { document.getElementById('eFat').style.display = 'block'; return }
-    if (data.faturamento === 'Até R$ 30.000') {
+    if (data.faturamento === 'Até R$ 15.000') {
       enviado = true
       fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado', fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) }).catch(()=>{})
-      go(8)
+      go(10)
     } else {
-      go(6)
+      go(8)
     }
   }
 
@@ -899,18 +915,14 @@
     try {
       await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'completo', eventId, fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) })
     } catch(_) {}
-    go(7)
+    go(9)
   }
 
   document.querySelectorAll('.field').forEach(inp => {
     inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter') return
-      const id = inp.closest('.step').id.replace('s','')
-      if (id === '4') go(5)
-      else {
-        const btn = inp.closest('.step').querySelector('.btn')
-        if (btn && !btn.disabled) btn.click()
-      }
+      const btn = inp.closest('.step').querySelector('.btn')
+      if (btn && !btn.disabled) btn.click()
     })
   })
 </script>

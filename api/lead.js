@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, investimento, especialidade, tipo, eventId,
+  const { nome, telefone, instagram, site, faturamento, investimento, especialidade, objetivo, desafio, tipo, eventId,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -132,7 +132,7 @@ export default async function handler(req, res) {
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
   } else if (tipo === 'desqualificado') {
-    header = '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(faturamento até R$ 30.000)</i>'
+    header = '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(faturamento até R$ 15.000)</i>'
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
@@ -267,6 +267,9 @@ export default async function handler(req, res) {
       }
 
       const observacoes = [
+        especialidade ? `Especialidade: ${especialidade}` : null,
+        objetivo     ? `Objetivo: ${objetivo}` : null,
+        desafio      ? `Desafio: ${desafio}` : null,
         instagram    ? `Instagram: @${instagram}` : null,
         site         ? `Site: ${site}` : null,
         faturamento  ? `Faturamento: ${faturamento}` : null,
