@@ -511,7 +511,7 @@
           <div class="choice" onclick="pick('desafio',this,'Pouca autoridade digital','btnDes')"><span class="badge">E</span><span class="choice-label">Pouca autoridade digital</span></div>
         </div>
         <span class="field-error" id="eDes">Selecione uma opção para continuar.</span>
-        <button class="btn" id="btnDes" onclick="nextChoice('desafio','eDes',5)">Avançar</button>
+        <button class="btn" id="btnDes" onclick="nextChoice('desafio','eDes',4)">Avançar</button>
       </div>
     </div>
 
@@ -542,10 +542,10 @@
       </div>
     </div>
 
-    <!-- ── FATURAMENTO (s7) ── -->
+    <!-- ── FATURAMENTO (s7) — última pergunta, envia o form ── -->
     <div class="step" id="s7">
       <div class="card">
-        <div class="step-progress">Quase lá</div>
+        <div class="step-progress">Última pergunta</div>
         <h2 class="step-question">Qual o seu faturamento médio mensal?</h2>
         <p class="step-hint" style="margin-bottom:20px">Pedimos isso para montar um diagnóstico e um plano que caibam no seu momento.</p>
         <div class="choices">
@@ -560,10 +560,9 @@
       </div>
     </div>
 
-    <!-- ── INVESTIMENTO (s8) ── -->
-    <div class="step" id="s8">
+    <!-- ── JÁ INVESTIU (s4) ── -->
+    <div class="step" id="s4">
       <div class="card">
-        <div class="step-progress">Última pergunta</div>
         <h2 class="step-question">Você já investiu em marketing antes?</h2>
         <div class="choices">
           <div class="choice" onclick="pick('ja_investiu',this,'Ainda não invisto, mas sei que preciso','btnInv')"><span class="badge">A</span><span class="choice-label">Ainda não invisto, mas sei que preciso</span></div>
@@ -572,10 +571,7 @@
           <div class="choice" onclick="pick('ja_investiu',this,'Já tive experiências ruins e parei','btnInv')"><span class="badge">D</span><span class="choice-label">Já tive experiências ruins e parei</span></div>
         </div>
         <span class="field-error" id="eInv">Selecione uma opção para continuar.</span>
-        <button class="btn" id="btnInv" onclick="submitForm()">
-          <span id="btnInvLabel">✓ Enviar respostas</span>
-          <span class="spinner" id="spinnerInv"></span>
-        </button>
+        <button class="btn" id="btnInv" onclick="nextChoice('ja_investiu','eInv',5)">Avançar</button>
       </div>
     </div>
 
@@ -645,7 +641,7 @@
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + n).classList.add('active')
     current = n
-    const pct = n === 0 ? 2 : n >= 9 ? 100 : Math.round(((n > 4 ? n - 1 : n) / 7) * 96) + 2
+    const pct = n === 0 ? 2 : n >= 9 ? 100 : Math.round((n / 7) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
     document.getElementById('progressTrack').style.display = n === 0 ? 'none' : 'block'
     const inp = document.querySelector('#s' + n + ' .field')
@@ -662,14 +658,14 @@
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + prev).classList.add('active')
     current = prev
-    const pct = prev === 0 ? 2 : prev >= 9 ? 100 : Math.round(((prev > 4 ? prev - 1 : prev) / 7) * 96) + 2
+    const pct = prev === 0 ? 2 : prev >= 9 ? 100 : Math.round((prev / 7) * 96) + 2
     document.getElementById('progressBar').style.width = pct + '%'
     document.getElementById('progressTrack').style.display = prev === 0 ? 'none' : 'block'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Injeta o botão "Voltar" nas etapas do formulário (1 a 6)
-  ;['1','2','3','5','6','7','8'].forEach(id => {
+  ;['1','2','3','4','5','6','7'].forEach(id => {
     const card = document.querySelector('#s' + id + ' .card')
     if (!card) return
     const b = document.createElement('button')
@@ -891,7 +887,7 @@
       fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado', fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) }).catch(()=>{})
       go(10)
     } else {
-      go(8)
+      submitForm()
     }
   }
 
@@ -906,11 +902,9 @@
 
 
   async function submitForm() {
-    if (!data.ja_investiu) { document.getElementById('eInv').style.display = 'block'; return }
-    document.getElementById('btnInvLabel').style.display = 'none'
-    document.getElementById('spinnerInv').style.display = 'block'
-    document.getElementById('btnInv').disabled = true
     enviado = true
+    const btnEnv = document.getElementById('btnFat')
+    if (btnEnv) { btnEnv.disabled = true; btnEnv.textContent = 'Enviando...' }
     // Completou o formulário → AddPaymentInfo (Vendas-nativo). Navegador + CAPI com dedup.
     const eventId = 'api_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
     if (typeof fbq !== 'undefined') fbq('track', 'AddPaymentInfo', {}, { eventID: eventId })
