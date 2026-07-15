@@ -110,37 +110,26 @@ export default async function handler(req, res) {
     const pnome = pnomeDe(p.nome)
 
     // 1. Completou o formulário e não agendou — espera 3 min
-    if (/Investimento:/i.test(o) && !/Status:/i.test(o)) {
+    // Reforma 14/07: o form trocou a pergunta "Investimento:" pela "Já investiu antes:".
+    // A condição antiga (/Investimento:/) parou de casar e deixou TODA lead qualificada
+    // sem resgate (foi assim que a Mirelly, 15/07, ficou sem mensagem). Sem gate de preço
+    // no form, quem completa já é qualificada → abordagem qualificada para todas.
+    if (/Já investiu antes:/i.test(o) && !/Status:/i.test(o)) {
       if (idadeMin < 3) continue
       if (await temAgendamento(p.telefone)) { await marcar(p, 'resgate-desnecessario'); await moverParaReuniao(p); continue }
 
       // Política de 11/07: NENHUM link em mensagem automática de venda. A abordagem
       // abre CONVERSA (fecho "quer os horários? dúvidas, estou por aqui"); o link do
       // Calendly vai manual pelo /whatsapp quando a lead responder (janela de 24h aberta).
-      if (/Investimento: Sim/i.test(o)) {
-        const preview =
-          `Oi, ${pnome}! Tudo bem? Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-          `Somos um programa de aceleração digital especializado em médicas e profissionais da saúde da mulher. ` +
-          `Vi que você preencheu o nosso diagnóstico e ficou faltando só agendar a sua sessão com o nosso estrategista.\n\n` +
-          `Nessa sessão, você vê ponto por ponto o que está te impedindo de atrair mais pacientes e o que fazer em cada frente. ` +
-          `E mesmo que a gente não caminhe junto depois, você sai com uma clareza que economiza meses de tentativa e erro.\n\n` +
-          `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
-        if (await sendTemplate(p.telefone, 'abordagem_qualificada_v1', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
-        else falhas++
-      } else {
-        // "Ainda não é o momento de investir": acolhe a pessoa, oferta concreta da sessão,
-        // mesmo fecho conversacional (sem link)
-        const preview =
-          `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-          `Vi que você concluiu o diagnóstico e sinalizou que ainda não é o momento de investir. ` +
-          `Tudo bem, esse tempo é seu e a gente respeita.\n\n` +
-          `Mesmo assim, quero te deixar um convite: uma sessão de diagnóstico completo com o nosso estrategista, sem custo nenhum. ` +
-          `Em 30 minutos ele analisa o seu posicionamento e o seu momento atual no digital, te aponta o que pode melhorar e as soluções pra cada ponto. ` +
-          `Você sai com clareza do caminho, e quando o seu momento chegar, quem sabe não nasce uma parceria?\n\n` +
-          `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
-        if (await sendTemplate(p.telefone, 'resgate_ainda_nao_v4', [pnome], preview)) { await marcar(p, 'resgate-ainda-nao'); await moverParaContato(p); aindaNao++ }
-        else falhas++
-      }
+      const preview =
+        `Oi, ${pnome}! Tudo bem? Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+        `Somos um programa de aceleração digital especializado em médicas e profissionais da saúde da mulher. ` +
+        `Vi que você preencheu o nosso diagnóstico e ficou faltando só agendar a sua sessão com o nosso estrategista.\n\n` +
+        `Nessa sessão, você vê ponto por ponto o que está te impedindo de atrair mais pacientes e o que fazer em cada frente. ` +
+        `E mesmo que a gente não caminhe junto depois, você sai com uma clareza que economiza meses de tentativa e erro.\n\n` +
+        `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
+      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v1', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
+      else falhas++
       continue
     }
 
