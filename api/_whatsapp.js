@@ -11,11 +11,33 @@
 const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN
 const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
 
+// Reinsere o 9º dígito em celular que veio sem ele. Fixo (começa 2-5) não muda.
+function corrigirCelular(resto) {
+  if (resto.length === 8 && /^[6-9]/.test(resto)) return '9' + resto
+  return resto
+}
+
+// Forma canônica ENVIÁVEL: 55+DDD+9+8 (celular) / 55+DDD+8 (fixo). Precisa ser
+// idêntica à chave do webhook do CRM (lib/telefone.ts) — senão o envio (com 9) e
+// a resposta da lead (que chega sem o 9) caem em conversas separadas e a resposta
+// fica órfã, sem retorno. Mantida em sincronia manual: os dois repos usam a MESMA
+// regra. Se mudar aqui, mude também em acelerago-crm/lib/telefone.ts.
+export function telefoneCanonico(telefone) {
+  const d = String(telefone ?? '').replace(/\D/g, '')
+  if (!d) return ''
+  if (d.startsWith('55') && (d.length === 12 || d.length === 13)) {
+    return '55' + d.slice(2, 4) + corrigirCelular(d.slice(4))
+  }
+  if (d.length === 10 || d.length === 11) {
+    return '55' + d.slice(0, 2) + corrigirCelular(d.slice(2))
+  }
+  return d
+}
+
 export function normalizarNumero(telefone) {
   const digits = String(telefone ?? '').replace(/\D/g, '')
   if (digits.length < 10) return null
-  // DDI 55 só quando já tem 12+ dígitos; senão é DDD 55 (RS) e precisa do prefixo
-  return digits.startsWith('55') && digits.length >= 12 ? digits : `55${digits}`
+  return telefoneCanonico(digits)
 }
 
 async function post(payload) {
@@ -48,11 +70,14 @@ async function registrarEnvio(to, wamid, corpo) {
         body: JSON.stringify({ ultima_mensagem_em: agora, ultima_mensagem_preview: corpo.slice(0, 120) }),
       })
     } else {
+      // Casa o prospect pela chave canônica. O ilike por sufixo de 4 dígitos só
+      // estreita candidatos (o hífen no cadastro — "9976-3050" — quebra um match
+      // de 8 dígitos); a igualdade real é pela canônica, em JS.
       let prospectId = null
-      const last8 = to.slice(-8)
-      const pr = await fetch(`${SB_URL}/rest/v1/prospects?select=id&telefone=ilike.${encodeURIComponent('%' + last8 + '%')}&limit=1`, { headers: H })
+      const last4 = to.slice(-4)
+      const pr = await fetch(`${SB_URL}/rest/v1/prospects?select=id,telefone&telefone=ilike.${encodeURIComponent('%' + last4 + '%')}&limit=25`, { headers: H })
       const ps = pr.ok ? await pr.json() : []
-      prospectId = ps[0]?.id ?? null
+      prospectId = (ps.find(p => telefoneCanonico(p.telefone) === to) ?? {}).id ?? null
       const ins = await fetch(`${SB_URL}/rest/v1/wa_conversas`, {
         method: 'POST', headers: { ...H, Prefer: 'return=representation' },
         body: JSON.stringify({
