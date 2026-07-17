@@ -122,13 +122,11 @@ export default async function handler(req, res) {
       // abre CONVERSA (fecho "quer os horários? dúvidas, estou por aqui"); o link do
       // Calendly vai manual pelo /whatsapp quando a lead responder (janela de 24h aberta).
       const preview =
-        `Oi, ${pnome}! Tudo bem? Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-        `Somos um programa de aceleração digital especializado em médicas e profissionais da saúde da mulher. ` +
-        `Vi que você preencheu o nosso diagnóstico e ficou faltando só agendar a sua sessão com o nosso estrategista.\n\n` +
-        `Nessa sessão, você vê ponto por ponto o que está te impedindo de atrair mais pacientes e o que fazer em cada frente. ` +
-        `E mesmo que a gente não caminhe junto depois, você sai com uma clareza que economiza meses de tentativa e erro.\n\n` +
-        `Quer que eu te envie os horários disponíveis? Qualquer dúvida, estou por aqui pra te responder 😊`
-      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v1', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
+        `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+        `Vi que você concluiu o diagnóstico e, pelo que respondeu, faz sentido aprofundarmos um pouco mais o seu cenário.\n\n` +
+        `Nessa conversa, nosso estrategista vai identificar o que hoje está limitando a atração de pacientes e organizar os próximos passos para o seu consultório.\n\n` +
+        `Posso te enviar algumas opções de horário por aqui?`
+      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
       else falhas++
       continue
     }
@@ -146,9 +144,10 @@ export default async function handler(req, res) {
       if (idadeMin < 10) continue
       const preview =
         `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-        `Vi que você começou o nosso diagnóstico e não chegou a concluir. ` +
-        `Se travou em alguma pergunta ou ficou com dúvida, me fala por aqui que eu te ajudo direto, sem precisar refazer nada.`
-      if (await sendTemplate(p.telefone, 'resgate_abandono_v2', [pnome], preview)) { await marcar(p, 'resgate-abandono'); await moverParaContato(p); abandonos++ }
+        `Vi que você começou o nosso diagnóstico, mas não chegou a concluir.\n\n` +
+        `Se alguma pergunta não ficou clara, posso te ajudar a finalizar por aqui, sem precisar começar novamente.\n\n` +
+        `Em qual parte você parou?`
+      if (await sendTemplate(p.telefone, 'resgate_abandono_v3', [pnome], preview)) { await marcar(p, 'resgate-abandono'); await moverParaContato(p); abandonos++ }
       else falhas++
     }
   }
