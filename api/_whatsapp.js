@@ -99,6 +99,25 @@ async function registrarEnvio(to, wamid, corpo) {
   } catch (e) { console.error('[whatsapp] registrarEnvio falhou:', e) }
 }
 
+// Notifica o app do CRM (push no iPhone) que um template saiu — fire-and-forget,
+// nunca derruba o envio. Autenticado pelo CRM_SYNC_SECRET compartilhado.
+async function notificarPushCRM(nome, to, nomeTemplate) {
+  const secret = process.env.CRM_SYNC_SECRET
+  if (!secret) return
+  try {
+    await fetch('https://crm.acelerago.com.br/api/push/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret,
+        title: '📤 Template enviado',
+        message: `${nome || to} recebeu "${nomeTemplate}"`,
+        url: '/whatsapp',
+      }),
+    })
+  } catch (_) {}
+}
+
 // corpoPreview: texto legível gravado no inbox (mantenha em sincronia com o template na Meta).
 export async function sendTemplate(telefone, nomeTemplate, parametros = [], corpoPreview = '') {
   const to = normalizarNumero(telefone)
@@ -111,7 +130,10 @@ export async function sendTemplate(telefone, nomeTemplate, parametros = [], corp
     type: 'template',
     template: { name: nomeTemplate, language: { code: 'pt_BR' }, ...(components && { components }) },
   })
-  if (wamid) await registrarEnvio(to, wamid, corpoPreview || `[template] ${nomeTemplate}`)
+  if (wamid) {
+    await registrarEnvio(to, wamid, corpoPreview || `[template] ${nomeTemplate}`)
+    await notificarPushCRM(parametros[0], to, nomeTemplate)
+  }
   return wamid
 }
 
