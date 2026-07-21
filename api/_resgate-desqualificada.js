@@ -2,21 +2,31 @@
 // Usado em dois pontos: envio IMEDIATO no /api/lead (assim que o formulário
 // desqualifica) e rede de segurança no cron /api/resgates.
 //
-// Template preferido: resgate_desqualificada_v3 (copy nova, aprovada em 17/07).
-// Se a Meta não aceitar o v3, cai no v2 e depois no v1, para a lead nunca ficar
-// sem resposta. NÃO menciona desqualificação/faturamento como argumento.
+// Template preferido: resgate_desqualificada_v4 (20/07 — SEM promessa de envio:
+// fecha com pergunta que abre conversa, decisão do Ronaldo). Fallback em cadeia
+// v4→v3→v2→v1 para a lead nunca ficar sem resposta. NÃO menciona
+// desqualificação/faturamento como argumento.
 import { sendTemplate } from './_whatsapp.js'
 
 export const TEXTO_DESQUALIFICADA =
   'Oi, {nome}! Aqui é o Gabriel, da AceleraGO 😊\n\n' +
   'Analisei suas respostas no diagnóstico e, pelo momento atual do seu consultório, ' +
   'não seria responsável indicar um investimento maior em anúncios agora.\n\n' +
-  'Antes disso, existem alguns ajustes de base que podem fortalecer sua operação e preparar o próximo nível de crescimento.\n\n' +
-  'Posso te enviar os primeiros passos por aqui?'
+  'Antes disso, existem ajustes de base que fortalecem sua operação e preparam o próximo nível de crescimento.\n\n' +
+  'No seu caso: o que você sente que mais trava o seu crescimento hoje?'
 
 export async function enviarResgateDesqualificada(telefone, pnome) {
   const preview = TEXTO_DESQUALIFICADA.replace('{nome}', pnome || 'Doutora')
-  const ok = await sendTemplate(telefone, 'resgate_desqualificada_v3', [pnome], preview)
+  const okV4 = await sendTemplate(telefone, 'resgate_desqualificada_v4', [pnome], preview)
+  if (okV4) return okV4
+  // v4 indisponível: v3 (copy anterior, ainda com a oferta de primeiros passos)
+  const previewV3 =
+    `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
+    'Analisei suas respostas no diagnóstico e, pelo momento atual do seu consultório, ' +
+    'não seria responsável indicar um investimento maior em anúncios agora.\n\n' +
+    'Antes disso, existem alguns ajustes de base que podem fortalecer sua operação e preparar o próximo nível de crescimento.\n\n' +
+    'Posso te enviar os primeiros passos por aqui?'
+  const ok = await sendTemplate(telefone, 'resgate_desqualificada_v3', [pnome], previewV3)
   if (ok) return ok
   // v3 indisponível: cai no v2 (copy anterior) para a lead não ficar sem resposta
   const previewV2 =
