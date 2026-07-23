@@ -462,10 +462,10 @@
     <!-- ── CAPA ── -->
     <div class="step active" id="s0">
       <div class="card">
-        <span class="cover-tag">AceleraGO · Marketing para Saúde da Mulher</span>
+        <span class="cover-tag">AceleraGO · Marketing para Médicos da Saúde da Mulher</span>
         <h1 class="cover-title">Doutor(a), <em>bem-vindo(a)</em>.</h1>
-        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;margin-top:-4px;line-height:1.6">Há mais de <strong>6 anos</strong> a AceleraGO é a estrutura de marketing <strong>especializada em saúde da mulher</strong>. Ajudamos você a fortalecer a autoridade, atrair mais pacientes particulares e aumentar o faturamento pelo digital, sem depender apenas de indicação.</p>
-        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;line-height:1.6">Para manter um trabalho próximo e estratégico, abrimos <strong>apenas 4 vagas por mês</strong> para novos médicos.</p>
+        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;margin-top:-4px;line-height:1.6">Há mais de <strong>6 anos</strong> a AceleraGO é a estrutura de marketing <strong>especializada em médicos que atuam na saúde da mulher</strong>. Ajudamos ginecologistas, obstetras e especialistas a fortalecer a autoridade, atrair mais pacientes particulares e aumentar o faturamento pelo digital, sem depender apenas de indicação.</p>
+        <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:16px;line-height:1.6">Para manter um trabalho próximo e estratégico, abrimos <strong>apenas 4 vagas por mês</strong> para novos médicos <strong>com CRM ativo</strong>.</p>
         <p style="font-size:1rem;font-weight:500;color:var(--text-mid);margin-bottom:20px;line-height:1.6">Responda algumas perguntas rápidas, leva <strong>menos de 1 minuto</strong>. Ao final, você escolhe um horário e recebe o seu diagnóstico <strong>ao vivo, numa sessão com o nosso estrategista</strong>, sem custo.</p>
         <button class="btn" onclick="go(1)">Começar meu diagnóstico →</button>
       </div>
@@ -479,7 +479,24 @@
           <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula" autocomplete="name" />
         </div>
         <span class="field-error" id="eNome">Por favor, informe seu nome.</span>
-        <button class="btn" onclick="nextText('fNome','eNome',2)">Avançar →</button>
+        <button class="btn" onclick="nextText('fNome','eNome',8)">Avançar →</button>
+      </div>
+    </div>
+
+    <!-- ── ESPECIALIDADE (s8) — filtro: só médicos seguem no diagnóstico ── -->
+    <div class="step" id="s8">
+      <div class="card">
+        <h2 class="step-question">Qual a sua área de atuação?</h2>
+        <p class="step-hint" style="margin-bottom:20px">O diagnóstico é desenhado para a realidade de cada especialidade médica.</p>
+        <div class="choices">
+          <div class="choice" onclick="pick('especialidade',this,'Ginecologia e Obstetrícia','btnEsp')"><span class="badge">A</span><span class="choice-label">Ginecologia e Obstetrícia</span></div>
+          <div class="choice" onclick="pick('especialidade',this,'Endocrinologia, Emagrecimento ou Nutrologia','btnEsp')"><span class="badge">B</span><span class="choice-label">Endocrinologia, Emagrecimento ou Nutrologia</span></div>
+          <div class="choice" onclick="pick('especialidade',this,'Reprodução Humana / Fertilidade','btnEsp')"><span class="badge">C</span><span class="choice-label">Reprodução Humana / Fertilidade</span></div>
+          <div class="choice" onclick="pick('especialidade',this,'Outra especialidade médica','btnEsp')"><span class="badge">D</span><span class="choice-label">Outra especialidade médica</span></div>
+          <div class="choice" onclick="pick('especialidade',this,'Não sou médica(o)','btnEsp')"><span class="badge">E</span><span class="choice-label">Não sou médica(o): atuo em outra área da saúde</span></div>
+        </div>
+        <span class="field-error" id="eEsp">Selecione uma opção para continuar.</span>
+        <button class="btn" id="btnEsp" onclick="nextEspecialidade()">Avançar</button>
       </div>
     </div>
 
@@ -597,6 +614,27 @@
       </div>
     </div>
 
+    <!-- ── NÃO-MÉDICO (s11) — encerramento educado, sem CTA de WhatsApp ── -->
+    <div class="step" id="s11">
+      <div class="card final-card">
+        <div class="final-label">AceleraGO · Marketing para Médicos da Saúde da Mulher</div>
+        <h2 style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);margin-bottom:24px;line-height:1.2">
+          Obrigado pelo<br>seu interesse!
+        </h2>
+        <div style="background:var(--cream);border-radius:14px;padding:24px 22px;margin-bottom:28px;text-align:left">
+          <p style="font-size:.95rem;color:var(--text-mid);line-height:1.75;margin-bottom:12px">
+            A AceleraGO é uma estrutura focada <strong>exclusivamente em médicos que atuam na saúde da mulher</strong>. Por isso, o nosso diagnóstico não se aplica à sua área de atuação.
+          </p>
+          <p style="font-size:.95rem;color:var(--text-mid);line-height:1.75">
+            Se você trabalha ao lado de médicos ou quer acompanhar o nosso conteúdo sobre marketing médico, siga a AceleraGO no Instagram.
+          </p>
+        </div>
+        <a class="btn" href="https://instagram.com/acelerago.oficial" target="_blank" rel="noopener" style="background:var(--navy);border-color:var(--navy)">
+          Seguir @acelerago.oficial
+        </a>
+      </div>
+    </div>
+
     <!-- ── FINAL (s9) ── -->
     <div class="step" id="s9">
       <div class="card" style="padding:36px 28px 32px;text-align:center">
@@ -622,7 +660,7 @@
 </div>
 
 <script>
-  const data = { nome:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
+  const data = { nome:'', especialidade:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
   let current = 0
   let enviado = false
 
@@ -636,13 +674,21 @@
 
   const navHistory = []
 
+  // Posição de cada step na SEQUÊNCIA do funil (ids não seguem a ordem visual:
+  // s8 = especialidade, entra entre nome e objetivo). Progresso usa a posição, não o id.
+  const flowPos = { 0:0, 1:1, 8:2, 2:3, 3:4, 4:5, 5:6, 6:7, 7:8 }
+  function pctFor(n) {
+    if (n === 0) return 2
+    if (n >= 9) return 100                    // s9 final, s10/s11 desqualificados
+    return Math.round(((flowPos[n] ?? 0) / 8) * 96) + 2
+  }
+
   function go(n) {
     navHistory.push(current)   // registra de onde veio, para o botão Voltar
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + n).classList.add('active')
     current = n
-    const pct = n === 0 ? 2 : n >= 9 ? 100 : Math.round((n / 7) * 96) + 2
-    document.getElementById('progressBar').style.width = pct + '%'
+    document.getElementById('progressBar').style.width = pctFor(n) + '%'
     document.getElementById('progressTrack').style.display = n === 0 ? 'none' : 'block'
     const inp = document.querySelector('#s' + n + ' .field')
     if (inp) setTimeout(() => inp.focus(), 300)
@@ -658,14 +704,13 @@
     document.getElementById('s' + current).classList.remove('active')
     document.getElementById('s' + prev).classList.add('active')
     current = prev
-    const pct = prev === 0 ? 2 : prev >= 9 ? 100 : Math.round((prev / 7) * 96) + 2
-    document.getElementById('progressBar').style.width = pct + '%'
+    document.getElementById('progressBar').style.width = pctFor(prev) + '%'
     document.getElementById('progressTrack').style.display = prev === 0 ? 'none' : 'block'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Injeta o botão "Voltar" nas etapas do formulário (1 a 6)
-  ;['1','2','3','4','5','6','7'].forEach(id => {
+  // Injeta o botão "Voltar" nas etapas do formulário (inclui s8 = especialidade)
+  ;['1','8','2','3','4','5','6','7'].forEach(id => {
     const card = document.querySelector('#s' + id + ' .card')
     if (!card) return
     const b = document.createElement('button')
@@ -726,7 +771,7 @@
   // Abandono: só dispara ao fechar/navegar para fora, e apenas se passou da etapa do WhatsApp
   function onAbandon() {
     if (enviado) return
-    if (current < 6) return   // ainda não passou da etapa de WhatsApp (agora s5)
+    if ((flowPos[current] ?? 99) < 7) return   // posição no funil antes do Instagram = ainda não passou do WhatsApp (s5)
     if (!data.telefone) return
     enviado = true
     sendBeaconLead('abandono')
@@ -862,6 +907,21 @@
     }
     errEl.style.display = 'none'
     go(5)
+  }
+
+  // Especialidade: não-médica(o) sai do funil ANTES do WhatsApp — não dispara pixel,
+  // não entra no CRM (sem telefone o /api/lead só notifica Telegram/email) e não
+  // aciona a jornada de resgate. É o filtro real contra leads fora do perfil.
+  function nextEspecialidade() {
+    if (!data.especialidade) { document.getElementById('eEsp').style.display = 'block'; return }
+    document.getElementById('eEsp').style.display = 'none'
+    if (data.especialidade === 'Não sou médica(o)') {
+      enviado = true
+      fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado', fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) }).catch(()=>{})
+      go(11)
+      return
+    }
+    go(2)
   }
 
   function nextChoice(key, errId, next) {

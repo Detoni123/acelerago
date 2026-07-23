@@ -117,8 +117,9 @@ export default async function handler(req, res) {
     linha('🖼 <b>Anúncio:</b>',  utm_content),
   ]
 
-  // Respostas do funil — vão em todos os alertas (objetivo, desafio, histórico)
+  // Respostas do funil — vão em todos os alertas (especialidade, objetivo, desafio, histórico)
   const funilLinhas = [
+    linha('🩺 <b>Especialidade:</b>', especialidade),
     linha('🎯 <b>Objetivo:</b>', objetivo),
     linha('🧩 <b>Desafio:</b>', desafio),
     linha('📊 <b>Já investiu antes:</b>', ja_investiu),
@@ -140,7 +141,12 @@ export default async function handler(req, res) {
       whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
     ]
   } else if (tipo === 'desqualificado') {
-    header = '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(faturamento até R$ 15.000)</i>'
+    // Dois motivos possíveis: não é médica(o) (filtro da especialidade, sem telefone)
+    // ou faturamento abaixo do mínimo (chegou ao fim do funil)
+    const naoMedico = (especialidade || '').startsWith('Não sou médica')
+    header = naoMedico
+      ? '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(não é médica/o — filtrado na etapa de especialidade)</i>'
+      : '🟡 <b>Lead Desqualificado — AceleraGO</b>\n<i>(faturamento até R$ 15.000)</i>'
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
