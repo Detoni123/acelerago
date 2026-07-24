@@ -479,11 +479,12 @@
           <input class="field" id="fNome" type="text" placeholder="Ex: Dra. Ana Paula" autocomplete="name" />
         </div>
         <span class="field-error" id="eNome">Por favor, informe seu nome.</span>
-        <button class="btn" onclick="nextText('fNome','eNome',8)">Avançar →</button>
+        <button class="btn" onclick="nextText('fNome','eNome',2)">Avançar →</button>
       </div>
     </div>
 
-    <!-- ── ESPECIALIDADE (s8) — filtro: só médicos seguem no diagnóstico ── -->
+    <!-- ── ESPECIALIDADE (s8) — filtro: só médicos seguem. Roda entre "já investiu" (s4)
+         e WhatsApp (s5): depois do engajamento, antes do pixel/CRM ── -->
     <div class="step" id="s8">
       <div class="card">
         <h2 class="step-question">Qual a sua área de atuação?</h2>
@@ -588,7 +589,7 @@
           <div class="choice" onclick="pick('ja_investiu',this,'Já tive experiências ruins e parei','btnInv')"><span class="badge">D</span><span class="choice-label">Já tive experiências ruins e parei</span></div>
         </div>
         <span class="field-error" id="eInv">Selecione uma opção para continuar.</span>
-        <button class="btn" id="btnInv" onclick="nextChoice('ja_investiu','eInv',5)">Avançar</button>
+        <button class="btn" id="btnInv" onclick="nextChoice('ja_investiu','eInv',8)">Avançar</button>
       </div>
     </div>
 
@@ -675,8 +676,9 @@
   const navHistory = []
 
   // Posição de cada step na SEQUÊNCIA do funil (ids não seguem a ordem visual:
-  // s8 = especialidade, entra entre nome e objetivo). Progresso usa a posição, não o id.
-  const flowPos = { 0:0, 1:1, 8:2, 2:3, 3:4, 4:5, 5:6, 6:7, 7:8 }
+  // s8 = especialidade, entra entre "já investiu" e WhatsApp, depois do engajamento
+  // e ANTES do pixel/CRM). Progresso usa a posição, não o id.
+  const flowPos = { 0:0, 1:1, 2:2, 3:3, 4:4, 8:5, 5:6, 6:7, 7:8 }
   function pctFor(n) {
     if (n === 0) return 2
     if (n >= 9) return 100                    // s9 final, s10/s11 desqualificados
@@ -921,7 +923,7 @@
       go(11)
       return
     }
-    go(2)
+    go(5)
   }
 
   function nextChoice(key, errId, next) {
