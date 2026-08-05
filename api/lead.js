@@ -2,6 +2,7 @@ import crypto from 'crypto'
 
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
 import { volumeAnormal } from './_whatsapp.js'
+import { enviarAlertaGrupo, htmlParaWhatsApp } from './_alerta-grupo.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -192,6 +193,11 @@ export default async function handler(req, res) {
       if (!tg.ok) console.error(`[lead] Telegram falhou (${tipo}): HTTP ${tg.status} — ${await tg.text()}`)
     } catch (e) { console.error(`[lead] Telegram erro (${tipo}):`, e) }
   }
+
+  // Grupo do WhatsApp (Evolution, instância detoni-alertas) — mesma mensagem do
+  // Telegram convertida para o formato do WhatsApp. Roda em paralelo ao Telegram
+  // durante a validação; depois o Telegram sai.
+  await enviarAlertaGrupo(htmlParaWhatsApp(msg))
 
   // Email via Resend (adicione RESEND_API_KEY nas env vars do Vercel para ativar)
   const RESEND_API_KEY = process.env.RESEND_API_KEY
