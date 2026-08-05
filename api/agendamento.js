@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 
 import { sendTemplate, volumeAnormal } from './_whatsapp.js'
+import { enviarAlertaGrupo, htmlParaWhatsApp } from './_alerta-grupo.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -193,6 +194,10 @@ export default async function handler(req, res) {
     })
     if (!tg.ok) console.error(`[agendamento] Telegram falhou: HTTP ${tg.status} — ${await tg.text()}`)
   } catch (e) { console.error('[agendamento] Telegram erro:', e) }
+
+  // Grupo do WhatsApp — mesmo alerta do Telegram (agendamento é o evento que mais
+  // importa do funil; ficar só no Telegram foi esquecimento da migração de 04/08).
+  await enviarAlertaGrupo(htmlParaWhatsApp(msg))
 
   return res.status(200).json({ ok: true })
 }

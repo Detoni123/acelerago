@@ -17,6 +17,7 @@
 // template aprovado na Meta — mantenha os dois em sincronia ao editar.
 import { alertaTelegram, sendTemplate, volumeAnormal } from './_whatsapp.js'
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
+import { enviarAlertaGrupo } from './_alerta-grupo.js'
 
 export default async function handler(req, res) {
   const CRON_SECRET = process.env.CRON_SECRET
@@ -40,7 +41,11 @@ export default async function handler(req, res) {
   // Suspende TODOS os envios desta rodada (nada é marcado, então nada se perde:
   // o cron retoma de onde parou quando o volume normalizar).
   if (await volumeAnormal('prospects', 'created_at')) {
-    await alertaTelegram('🚨 Volume anormal de leads nos últimos 15 min — resgates suspensos nesta rodada (possível abuso do /api/lead). Verificar prospects recentes no CRM.')
+    const aviso = '🚨 Volume anormal de leads nos últimos 15 min — resgates suspensos nesta rodada (possível abuso do /api/lead). Verificar prospects recentes no CRM.'
+    await alertaTelegram(aviso)
+    // Também no grupo: este é o alerta que NÃO pode passar batido, e o Telegram
+    // está sendo aposentado.
+    await enviarAlertaGrupo(aviso)
     return res.status(200).json({ ok: true, skipped: 'volume anormal de prospects' })
   }
 
