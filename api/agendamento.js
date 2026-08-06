@@ -19,6 +19,13 @@ export default async function handler(req, res) {
 
   let dataHora = null
   let startTimeIso = null
+  // Sem a data do Calendly o agendamento NÃO é gravado e o lembrete de 2h não
+  // dispara. Isso já falhou em silêncio (token inválido desde ~25/07/2026), então
+  // a falha agora aparece no alerta em vez de sumir num catch vazio.
+  let falhaCalendly = null
+
+  if (!CALENDLY_TOKEN)  falhaCalendly = 'CALENDLY_TOKEN ausente no ambiente'
+  else if (!eventUri)   falhaCalendly = 'o Calendly não devolveu o eventUri'
 
   if (CALENDLY_TOKEN && eventUri) {
     try {
@@ -26,6 +33,10 @@ export default async function handler(req, res) {
         headers: { Authorization: `Bearer ${CALENDLY_TOKEN}` }
       })
       const json = await resp.json()
+      if (!resp.ok) {
+        falhaCalendly = `API do Calendly respondeu HTTP ${resp.status}` +
+          (resp.status === 401 || resp.status === 403 ? ' (token inválido ou revogado)' : '')
+      }
       const startTime = json.resource?.start_time
       startTimeIso = startTime || null
       if (startTime) {
@@ -38,9 +49,15 @@ export default async function handler(req, res) {
           hour:     '2-digit',
           minute:   '2-digit',
         })
+      } else if (!falhaCalendly) {
+        falhaCalendly = 'a resposta do Calendly veio sem start_time'
       }
-    } catch (_) {}
+    } catch (e) {
+      falhaCalendly = `erro ao consultar o Calendly: ${e?.message ?? e}`
+    }
   }
+
+  if (falhaCalendly) console.error(`[agendamento] SEM data da reunião — ${falhaCalendly}`)
 
   // Meta CAPI — evento CompleteRegistration via servidor (garante rastreamento no iOS)
   const META_TOKEN = process.env.META_ACCESS_TOKEN
@@ -182,6 +199,9 @@ export default async function handler(req, res) {
     linha('✅ <b>Investimento:</b>', investimento),
     linha('📊 <b>Origem:</b>',      utmLabel),
     linha('🗓 <b>Reunião:</b>',     dataHora),
+    falhaCalendly
+      ? `⚠️ <b>SEM data da reunião</b> — ${falhaCalendly}.\nO agendamento NÃO foi gravado e o lembrete de 2h não vai disparar. Conferir no Calendly.`
+      : null,
     '',
     whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
   ].filter(Boolean).join('\n')
