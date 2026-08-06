@@ -963,7 +963,15 @@
 
   function nextFaturamento() {
     if (!data.faturamento) { document.getElementById('eFat').style.display = 'block'; return }
-    if (data.faturamento === 'Até R$ 15.000') {
+    // Faturamento declarado é dado pouco confiável: médicas com vários RQEs e
+    // carreira consolidada declaram a faixa mais baixa como DEFESA, para não
+    // serem exploradas na negociação (padrão observado em 06/08/2026). Barrar
+    // por esse campo joga fora lead bom. Quem tem RQE segue para a agenda mesmo
+    // marcando até R$ 15k — a qualificação real acontece na conversa. Sem RQE e
+    // gestor seguem no corte antigo.
+    const temRQE = data.especialidade === 'Ginecologia, Obstetrícia e Medicina Fetal'
+                || data.especialidade === 'Reprodução Humana / Fertilidade'
+    if (data.faturamento === 'Até R$ 15.000' && !temRQE) {
       enviado = true
       fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...data, tipo:'desqualificado', fbc: getCookie('_fbc'), fbp: getCookie('_fbp'), userAgent: navigator.userAgent }) }).catch(()=>{})
       go(10)
