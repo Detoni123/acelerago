@@ -12,12 +12,16 @@ const INSTANCIA = 'detoni-alertas'
 // <b>→*negrito*, <i>→_itálico_, <a href="url">rótulo</a>→"rótulo: url",
 // e desfaz as entidades escapadas (&amp; &lt; &gt;).
 export function htmlParaWhatsApp(html) {
+  // ORDEM IMPORTA: desescapar ANTES de converter as tags. O lead.js passa cada
+  // valor por esc(), então um link montado com dado do formulário (o Instagram)
+  // chega como &lt;a href=...&gt; e NÃO casava com a regex da âncora — o HTML
+  // aparecia cru na mensagem. Corrigido em 06/08/2026.
   return html
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .replace(/<a href="([^"]+)">([^<]*)<\/a>/g, '$2\n$1')
     .replace(/<\/?b>/g, '*')
     .replace(/<\/?i>/g, '_')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
 }
 
