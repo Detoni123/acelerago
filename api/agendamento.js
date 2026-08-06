@@ -20,8 +20,9 @@ export default async function handler(req, res) {
   let dataHora = null
   let startTimeIso = null
   // Sem a data do Calendly o agendamento NÃO é gravado e o lembrete de 2h não
-  // dispara. Isso já falhou em silêncio (token inválido desde ~25/07/2026), então
-  // a falha agora aparece no alerta em vez de sumir num catch vazio.
+  // dispara — e isso sumia num catch vazio. Agora a falha aparece no alerta.
+  // (Diagnóstico: 403 "Insufficient scope" em /users/me é normal, o token não
+  // tem users:read e o código não usa esse endpoint.)
   let falhaCalendly = null
 
   if (!CALENDLY_TOKEN)  falhaCalendly = 'CALENDLY_TOKEN ausente no ambiente'
