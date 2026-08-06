@@ -126,12 +126,16 @@ export default async function handler(req, res) {
       // Política de 11/07: NENHUM link em mensagem automática de venda. A abordagem
       // abre CONVERSA (fecho "quer os horários? dúvidas, estou por aqui"); o link do
       // Calendly vai manual pelo /whatsapp quando a lead responder (janela de 24h aberta).
+      // v3 (06/08/2026): mesma função, categoria UTILITY em vez de MARKETING.
+      // A Meta bloqueia template MARKETING para parte dos usuários (erro 130472,
+      // "número faz parte de um experimento") — foi o que engoliu mensagens de
+      // lead qualificada em silêncio. Texto transacional é o que sustenta UTILITY:
+      // não mexer para "vender mais" sem reenviar para aprovação.
       const preview =
-        `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-        `Vi que você concluiu o diagnóstico e, pelo que respondeu, faz sentido aprofundarmos um pouco mais o seu cenário.\n\n` +
-        `Nessa conversa, nosso estrategista vai identificar o que hoje está limitando a atração de pacientes e organizar os próximos passos para o seu consultório.\n\n` +
-        `Posso te enviar algumas opções de horário por aqui?`
-      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v2', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
+        `Olá, ${pnome}. Aqui é o Gabriel, da AceleraGO.\n\n` +
+        `Confirmando o recebimento do seu diagnóstico: suas respostas foram registradas e a sua sessão com o estrategista ainda não está agendada.\n\n` +
+        `A sessão é online e dura 30 minutos. Responda por aqui que eu envio os horários disponíveis.`
+      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v3', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
       else falhas++
       continue
     }
