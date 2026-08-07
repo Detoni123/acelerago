@@ -151,12 +151,14 @@ export default async function handler(req, res) {
     // 3. Abandonou o formulário — espera 10 min (a pessoa pode só ter trocado de aba)
     if (/ABANDONOU/i.test(o)) {
       if (idadeMin < 10) continue
+      // v4 (aprovado 07/08/2026): categoria UTILITY, mesmo motivo do
+      // abordagem_qualificada_v3 acima. Sem emoji e sem pergunta de venda —
+      // é o texto transacional que sustenta a categoria.
       const preview =
-        `Oi, ${pnome}! Aqui é o Gabriel, da AceleraGO 😊\n\n` +
-        `Vi que você começou o nosso diagnóstico, mas não chegou a concluir.\n\n` +
-        `Se alguma pergunta não ficou clara, posso te ajudar a finalizar por aqui, sem precisar começar novamente.\n\n` +
-        `Em qual parte você parou?`
-      if (await sendTemplate(p.telefone, 'resgate_abandono_v3', [pnome], preview)) { await marcar(p, 'resgate-abandono'); await moverParaContato(p); abandonos++ }
+        `Olá, ${pnome}. Aqui é o Gabriel, da AceleraGO.\n\n` +
+        `Seu formulário de diagnóstico ficou incompleto e não chegou a ser enviado.\n\n` +
+        `Se preferir, concluo o preenchimento com você por aqui, a partir de onde parou.`
+      if (await sendTemplate(p.telefone, 'resgate_abandono_v4', [pnome], preview)) { await marcar(p, 'resgate-abandono'); await moverParaContato(p); abandonos++ }
       else falhas++
     }
   }
