@@ -73,6 +73,41 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true })
   }
 
+  // Clique na tela final (s9): qual das duas saídas ela escolheu, Calendly ou
+  // WhatsApp. Sem isto os dois caminhos são invisíveis — o botão do Calendly não
+  // disparava NADA e o do WhatsApp só um custom event de pixel, que não chega ao
+  // CRM. A análise de 07/08 mostrou que 7 dos 8 agendamentos vieram do Calendly
+  // na própria página e que o caminho WhatsApp converte muito menos; sem medir os
+  // dois cliques não dá para saber se a saída de WhatsApp (adicionada em 06/08)
+  // está somando agendamento ou roubando do Calendly.
+  // Só anota no prospect que já existe (criado no submitForm, antes da s9). Não
+  // cria registro, não notifica: é telemetria.
+  if (tipo === 's9-clique') {
+    const alvo = req.body.alvo === 'whatsapp' ? 'whatsapp' : 'calendly'
+    // SUPABASE_URL/KEY só são declarados mais abaixo, dentro do bloco de gravação
+    // do lead — aqui precisam ser lidos do ambiente de novo.
+    const SB_URL = process.env.SUPABASE_URL
+    const SB_KEY = process.env.SUPABASE_SECRET_KEY
+    if (!telefone || !SB_URL || !SB_KEY) return res.status(200).json({ ok: true, skipped: 'no phone/env' })
+    try {
+      const url = `${SB_URL}/rest/v1/prospects?select=id,observacoes&telefone=eq.${encodeURIComponent(telefone)}`
+      const h = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+      const rows = await (await fetch(url, { headers: h })).json()
+      const row = rows?.[0]
+      // Um marcador por alvo: o duplo-toque nervoso não vira duas linhas.
+      if (row && !new RegExp(`\\[s9:${alvo}\\]`).test(row.observacoes || '')) {
+        await fetch(`${SB_URL}/rest/v1/prospects?id=eq.${row.id}`, {
+          method: 'PATCH',
+          headers: { ...h, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            observacoes: `${row.observacoes || ''}\n[s9:${alvo}] ${new Date().toISOString()}`,
+          }),
+        })
+      }
+    } catch (e) { console.error('[lead] s9-clique falhou:', e) }
+    return res.status(200).json({ ok: true })
+  }
+
   // Origem real derivada do utm_source (antes ficava fixo em 'Google' — atribuição errada)
   const origemLead = (() => {
     const s = (utm_source || '').toLowerCase()
