@@ -103,7 +103,7 @@ export default async function handler(req, res) {
     } catch (_) { return false }
   }
 
-  const pnomeDe = (nome) => nome ? String(nome).trim().split(/\s+/)[0] : ''
+  const pnomeDe = (nome) => nome ? String(nome).trim().replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '').split(/\s+/)[0] : ''
 
   let qualificadas = 0, aindaNao = 0, desqualificadas = 0, abandonos = 0, falhas = 0
 

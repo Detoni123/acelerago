@@ -538,16 +538,25 @@
       </div>
     </div>
 
-    <!-- ── WHATSAPP (s5) — InitiateCheckout dispara aqui ── -->
+    <!-- ── CONTATO (s5) — InitiateCheckout dispara aqui ──
+         O e-mail passou a ser pedido aqui (07/08) por causa da análise do gargalo:
+         o Calendly EXIGE e-mail no formulário de agendamento e isso não é
+         configurável. Pedindo só na hora de marcar, a médica era obrigada a digitar
+         no celular um dado que o funil nunca pediu, no exato instante da conversão.
+         Aqui ela ainda está em embalo, e o campo alimenta o prefill do Calendly. -->
     <div class="step" id="s5">
       <div class="card">
-        <h2 class="step-question">Qual o seu WhatsApp?</h2>
-        <p class="step-hint" style="margin-bottom:20px">É por onde você recebe o resultado do diagnóstico.</p>
+        <h2 class="step-question">Como falamos com você?</h2>
+        <p class="step-hint" style="margin-bottom:20px">É por onde você recebe o resultado do diagnóstico e a confirmação da sessão.</p>
         <div class="input-wrap">
-          <input class="field" id="fTelefone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+          <input class="field" id="fTelefone" type="tel" placeholder="WhatsApp: (11) 99999-9999" autocomplete="tel" />
         </div>
         <span class="field-error" id="eTelefone">Por favor, informe seu WhatsApp.</span>
-        <button class="btn" onclick="nextText('fTelefone','eTelefone',6)">Avançar →</button>
+        <div class="input-wrap" style="margin-top:14px">
+          <input class="field" id="fEmail" type="email" placeholder="Seu melhor e-mail" autocomplete="email" inputmode="email" />
+        </div>
+        <span class="field-error" id="eEmail">Por favor, informe um e-mail válido.</span>
+        <button class="btn" onclick="nextContato()">Avançar →</button>
       </div>
     </div>
 
@@ -647,24 +656,37 @@
         <div class="final-label" style="margin-bottom:8px">AceleraGO · Diagnóstico Gratuito</div>
         <div style="margin-bottom:16px"><span style="display:inline-block;background:var(--teal);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px">Falta só 1 passo</span></div>
         <div style="font-size:2.4rem;line-height:1;margin-bottom:10px">✅</div>
-        <h2 style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);line-height:1.25;margin-bottom:12px">Parabéns por chegar até aqui</h2>
+        <h2 id="s9Titulo" style="font-size:clamp(1.4rem,5.2vw,2rem);font-weight:800;letter-spacing:-.02em;color:var(--text-dark);line-height:1.25;margin-bottom:12px">Parabéns por chegar até aqui</h2>
         <p style="font-size:1rem;color:var(--text-mid);line-height:1.65;margin-bottom:20px">
-          Recebemos suas respostas e <strong>o seu diagnóstico já está em preparo</strong>. Ele é apresentado ao vivo, numa sessão de 30 minutos com o nosso estrategista: você vê o que está travando a sua atração de pacientes e o que fazer em cada frente. Toque no botão e escolha o melhor dia e horário para receber o seu.
+          Recebemos suas respostas e <strong>o seu diagnóstico já está em preparo</strong>. Ele é apresentado ao vivo, numa sessão de 30 minutos com o nosso estrategista: você vê o que está travando a sua atração de pacientes e o que fazer em cada frente. <strong>Escolha abaixo o melhor dia e horário.</strong>
         </p>
         <div style="background:var(--cream);border-left:4px solid var(--teal);border-radius:12px;padding:16px 18px;text-align:left;margin-bottom:24px">
           <p style="font-size:.92rem;color:var(--text-dark);line-height:1.6;margin:0">
-            <strong>Atenção individual e exclusiva.</strong> Como atendemos poucos médicos por mês, cada diagnóstico é conduzido com atenção total ao seu caso. É uma conversa direta e sem pressão. Escolha o melhor horário para você.
+            <strong>Atenção individual e exclusiva.</strong> Como atendemos poucos médicos por mês, cada diagnóstico é conduzido com atenção total ao seu caso. É uma conversa direta e sem pressão.
           </p>
         </div>
-        <button class="btn" onclick="openCalendly()" style="font-size:1.05rem">
+        <!-- Agenda embutida na própria tela (07/08). Antes era um botão que abria
+             popup: exigia um toque só para DESCOBRIR se havia horário, e o fallback
+             window.open costuma ser bloqueado no navegador interno do Instagram, que
+             é de onde vem quase todo o tráfego. Agora os horários já aparecem aqui,
+             com nome e e-mail pré-preenchidos. -->
+        <div id="calendlyInline" style="min-height:640px;margin-bottom:8px"></div>
+        <noscript><a class="btn" href="https://calendly.com/acelerago/diagnostico">Escolher o horário do meu diagnóstico</a></noscript>
+        <!-- Rede de segurança: se o widget não carregar (script bloqueado, rede ruim),
+             este botão aparece sozinho via JS e leva ao Calendly em página cheia. -->
+        <button id="calendlyFallback" class="btn" onclick="openCalendly()" style="font-size:1.05rem;display:none">
           📅 Escolher o horário do meu diagnóstico
         </button>
         <!-- Saída pelo WhatsApp: quem toca aqui INICIA a conversa, o que abre a
              janela de 24h. Dentro dela respondemos em texto livre — sem template
              MARKETING (que a Meta bloqueia para parte dos usuários, erro 130472)
-             e com espelhamento no app do celular, que template não tem. -->
+             e com espelhamento no app do celular, que template não tem.
+             07/08: deixou de perguntar "prefere falar antes de escolher o horário?".
+             Aquela frase legitimava adiar bem no momento da decisão, e os dados
+             mostram que o caminho WhatsApp converte muito menos que o Calendly.
+             Agora é rede de segurança para quem travou, não um convite a adiar. -->
         <p style="margin-top:20px;font-size:.92rem;color:var(--text-mid);line-height:1.6">
-          Prefere falar antes de escolher o horário?<br>
+          Não conseguiu ver os horários?<br>
           <a href="https://wa.me/5511934619564?text=Ol%C3%A1!%20Acabei%20de%20preencher%20o%20diagn%C3%B3stico%20da%20AceleraGO%20e%20quero%20falar%20sobre%20a%20minha%20cl%C3%ADnica."
              target="_blank" rel="noopener"
              onclick="trackS9('whatsapp')"
@@ -680,7 +702,7 @@
 </div>
 
 <script>
-  const data = { nome:'', especialidade:'', telefone:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
+  const data = { nome:'', especialidade:'', telefone:'', email:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
   let current = 0
   let enviado = false
 
@@ -716,7 +738,52 @@
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (n === 9) {
       initCalendly()
+      montarS9()
     }
+  }
+
+  // Monta a tela final: trata a médica pelo nome e embute a agenda com os dados
+  // dela já preenchidos. Se o widget não subir em 6s, mostra o botão de fallback.
+  let s9Montada = false
+  function montarS9() {
+    // Trava própria em vez de checar iframe no DOM: o widget é inserido de forma
+    // assíncrona, então duas chamadas seguidas passariam as duas pela checagem e
+    // empilhariam dois calendários (visto no teste).
+    if (s9Montada) return
+    s9Montada = true
+    // Descarta o pronome de tratamento antes de pegar o primeiro nome: quase toda
+    // médica se cadastra como "Dra. Fulana" e sem isto a tela dizia "Dra., falta só
+    // escolher o horário".
+    const primeiro = (data.nome || '')
+      .trim()
+      .replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '')
+      .split(/\s+/)[0]
+    if (primeiro) {
+      const h = document.getElementById('s9Titulo')
+      if (h) h.textContent = `${primeiro}, falta só escolher o horário`
+    }
+    const alvo = document.getElementById('calendlyInline')
+    const fb   = document.getElementById('calendlyFallback')
+    if (!alvo) return
+    let montado = false
+    const tentar = () => {
+      if (montado || !window.Calendly || !alvo.isConnected) return
+      montado = true
+      try {
+        Calendly.initInlineWidget({
+          url: calendlyUrl(),
+          parentElement: alvo,
+          prefill: { name: data.nome || '', email: data.email || '' },
+        })
+      } catch (_) { if (fb) fb.style.display = 'block' }
+    }
+    tentar()
+    const t = setInterval(tentar, 300)
+    setTimeout(() => {
+      clearInterval(t)
+      // Widget não subiu: some com a caixa vazia e oferece o caminho em página cheia.
+      if (!montado && fb) { alvo.style.minHeight = '0'; fb.style.display = 'block' }
+    }, 6000)
   }
 
   function goBack() {
@@ -745,6 +812,38 @@
   function calendlyUrl() {
     return 'https://calendly.com/acelerago/diagnostico'
       + '?name=' + encodeURIComponent(data.nome)
+      + (data.email ? '&email=' + encodeURIComponent(data.email) : '')
+      + '&hide_gdpr_banner=1'
+  }
+
+  // Valida e-mail sem inventar regra: exige algo@algo.tld, que é o que o Calendly
+  // aceita. Regex apertada demais rejeita domínio legítimo e custa lead.
+  function isValidEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test((v || '').trim())
+  }
+
+  // s5 pede WhatsApp E e-mail. O InitiateCheckout continua saindo assim que o
+  // telefone fica válido (ver o blur mais abaixo), então acrescentar o e-mail não
+  // reduz o sinal de otimização da campanha mesmo que ela desista neste campo.
+  function nextContato() {
+    const tel = document.getElementById('fTelefone').value.trim()
+    const eml = document.getElementById('fEmail').value.trim()
+    const errT = document.getElementById('eTelefone')
+    const errE = document.getElementById('eEmail')
+    if (!tel || !isValidPhone(tel)) {
+      errT.textContent = tel ? 'Informe um WhatsApp válido com DDD, ex: (11) 99999-9999.' : 'Por favor, informe seu WhatsApp.'
+      errT.style.display = 'block'; return
+    }
+    errT.style.display = 'none'
+    if (!isValidEmail(eml)) {
+      errE.textContent = eml ? 'Informe um e-mail válido, ex: nome@clinica.com.br' : 'Por favor, informe seu e-mail.'
+      errE.style.display = 'block'; return
+    }
+    errE.style.display = 'none'
+    data.telefone = tel
+    data.email = eml
+    fireLead()
+    go(6)
   }
 
   // Pré-carrega CSS + JS do Calendly ao chegar na última etapa, para o popup abrir na hora do toque.
@@ -824,6 +923,16 @@
       else if (d.length > 2) out = `(${d.slice(0, 2)}) ${d.slice(2)}`
       this.value = out
     })
+    // Dispara o InitiateCheckout assim que o telefone fica válido, sem esperar o
+    // botão. Como a s5 passou a pedir e-mail também (07/08), sem isto quem
+    // desistisse no campo de e-mail sumiria do sinal de otimização da campanha,
+    // e o telefone dela já estava na mão.
+    tel.addEventListener('blur', function () {
+      const v = this.value.trim()
+      if (!v || !isValidPhone(v)) return
+      data.telefone = v
+      fireLead()
+    })
   })()
 
   // Lê cookies Meta (_fbc / _fbp) para enriquecer CAPI
@@ -835,6 +944,13 @@
   // Conversão Calendly → Meta Pixel + CAPI com mesmo event_id para deduplicação
   window.addEventListener('message', function(e) {
     try {
+    // Com a agenda embutida (07/08) não existe mais "clique no Calendly": o
+    // widget aparece sozinho para todo mundo. O sinal equivalente de engajamento
+    // passa a ser ter escolhido dia e hora, que é o que grava [s9:calendly] e
+    // permite comparar este caminho com [s9:whatsapp].
+    if (e.data && e.data.event === 'calendly.date_and_time_selected') {
+      trackS9('calendly')
+    }
     if (e.data && e.data.event === 'calendly.event_scheduled') {
       const eventId  = 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
       const eventUri = e.data.payload?.event?.uri

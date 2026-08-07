@@ -112,7 +112,7 @@ export default async function handler(req, res) {
   if (inundado) console.error('[agendamento] volume anormal — confirmação suspensa')
   if (telefone && !inundado) {
     // Cloud API oficial: template aprovado confirmacao_reuniao_v2 (nome + data/hora)
-    const pnome  = nome ? nome.trim().split(/\s+/)[0] : 'Doutora'
+    const pnome  = nome ? nome.trim().replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '').split(/\s+/)[0] : 'Doutora'
     const quando = dataHora || 'em breve'
     // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
     // v6 = copy final aprovada pelo Ronaldo em 11/07 (valor da sessão, sem citar o

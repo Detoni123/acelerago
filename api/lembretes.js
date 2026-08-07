@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     const hora = new Date(ag.reuniao_at).toLocaleString('pt-BR', {
       timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit',
     })
-    const pnome = ag.nome ? String(ag.nome).trim().split(/\s+/)[0] : ''
+    const pnome = ag.nome ? String(ag.nome).trim().replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '').split(/\s+/)[0] : ''
 
     // Previews gravados no inbox do CRM — manter em sincronia com os templates na Meta.
     // v5 (copy aprovada 11/07, persona Gabriel, sem citar o Ronaldo) e v4 levam o link

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { nome, telefone, instagram, site, faturamento, ja_investiu, especialidade, objetivo, desafio, tipo, eventId,
+  const { nome, telefone, email, instagram, site, faturamento, ja_investiu, especialidade, objetivo, desafio, tipo, eventId,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -168,6 +168,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
+      linha('📧 <b>E-mail:</b>',     email),
       linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
@@ -186,6 +187,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',       nome),
       linha('📱 <b>WhatsApp:</b>',   telefone),
+      linha('📧 <b>E-mail:</b>',     email),
       linha('📸 <b>Instagram:</b>',  instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('🌐 <b>Site:</b>',       site),
       linha('💰 <b>Faturamento:</b>',faturamento),
@@ -203,6 +205,7 @@ export default async function handler(req, res) {
     linhas = [
       linha('👤 <b>Nome:</b>',        nome),
       linha('📱 <b>WhatsApp:</b>',    telefone),
+      linha('📧 <b>E-mail:</b>',     email),
       linha('📸 <b>Instagram:</b>',   instagram ? `<a href="https://instagram.com/${instagram}">@${instagram}</a>` : null),
       linha('💰 <b>Faturamento:</b>', faturamento),
       ...funilLinhas,
@@ -313,7 +316,7 @@ export default async function handler(req, res) {
           // Disjuntor anti-abuso: sem envio agora; o cron retoma quando o volume normalizar
           console.error('[lead] volume anormal de prospects — envio imediato suspenso')
         } else {
-          const pnome = nome ? String(nome).trim().split(/\s+/)[0] : ''
+          const pnome = nome ? String(nome).trim().replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '').split(/\s+/)[0] : ''
           const ok = await enviarResgateDesqualificada(telefone, pnome).catch(() => false)
           if (ok) {
             marcadorResgate = `[auto:resgate-desqualificada] ${new Date().toISOString()}`
@@ -326,6 +329,7 @@ export default async function handler(req, res) {
         especialidade ? `Especialidade: ${especialidade}` : null,
         objetivo     ? `Objetivo: ${objetivo}` : null,
         desafio      ? `Desafio: ${desafio}` : null,
+        email        ? `E-mail: ${email}` : null,
         instagram    ? `Instagram: @${instagram}` : null,
         site         ? `Site: ${site}` : null,
         faturamento  ? `Faturamento: ${faturamento}` : null,
