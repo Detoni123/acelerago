@@ -51,9 +51,14 @@ export default async function handler(req, res) {
   let enviados = 0, cancelados = 0, falhas = 0
 
   for (const ag of due) {
+    // Link da chamada, nesta ordem: gravado à mão no agendamento (reunião fechada
+    // no WhatsApp, sem Calendly — coluna link_reuniao), senão o join_url do
+    // Calendly, senão a sala padrão via env LINK_REUNIAO_PADRAO (opcional).
+    let linkReuniao = (typeof ag.link_reuniao === 'string' && ag.link_reuniao.trim())
+      || (process.env.LINK_REUNIAO_PADRAO || '').trim()
+      || null
     // Consulta o Calendly: pula reunião cancelada e aproveita pra pegar o link da chamada
     // (location.join_url — Zoom/Meet), que vai direto no corpo do lembrete.
-    let linkReuniao = null
     if (CALENDLY_TOKEN && ag.calendly_event_uri) {
       try {
         const ev  = await fetch(ag.calendly_event_uri, { headers: { Authorization: `Bearer ${CALENDLY_TOKEN}` } })
@@ -64,7 +69,7 @@ export default async function handler(req, res) {
           cancelados++
           continue
         }
-        linkReuniao = evj?.resource?.location?.join_url ?? null
+        linkReuniao = evj?.resource?.location?.join_url ?? linkReuniao
       } catch (_) { /* se a checagem falhar, segue e envia mesmo assim */ }
     }
 
