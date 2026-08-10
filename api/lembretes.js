@@ -1,7 +1,7 @@
 // Cron: lembrete de reunião ~2h antes.
 // Chamado pelo Vercel Cron a cada 15 min. Protegido por CRON_SECRET
 // (o Vercel envia automaticamente o header Authorization: Bearer ${CRON_SECRET}).
-import { sendTemplate } from './_whatsapp.js'
+import { sendTemplate, telefoneCanonico } from './_whatsapp.js'
 
 export default async function handler(req, res) {
   const CRON_SECRET = process.env.CRON_SECRET
@@ -21,6 +21,25 @@ export default async function handler(req, res) {
     'Content-Type': 'application/json',
     apikey:         SB_KEY,
     Authorization:  `Bearer ${SB_KEY}`,
+  }
+
+  // Segunda linha de defesa do "lead da Detoni não recebe nada": a coluna
+  // `frente` do agendamento resolve o que vem do funil, mas reunião fechada no
+  // WhatsApp e gravada à mão na tabela nasce com o default 'acelerago'. Aqui a
+  // marca é lida do prospect. Casa pelos últimos 4 dígitos e confirma pela forma
+  // canônica em JS: o cadastro guarda telefone formatado — "(11) 94469-0933" —,
+  // e o hífen no meio quebra qualquer ilike de 8 dígitos seguidos.
+  const éDetoni = async (telefone) => {
+    const canon = telefoneCanonico(telefone)
+    if (!canon) return false
+    try {
+      const r = await fetch(
+        `${SB_URL}/rest/v1/prospects?select=frente,telefone&telefone=ilike.${encodeURIComponent('%' + canon.slice(-4) + '%')}&limit=25`,
+        { headers: sbHeaders },
+      )
+      const rows = r.ok ? await r.json() : []
+      return rows.some(p => telefoneCanonico(p.telefone) === canon && p.frente === 'detoni')
+    } catch (_) { return false }
   }
 
   const markDone = (id) =>
@@ -48,9 +67,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'query falhou', detail: String(e) })
   }
 
-  let enviados = 0, cancelados = 0, falhas = 0
+  let enviados = 0, cancelados = 0, falhas = 0, pulados = 0
 
   for (const ag of due) {
+    // Lead do funil da Detoni não recebe nada automático (decisão do Ronaldo,
+    // 10/08/2026): este número e esta copy são da marca AceleraGO, e o número da
+    // Detoni não tem API oficial para assumir o envio. Contato é manual.
+    // O filtro fica em JS, não na query, de propósito: se a coluna `frente`
+    // ainda não existir no banco, uma query com ?frente=eq.acelerago devolveria
+    // 400 e o cron pararia de lembrar TODO mundo em silêncio.
+    if (ag.frente === 'detoni' || await éDetoni(ag.telefone)) { pulados++; continue }
+
     // Link da chamada, nesta ordem: gravado à mão no agendamento (reunião fechada
     // no WhatsApp, sem Calendly — coluna link_reuniao), senão o join_url do
     // Calendly, senão a sala padrão via env LINK_REUNIAO_PADRAO (opcional).
@@ -111,5 +138,5 @@ export default async function handler(req, res) {
     else    { falhas++ }
   }
 
-  return res.status(200).json({ ok: true, encontrados: due.length, enviados, cancelados, falhas })
+  return res.status(200).json({ ok: true, encontrados: due.length, enviados, cancelados, falhas, pulados })
 }
