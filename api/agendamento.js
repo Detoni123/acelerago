@@ -158,22 +158,38 @@ export default async function handler(req, res) {
       if (!ins.ok) console.error(`[agendamento] Supabase insert falhou: HTTP ${ins.status} — ${await ins.text()}`)
 
       // Kanban acompanha o funil: lead agendou → card vai pra "reuniao"
-      // (match pelos últimos 8 dígitos; não regride card já em proposta/fechado)
+      // (match pelos últimos 8 dígitos; não regride card já em proposta/fechado).
+      //
+      // O ilike de 8 dígitos SEGUIDOS nunca casava: o cadastro guarda o telefone
+      // formatado, "(11) 94469-0933", e o hífen no meio parte a sequência. O
+      // ilike agora só estreita candidatos pelos 4 últimos dígitos; a igualdade
+      // real é decidida em JS, sobre os dígitos limpos. Mesma correção aplicada
+      // no detoni-funil, que tem este arquivo duplicado.
       const last8 = telDigits.slice(-8)
+      const sbHeaders = {
+        'Content-Type': 'application/json',
+        apikey:         SB_KEY,
+        Authorization:  `Bearer ${SB_KEY}`,
+      }
       if (last8.length === 8) {
-        await fetch(
-          `${SB_URL}/rest/v1/prospects?telefone=ilike.${encodeURIComponent('%' + last8 + '%')}&etapa=in.(prospeccao,contato)`,
-          {
-            method:  'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey:         SB_KEY,
-              Authorization:  `Bearer ${SB_KEY}`,
-              Prefer:         'return=minimal',
-            },
-            body: JSON.stringify({ etapa: 'reuniao' }),
-          },
-        ).catch(() => {})
+        try {
+          const busca = await fetch(
+            `${SB_URL}/rest/v1/prospects?select=id,telefone&telefone=ilike.${encodeURIComponent('%' + telDigits.slice(-4) + '%')}&etapa=in.(prospeccao,contato)&limit=25`,
+            { headers: sbHeaders },
+          )
+          const candidatos = busca.ok ? await busca.json() : []
+          const alvos = candidatos.filter(
+            p => String(p.telefone ?? '').replace(/\D/g, '').slice(-8) === last8,
+          )
+          for (const p of alvos) {
+            await fetch(`${SB_URL}/rest/v1/prospects?id=eq.${p.id}`, {
+              method:  'PATCH',
+              headers: { ...sbHeaders, Prefer: 'return=minimal' },
+              body:    JSON.stringify({ etapa: 'reuniao' }),
+            }).catch(() => {})
+          }
+          if (!alvos.length) console.error(`[agendamento] Kanban: nenhum prospect casou com ${telE164}`)
+        } catch (e) { console.error('[agendamento] Kanban erro:', e) }
       }
     } catch (e) { console.error('[agendamento] Supabase insert erro:', e) }
   }
