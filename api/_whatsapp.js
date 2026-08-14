@@ -8,6 +8,8 @@
 // para que o inbox do CRM mostre a mensagem e o webhook consiga atualizar o
 // status assíncrono (delivered/read/FAILED). Sem isso, falha da Meta é invisível.
 
+import { enviarAlertaGrupo } from './_alerta-grupo.js'
+
 const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN
 const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
 
@@ -166,15 +168,8 @@ export async function volumeAnormal(tabela, colunaData, minutos = 15, limite = 1
   } catch (_) { return false }
 }
 
-export async function alertaTelegram(texto) {
-  const bot = process.env.TELEGRAM_BOT_TOKEN
-  const chat = process.env.TELEGRAM_CHAT_ID
-  if (!bot || !chat) return
-  try {
-    await fetch(`https://api.telegram.org/bot${bot}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chat, text: texto }),
-    })
-  } catch (_) {}
+// Alerta interno da agência. Ia para o Telegram até 14/08/2026; agora vai para
+// o grupo do WhatsApp, que era o canal em paralelo "durante a validação".
+export async function alertaInterno(texto) {
+  await enviarAlertaGrupo(texto)
 }

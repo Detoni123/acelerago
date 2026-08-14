@@ -131,8 +131,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: 'no data' })
   }
 
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-  const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
   const whatsappLink = telefone
     ? `https://wa.me/55${telefone.replace(/\D/g, '')}`
@@ -218,23 +216,13 @@ export default async function handler(req, res) {
 
   const msg = [header, '', ...linhas].filter(l => l !== null).join('\n')
 
-  // Telegram para TODOS os tipos — inclusive 'completo'. Antes o completo só
-  // notificava via agendamento do Calendly, então quem terminava o formulário e
-  // não agendava se perdia. Quem agendar recebe a 2ª mensagem (com data/hora).
-  {
-    try {
-      const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'HTML' }),
-      })
-      if (!tg.ok) console.error(`[lead] Telegram falhou (${tipo}): HTTP ${tg.status} — ${await tg.text()}`)
-    } catch (e) { console.error(`[lead] Telegram erro (${tipo}):`, e) }
-  }
+  // Alerta para TODOS os tipos — inclusive 'completo'. Antes o completo só
+  // notificava no agendamento, então quem terminava o formulário e não agendava
+  // se perdia. Quem agendar recebe a 2ª mensagem (com data/hora).
 
-  // Grupo do WhatsApp (Evolution, instância detoni-alertas) — mesma mensagem do
-  // Telegram convertida para o formato do WhatsApp. Roda em paralelo ao Telegram
-  // durante a validação; depois o Telegram sai.
+  // Grupo do WhatsApp (Evolution, instância detoni-alertas) — canal único dos
+  // alertas internos desde 14/08/2026, quando o Telegram saiu. A mensagem é
+  // montada em HTML e convertida aqui para o formato do WhatsApp.
   await enviarAlertaGrupo(htmlParaWhatsApp(msg))
 
   // Email via Resend (adicione RESEND_API_KEY nas env vars do Vercel para ativar)

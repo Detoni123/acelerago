@@ -15,7 +15,7 @@
 //
 // Os textos abaixo são o PREVIEW gravado no inbox do CRM. O que a lead recebe é o
 // template aprovado na Meta — mantenha os dois em sincronia ao editar.
-import { alertaTelegram, sendTemplate, volumeAnormal } from './_whatsapp.js'
+import { alertaInterno, sendTemplate, volumeAnormal } from './_whatsapp.js'
 import { enviarResgateDesqualificada } from './_resgate-desqualificada.js'
 import { enviarAlertaGrupo } from './_alerta-grupo.js'
 
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
   // o cron retoma de onde parou quando o volume normalizar).
   if (await volumeAnormal('prospects', 'created_at')) {
     const aviso = '🚨 Volume anormal de leads nos últimos 15 min — resgates suspensos nesta rodada (possível abuso do /api/lead). Verificar prospects recentes no CRM.'
-    await alertaTelegram(aviso)
+    await alertaInterno(aviso)
     // Também no grupo: este é o alerta que NÃO pode passar batido, e o Telegram
     // está sendo aposentado.
     await enviarAlertaGrupo(aviso)

@@ -12,8 +12,6 @@ export default async function handler(req, res) {
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress
 
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-  const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
   // ── Marca a reunião de verdade (agenda própria, ex-Calendly) ──────────────
   // O CRM confere a agenda do Google no instante do pedido, cria a sala do Zoom,
@@ -266,17 +264,9 @@ export default async function handler(req, res) {
     whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
   ].filter(Boolean).join('\n')
 
-  try {
-    const tg = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'HTML' }),
-    })
-    if (!tg.ok) console.error(`[agendamento] Telegram falhou: HTTP ${tg.status} — ${await tg.text()}`)
-  } catch (e) { console.error('[agendamento] Telegram erro:', e) }
 
-  // Grupo do WhatsApp — mesmo alerta do Telegram (agendamento é o evento que mais
-  // importa do funil; ficar só no Telegram foi esquecimento da migração de 04/08).
+  // Grupo do WhatsApp — canal único dos alertas internos desde 14/08/2026,
+  // quando o Telegram saiu.
   await enviarAlertaGrupo(htmlParaWhatsApp(msg))
 
   // A tela precisa da resposta real: se a reunião não foi marcada, ela mostra o
