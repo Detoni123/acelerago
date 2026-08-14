@@ -201,7 +201,10 @@ export default async function handler(req, res) {
                   nome:        nome || null,
                   telefone:    telefone || telE164,
                   etapa:       'reuniao',
-                  source:      'link-direto',
+                  // `source` tem CHECK fixo no banco (google|meta|whatsapp|
+                  // indicacao|manual|outro). O rótulo exato vive em
+                  // origem_lead, que é por onde se filtra este caso.
+                  source:      'manual',
                   frente:      'acelerago',
                   origem_lead: 'Link de agendamento enviado direto',
                   observacoes: [
