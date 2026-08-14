@@ -36,7 +36,10 @@
 
     '.ag-secao-label{font-size:.8rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}',
 
-    '.ag-dias{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:18px}',
+    '.ag-dias-wrap{position:relative;margin-bottom:18px}',
+    '.ag-dias-wrap::after{content:"";position:absolute;top:0;right:0;bottom:6px;width:34px;background:linear-gradient(to right, rgba(255,255,255,0), #fff 75%);pointer-events:none;transition:opacity .15s}',
+    '.ag-dias-wrap.ag-dias-fim::after{opacity:0}',
+    '.ag-dias{display:flex;gap:8px;overflow-x:auto;padding:2px 30px 4px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
     '.ag-dias::-webkit-scrollbar{display:none}',
     '.ag-dia{flex:0 0 auto;min-width:64px;padding:10px 8px;border:1.5px solid #ececea;border-radius:13px;background:#fff;cursor:pointer;text-align:center;line-height:1.2;transition:border-color .15s,background .15s,transform .1s}',
     '.ag-dia:hover{border-color:var(--ag-cor)}',
@@ -158,13 +161,13 @@
           '<p class="ag-campo-erro" id="agEmailErro">Informe um email válido, ex: nome@empresa.com.br</p></div>'
         : ''
 
-      html += '<p class="ag-secao-label">Escolha o dia</p><div class="ag-dias">'
+      html += '<p class="ag-secao-label">Escolha o dia</p><div class="ag-dias-wrap"><div class="ag-dias">'
       dias.forEach(function (d) {
         var r = rotuloDia(d)
         html += '<button type="button" class="ag-dia' + (d === estado.diaAtivo ? ' on' : '') +
                 '" data-dia="' + d + '"><small>' + r.semana + '</small><b>' + r.dia + '</b></button>'
       })
-      html += '</div><p class="ag-secao-label">Escolha o horário</p><div class="ag-horas">'
+      html += '</div></div><p class="ag-secao-label">Escolha o horário</p><div class="ag-horas">'
       estado.slots.filter(function (s) { return s.dia === estado.diaAtivo }).forEach(function (s) {
         html += '<button type="button" class="ag-hora" data-inicio="' + s.inicio + '">' + hhmm(s.inicio) + '</button>'
       })
@@ -177,6 +180,19 @@
       alvo.querySelectorAll('.ag-hora').forEach(function (b) {
         b.onclick = function () { escolherHorario(b.getAttribute('data-inicio')) }
       })
+
+      // Some com a sombra quando não há mais o que rolar — ela só faz sentido
+      // como aviso de "tem mais dias pra cá", não como decoração fixa.
+      var trilho = alvo.querySelector('.ag-dias')
+      var faixa = alvo.querySelector('.ag-dias-wrap')
+      if (trilho && faixa) {
+        var atualizarFade = function () {
+          var fim = trilho.scrollLeft + trilho.clientWidth >= trilho.scrollWidth - 4
+          faixa.classList.toggle('ag-dias-fim', fim)
+        }
+        trilho.addEventListener('scroll', atualizarFade)
+        atualizarFade()
+      }
     }
 
     function escolherHorario(inicio) {
