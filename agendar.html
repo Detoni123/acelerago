@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agendar conversa — AceleraGO</title>
+  <meta name="description" content="Escolha o melhor dia e horário para a sua conversa com a AceleraGO." />
+  <!-- noindex: esta página é para link enviado direto, não para busca. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="/logo-favicon.png" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-var.woff2" crossorigin />
+
+  <!-- Página de agendamento AVULSA (13/08/2026).
+       Serve o caso "o Ronaldo mandou o link direto", que antes ia para o
+       Calendly e por isso nascia fora do CRM: sem registro em `agendamentos`,
+       sem lembrete de 2h, e dependendo de alguém lançar a reunião na mão
+       depois (foi assim que a reunião da Dra. Tassia entrou com o mês errado).
+       Aqui o agendamento passa exatamente pelo mesmo caminho do funil, então
+       o lembrete e o card no Kanban saem sozinhos. -->
+  <style>
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 100 900;
+      font-display: swap; src: url('/fonts/inter-latin-var.woff2') format('woff2');
+    }
+    :root {
+      --laranja: #f97316;
+      --laranja-tint: #fff8f3;
+      --teal: #009188;
+      --navy: #0d1b2a;
+      --texto: #14202b;
+      --texto-mid: #5b6b7a;
+      --creme: #faf7f4;
+      --borda: #e8e6e1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--creme); color: var(--texto);
+      -webkit-font-smoothing: antialiased; line-height: 1.6;
+    }
+    header {
+      background: var(--navy); padding: 18px 20px; text-align: center;
+    }
+    header img { height: 30px; display: inline-block; }
+    main { max-width: 560px; margin: 0 auto; padding: 32px 18px 56px; }
+    .card {
+      background: #fff; border: 1px solid var(--borda); border-radius: 20px;
+      padding: 30px 24px; box-shadow: 0 3px 18px rgba(17,17,17,.05);
+    }
+    .selo {
+      display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: .09em;
+      text-transform: uppercase; color: var(--teal); margin-bottom: 12px;
+    }
+    h1 { font-size: clamp(1.5rem, 6vw, 1.95rem); line-height: 1.2; letter-spacing: -.02em; margin-bottom: 10px; }
+    .sub { color: var(--texto-mid); font-size: 1rem; margin-bottom: 26px; }
+    .campo { margin-bottom: 16px; }
+    .campo label { display: block; font-size: .88rem; font-weight: 600; color: #374151; margin-bottom: 7px; }
+    .campo input {
+      width: 100%; padding: 14px; border: 1.5px solid #e5e7eb; border-radius: 11px;
+      font-size: 1rem; font-family: inherit; background: #fafafa; transition: border-color .15s, background .15s;
+    }
+    .campo input:focus { outline: none; border-color: var(--laranja); background: #fff; }
+    .campo .erro { display: none; font-size: .85rem; color: #b91c1c; margin-top: 6px; }
+    .campo.invalido input { border-color: #b91c1c; }
+    .campo.invalido .erro { display: block; }
+    .divisor {
+      border: 0; border-top: 1px solid var(--borda); margin: 26px 0 22px;
+    }
+    footer { text-align: center; color: #9ca3af; font-size: .82rem; padding: 0 18px 40px; }
+    footer a { color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/acelerafundotransp.webp" alt="AceleraGO" width="120" height="30" />
+  </header>
+
+  <main>
+    <div class="card">
+      <span class="selo">AceleraGO · Saúde da mulher</span>
+      <h1>Vamos conversar</h1>
+      <p class="sub">Preencha seus dados e escolha o melhor dia e horário. A confirmação e o link da chamada chegam no seu e-mail.</p>
+
+      <div class="campo" id="cNome">
+        <label for="fNome">Seu nome</label>
+        <input id="fNome" type="text" autocomplete="name" placeholder="Ex: Dra. Ana Paula" />
+        <p class="erro">Por favor, informe seu nome.</p>
+      </div>
+
+      <div class="campo" id="cTelefone">
+        <label for="fTelefone">WhatsApp</label>
+        <input id="fTelefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" />
+        <p class="erro">Informe um WhatsApp válido com DDD.</p>
+      </div>
+
+      <div class="campo" id="cEmail">
+        <label for="fEmail">E-mail</label>
+        <input id="fEmail" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" />
+        <p class="erro">Informe um e-mail válido, ex: nome@clinica.com.br</p>
+      </div>
+
+      <hr class="divisor" />
+
+      <div id="agendaInline" style="min-height:300px"></div>
+    </div>
+  </main>
+
+  <footer>
+    AceleraGO — Marketing para saúde da mulher<br />
+    <a href="https://acelerago.com.br">acelerago.com.br</a>
+  </footer>
+
+  <script src="/agenda-widget.js"></script>
+  <script>
+    // Máscara de telefone: a mesma do funil, para o dado entrar no CRM no
+    // formato que o resto do sistema já espera.
+    var fTel = document.getElementById('fTelefone')
+    fTel.addEventListener('input', function () {
+      var d = fTel.value.replace(/\D/g, '').slice(0, 11)
+      fTel.value = d.length > 10
+        ? '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7)
+        : d.length > 6 ? '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6)
+        : d.length > 2 ? '(' + d.slice(0,2) + ') ' + d.slice(2)
+        : d
+    })
+
+    function telValido(v) {
+      var d = (v || '').replace(/\D/g, '')
+      // 10 (fixo) ou 11 (celular) dígitos, DDD entre 11 e 99.
+      return (d.length === 10 || d.length === 11) && Number(d.slice(0, 2)) >= 11
+    }
+    function emailValido(v) { return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test((v || '').trim()) }
+
+    function marcarErro(id, ruim) {
+      document.getElementById(id).classList.toggle('invalido', ruim)
+      return !ruim
+    }
+
+    // Chamado pelo widget ANTES de abrir a confirmação: sem os três campos
+    // válidos, o horário não avança.
+    function validarCampos() {
+      var nome = document.getElementById('fNome').value.trim()
+      var tel  = fTel.value.trim()
+      var eml  = document.getElementById('fEmail').value.trim()
+      var okNome = marcarErro('cNome', nome.length < 2)
+      var okTel  = marcarErro('cTelefone', !telValido(tel))
+      var okEml  = marcarErro('cEmail', !emailValido(eml))
+      if (okNome && okTel && okEml) return true
+      var primeiro = document.querySelector('.campo.invalido input')
+      if (primeiro) primeiro.focus()
+      return false
+    }
+
+    AgendaWidget.montar({
+      alvo:    document.getElementById('agendaInline'),
+      frente:  'acelerago',
+      cor:     '#f97316',
+      tint:    '#fff8f3',
+      validar: validarCampos,
+      dados: function () {
+        return {
+          nome:     document.getElementById('fNome').value.trim(),
+          telefone: fTel.value.trim(),
+          email:    document.getElementById('fEmail').value.trim(),
+          // Marca a origem: o alerta interno diz que veio do link direto, e o
+          // /api/agendamento pula a CAPI (não houve clique em anúncio, então
+          // contar CompleteRegistration aqui sujaria a atribuição da campanha).
+          origem:   'link-direto',
+        }
+      },
+    })
+  </script>
+</body>
+</html>

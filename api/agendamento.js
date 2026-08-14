@@ -6,7 +6,7 @@ import { enviarAlertaGrupo, htmlParaWhatsApp } from './_alerta-grupo.js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { inicio, eventId, nome, telefone, email, instagram, site, faturamento, investimento, especialidade,
+  const { inicio, eventId, origem, nome, telefone, email, instagram, site, faturamento, investimento, especialidade,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
@@ -70,9 +70,14 @@ export default async function handler(req, res) {
 
   if (falhaAgenda) console.error(`[agendamento] reunião NÃO marcada — ${falhaAgenda}`)
 
+  // Página avulsa (/agendar): o Ronaldo mandou o link direto, não houve clique
+  // em anúncio. Contar CompleteRegistration aqui inflaria a conversão da campanha
+  // com um agendamento que a mídia não trouxe.
+  const linkDireto = origem === 'link-direto'
+
   // Meta CAPI — evento CompleteRegistration via servidor (garante rastreamento no iOS)
   const META_TOKEN = process.env.META_ACCESS_TOKEN
-  if (META_TOKEN) {
+  if (META_TOKEN && !linkDireto) {
     const sha256 = (val) => crypto.createHash('sha256').update(val.trim().toLowerCase()).digest('hex')
 
     const phoneDigits = telefone ? telefone.replace(/\D/g, '') : null
@@ -184,7 +189,32 @@ export default async function handler(req, res) {
               body:    JSON.stringify({ etapa: 'reuniao' }),
             }).catch(() => {})
           }
-          if (!alvos.length) console.error(`[agendamento] Kanban: nenhum prospect casou com ${telE164}`)
+          if (!alvos.length) {
+            // No funil o prospect já nasceu no /api/lead; aqui não passou por
+            // lá, então sem isto a pessoa teria reunião marcada e nenhum card
+            // no Kanban — exatamente o buraco que obrigava a lançar na mão.
+            if (linkDireto) {
+              const criado = await fetch(`${SB_URL}/rest/v1/prospects`, {
+                method:  'POST',
+                headers: { ...sbHeaders, Prefer: 'return=minimal' },
+                body: JSON.stringify({
+                  nome:        nome || null,
+                  telefone:    telefone || telE164,
+                  etapa:       'reuniao',
+                  source:      'link-direto',
+                  frente:      'acelerago',
+                  origem_lead: 'Link de agendamento enviado direto',
+                  observacoes: [
+                    'Agendou pela página /agendar (link enviado direto).',
+                    email ? `E-mail: ${email}` : null,
+                  ].filter(Boolean).join('\n'),
+                }),
+              })
+              if (!criado.ok) console.error(`[agendamento] criar prospect falhou: HTTP ${criado.status} — ${await criado.text()}`)
+            } else {
+              console.error(`[agendamento] Kanban: nenhum prospect casou com ${telE164}`)
+            }
+          }
         } catch (e) { console.error('[agendamento] Kanban erro:', e) }
       }
     } catch (e) { console.error('[agendamento] Supabase insert erro:', e) }
@@ -210,7 +240,7 @@ export default async function handler(req, res) {
     linha('🌐 <b>Site:</b>',        site || 'Não informado'),
     linha('💰 <b>Faturamento:</b>', faturamento),
     linha('✅ <b>Investimento:</b>', investimento),
-    linha('📊 <b>Origem:</b>',      utmLabel),
+    linha('📊 <b>Origem:</b>',      linkDireto ? 'Link de agendamento enviado direto' : utmLabel),
     linha('🗓 <b>Reunião:</b>',     dataHora),
     linha('🎥 <b>Zoom:</b>', linkZoom),
     dataHora && !emailEnviado && email

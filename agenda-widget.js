@@ -196,6 +196,10 @@
     }
 
     function escolherHorario(inicio) {
+      // Página avulsa tem formulário próprio (nome, WhatsApp, email) fora do
+      // widget. Ela valida aqui: devolvendo false, o horário não avança.
+      if (opts.validar && opts.validar() === false) return
+
       // Email pedido na própria tela: valida antes de avançar pra confirmação.
       var campo = alvo.querySelector('#agEmail')
       if (campo) {
