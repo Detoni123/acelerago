@@ -174,15 +174,25 @@ export default async function handler(req, res) {
       }
       if (last8.length === 8) {
         try {
+          // Busca em TODAS as etapas. Antes filtrava `etapa=in.(prospeccao,contato)`,
+          // o que misturava duas perguntas diferentes: "esta pessoa já é lead?" e
+          // "o card pode avançar?". Quem já estava em reunião, proposta, fechado ou
+          // perdido não era encontrado — e no link avulso isso criava um card
+          // DUPLICADO para alguém que já tinha vindo pelo funil.
           const busca = await fetch(
-            `${SB_URL}/rest/v1/prospects?select=id,telefone&telefone=ilike.${encodeURIComponent('%' + telDigits.slice(-4) + '%')}&etapa=in.(prospeccao,contato)&limit=25`,
+            `${SB_URL}/rest/v1/prospects?select=id,telefone,etapa&telefone=ilike.${encodeURIComponent('%' + telDigits.slice(-4) + '%')}&limit=50`,
             { headers: sbHeaders },
           )
           const candidatos = busca.ok ? await busca.json() : []
+          // Casa pelos últimos 8 dígitos: absorve o 9º dígito do celular, que
+          // aparece ou não dependendo de onde o número foi cadastrado.
           const alvos = candidatos.filter(
             p => String(p.telefone ?? '').replace(/\D/g, '').slice(-8) === last8,
           )
-          for (const p of alvos) {
+          // Avançar é outra decisão: sobe quem está no começo do funil e reativa
+          // quem tinha sido dado como perdido e voltou. Quem já está em proposta
+          // ou fechado NÃO regride — mas segue casado, então não duplica.
+          for (const p of alvos.filter(x => ['prospeccao', 'contato', 'perdido'].includes(x.etapa))) {
             await fetch(`${SB_URL}/rest/v1/prospects?id=eq.${p.id}`, {
               method:  'PATCH',
               headers: { ...sbHeaders, Prefer: 'return=minimal' },
