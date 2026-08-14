@@ -8,14 +8,15 @@
  *
  * Ganho sobre o Calendly: o funil JÁ SABE nome, email e telefone. O Calendly
  * pedia tudo de novo (dois formulários para a mesma pessoa, no passo mais caro
- * do funil). Aqui é um toque no horário e pronto.
+ * do funil). Aqui é um toque no horário e pronto — mas com uma etapa de
+ * confirmação explícita entre "toquei" e "está marcado", para quem errou o dedo.
  *
  * Uso:
  *   AgendaWidget.montar({
  *     alvo:      document.getElementById('agendaInline'),
  *     frente:    'acelerago',            // ou 'detoni'
  *     cor:       '#f97316',
- *     dados:     () => ({ nome, email, telefone, ...resto }),  // vai inteiro no POST
+ *     dados:     () => ({ nome, email, telefone, observacoes }),
  *     aoMarcar:  (resultado) => { ... },  // sucesso: dispara pixel, CAPI etc.
  *     aoFalhar:  () => { ... },           // mostra o caminho do WhatsApp
  *   })
@@ -24,33 +25,56 @@
   'use strict'
 
   var css = [
-    '.ag-wrap{font-family:inherit;text-align:left}',
-    '.ag-dias{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
+    '.ag-wrap{font-family:inherit;text-align:left;border:1.5px solid #e8e6e1;border-radius:18px;padding:22px 20px;background:#fff;box-shadow:0 2px 10px rgba(17,17,17,.05);box-sizing:border-box}',
+    '.ag-wrap *{box-sizing:border-box}',
+
+    '.ag-email{margin:0 0 18px}',
+    '.ag-email label{display:block;font-size:.88rem;color:#374151;font-weight:600;margin-bottom:7px}',
+    '.ag-email input{width:100%;padding:13px 14px;border:1.5px solid #e5e7eb;border-radius:11px;font-size:1rem;font-family:inherit;background:#fafafa;transition:border-color .15s,background .15s}',
+    '.ag-email input:focus{outline:none;border-color:var(--ag-cor);background:#fff}',
+    '.ag-email .ag-campo-erro{display:none;font-size:.85rem;color:#b91c1c;margin:6px 0 0}',
+
+    '.ag-secao-label{font-size:.8rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}',
+
+    '.ag-dias{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:18px}',
     '.ag-dias::-webkit-scrollbar{display:none}',
-    '.ag-dia{flex:0 0 auto;min-width:76px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:12px;background:#fff;cursor:pointer;text-align:center;line-height:1.25;transition:border-color .15s,background .15s}',
-    '.ag-dia small{display:block;font-size:.72rem;color:#6b7280;text-transform:capitalize}',
-    '.ag-dia b{display:block;font-size:1.05rem;color:#111;margin-top:2px}',
+    '.ag-dia{flex:0 0 auto;min-width:64px;padding:10px 8px;border:1.5px solid #ececea;border-radius:13px;background:#fff;cursor:pointer;text-align:center;line-height:1.2;transition:border-color .15s,background .15s,transform .1s}',
+    '.ag-dia:hover{border-color:var(--ag-cor)}',
+    '.ag-dia:active{transform:scale(.96)}',
+    '.ag-dia small{display:block;font-size:.7rem;color:#9ca3af;text-transform:capitalize;font-weight:600}',
+    '.ag-dia b{display:block;font-size:1.15rem;color:#111;margin-top:3px;font-weight:700}',
     '.ag-dia.on{border-color:var(--ag-cor);background:var(--ag-tint)}',
-    '.ag-dia.on b{color:var(--ag-cor)}',
-    '.ag-horas{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}',
-    '.ag-hora{padding:12px 6px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;font-size:1rem;font-weight:600;color:#111;cursor:pointer;transition:border-color .15s,background .15s}',
-    '.ag-hora:hover{border-color:var(--ag-cor)}',
-    '.ag-hora:disabled{opacity:.5;cursor:default}',
-    '.ag-hora.on{border-color:var(--ag-cor);background:var(--ag-cor);color:#fff}',
+    '.ag-dia.on b, .ag-dia.on small{color:var(--ag-cor)}',
+
+    '.ag-horas{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:9px}',
+    '.ag-hora{padding:13px 6px;border:1.5px solid #ececea;border-radius:11px;background:#fff;font-size:.98rem;font-weight:600;color:#1f2937;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}',
+    '.ag-hora:hover{border-color:var(--ag-cor);background:var(--ag-tint)}',
+    '.ag-hora:active{transform:scale(.96)}',
+
+    '.ag-rodape{padding-top:14px;color:#9ca3af;font-size:.85rem;line-height:1.5;text-align:center}',
+
     '.ag-msg{padding:14px 0;color:#6b7280;font-size:.95rem;line-height:1.5}',
     '.ag-erro{color:#b91c1c}',
-    '.ag-email{margin:0 0 14px}',
-    '.ag-email label{display:block;font-size:.9rem;color:#374151;font-weight:600;margin-bottom:6px}',
-    '.ag-email input{width:100%;padding:13px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:1rem;font-family:inherit;box-sizing:border-box}',
-    '.ag-email input:focus{outline:none;border-color:var(--ag-cor)}',
-    '.ag-email .ag-erro{display:none;font-size:.85rem;margin:6px 0 0}',
+
+    /* etapa de confirmação */
+    '.ag-confirma{text-align:center;padding:6px 0 2px}',
+    '.ag-confirma .ag-icone{width:46px;height:46px;border-radius:50%;background:var(--ag-tint);color:var(--ag-cor);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 16px}',
+    '.ag-confirma p.ag-pergunta{font-size:.95rem;color:#6b7280;margin:0 0 6px}',
+    '.ag-confirma .ag-quando{font-size:1.22rem;font-weight:800;color:#111;text-transform:capitalize;line-height:1.35;margin:0 0 4px}',
+    '.ag-confirma .ag-duracao{font-size:.88rem;color:#9ca3af;margin:0 0 22px}',
+    '.ag-btn{display:block;width:100%;padding:15px 24px;background:var(--ag-cor);color:#fff;text-decoration:none;border-radius:12px;font-weight:700;font-size:1rem;border:0;cursor:pointer;transition:opacity .15s,transform .1s}',
+    '.ag-btn:hover{opacity:.92}',
+    '.ag-btn:active{transform:scale(.985)}',
+    '.ag-btn:disabled{opacity:.6;cursor:default}',
+    '.ag-btn-voltar{display:block;width:100%;text-align:center;margin-top:10px;padding:12px;background:transparent;color:#6b7280;border:0;font-size:.92rem;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}',
+
     '.ag-ok{text-align:center;padding:8px 0}',
     '.ag-ok .ag-check{width:52px;height:52px;border-radius:50%;background:var(--ag-tint);color:var(--ag-cor);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px}',
     '.ag-ok h3{font-size:1.2rem;margin:0 0 6px;color:#111}',
     '.ag-ok .ag-quando{font-size:1.05rem;font-weight:700;color:var(--ag-cor);text-transform:capitalize;margin:0 0 4px}',
     '.ag-ok p{color:#6b7280;font-size:.92rem;line-height:1.55;margin:0 0 6px}',
-    '.ag-btn{display:inline-block;margin-top:14px;padding:13px 26px;background:var(--ag-cor);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:.98rem;border:0;cursor:pointer}',
-    '.ag-spin{width:22px;height:22px;border:2.5px solid #e5e7eb;border-top-color:var(--ag-cor);border-radius:50%;animation:ag-gira .7s linear infinite;margin:18px auto}',
+
+    '.ag-spin{width:24px;height:24px;border:2.5px solid #e5e7eb;border-top-color:var(--ag-cor);border-radius:50%;animation:ag-gira .7s linear infinite;margin:20px auto}',
     '@keyframes ag-gira{to{transform:rotate(360deg)}}',
   ].join('')
 
@@ -77,6 +101,10 @@
     })
   }
 
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+
   function montar(opts) {
     injetarCss()
     var alvo = opts.alvo
@@ -87,9 +115,11 @@
     alvo.className = 'ag-wrap ' + (alvo.className || '')
     alvo.innerHTML = '<div class="ag-spin"></div>'
 
-    var estado = { slots: [], diaAtivo: null, marcando: false, email: null }
+    // etapa: 'carregando' | 'escolha' | 'confirmando' | 'enviando' | 'erro'
+    var estado = { slots: [], diaAtivo: null, etapa: 'carregando', email: null, escolhido: null }
 
     function falhou(msg) {
+      estado.etapa = 'erro'
       alvo.innerHTML = '<p class="ag-msg ag-erro">' + msg + '</p>'
       if (opts.aoFalhar) try { opts.aoFalhar() } catch (e) {}
     }
@@ -103,6 +133,7 @@
         estado.slots = j.slots
         estado.duracao = j.duracaoMin
         estado.diaAtivo = j.slots[0].dia
+        estado.etapa = 'escolha'
         render()
       })
       .catch(function () {
@@ -110,6 +141,11 @@
       })
 
     function render() {
+      if (estado.etapa === 'confirmando') return renderConfirmacao()
+      renderEscolha()
+    }
+
+    function renderEscolha() {
       var dias = []
       estado.slots.forEach(function (s) { if (dias.indexOf(s.dia) < 0) dias.push(s.dia) })
 
@@ -118,37 +154,33 @@
       var html = opts.pedirEmail
         ? '<div class="ag-email"><label for="agEmail">Para onde enviamos a confirmação?</label>' +
           '<input id="agEmail" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" value="' +
-          (estado.email || (opts.dados && opts.dados().email) || '') + '">' +
-          '<p class="ag-erro" id="agEmailErro">Informe um email válido, ex: nome@empresa.com.br</p></div>'
+          esc(estado.email || (opts.dados && opts.dados().email) || '') + '">' +
+          '<p class="ag-campo-erro" id="agEmailErro">Informe um email válido, ex: nome@empresa.com.br</p></div>'
         : ''
 
-      html += '<div class="ag-dias">'
+      html += '<p class="ag-secao-label">Escolha o dia</p><div class="ag-dias">'
       dias.forEach(function (d) {
         var r = rotuloDia(d)
         html += '<button type="button" class="ag-dia' + (d === estado.diaAtivo ? ' on' : '') +
                 '" data-dia="' + d + '"><small>' + r.semana + '</small><b>' + r.dia + '</b></button>'
       })
-      html += '</div><div class="ag-horas">'
+      html += '</div><p class="ag-secao-label">Escolha o horário</p><div class="ag-horas">'
       estado.slots.filter(function (s) { return s.dia === estado.diaAtivo }).forEach(function (s) {
         html += '<button type="button" class="ag-hora" data-inicio="' + s.inicio + '">' + hhmm(s.inicio) + '</button>'
       })
-      html += '</div><p class="ag-msg">Reunião de ' + estado.duracao + ' minutos, por videochamada. Horário de Brasília.</p>'
+      html += '</div><p class="ag-rodape">Reunião de ' + estado.duracao + ' minutos, por videochamada. Horário de Brasília.</p>'
       alvo.innerHTML = html
 
       alvo.querySelectorAll('.ag-dia').forEach(function (b) {
         b.onclick = function () { estado.diaAtivo = b.getAttribute('data-dia'); render() }
       })
       alvo.querySelectorAll('.ag-hora').forEach(function (b) {
-        b.onclick = function () { marcar(b) }
+        b.onclick = function () { escolherHorario(b.getAttribute('data-inicio')) }
       })
     }
 
-    function marcar(botao) {
-      if (estado.marcando) return
-      var inicio = botao.getAttribute('data-inicio')
-      var d = opts.dados ? opts.dados() : {}
-
-      // Email pedido na própria tela: valida antes de queimar o horário.
+    function escolherHorario(inicio) {
+      // Email pedido na própria tela: valida antes de avançar pra confirmação.
       var campo = alvo.querySelector('#agEmail')
       if (campo) {
         var v = campo.value.trim()
@@ -159,14 +191,44 @@
           return
         }
         if (erro) erro.style.display = 'none'
-        // Guarda para o re-render do 409 não apagar o que ela já digitou.
         estado.email = v
-        d.email = v
       }
+      var slot = estado.slots.filter(function (s) { return s.inicio === inicio })[0]
+      if (!slot) return
+      estado.escolhido = slot
+      estado.etapa = 'confirmando'
+      render()
+    }
 
-      estado.marcando = true
-      botao.classList.add('on')
-      alvo.querySelectorAll('.ag-hora').forEach(function (b) { b.disabled = true })
+    function renderConfirmacao() {
+      var s = estado.escolhido
+      alvo.innerHTML =
+        '<div class="ag-confirma">' +
+          '<div class="ag-icone">🗓️</div>' +
+          '<p class="ag-pergunta">Confirma este horário?</p>' +
+          '<p class="ag-quando">' + s.rotulo + '</p>' +
+          '<p class="ag-duracao">' + estado.duracao + ' minutos · videochamada</p>' +
+          '<button type="button" class="ag-btn" id="agConfirmar">Confirmar agendamento</button>' +
+          '<button type="button" class="ag-btn-voltar" id="agVoltar">← Escolher outro horário</button>' +
+        '</div>'
+      alvo.querySelector('#agConfirmar').onclick = marcar
+      alvo.querySelector('#agVoltar').onclick = function () {
+        estado.etapa = 'escolha'
+        estado.escolhido = null
+        render()
+      }
+    }
+
+    function marcar() {
+      if (estado.etapa === 'enviando') return
+      estado.etapa = 'enviando'
+      var btn = alvo.querySelector('#agConfirmar')
+      if (btn) { btn.disabled = true; btn.textContent = 'Confirmando…' }
+      var voltar = alvo.querySelector('#agVoltar')
+      if (voltar) voltar.style.display = 'none'
+
+      var d = opts.dados ? opts.dados() : {}
+      if (estado.email) d.email = estado.email
 
       // Mesmo endpoint que o Calendly acionava (api/agendamento.js): ele já faz
       // Telegram, alerta no grupo, Meta CAPI e move o card no Kanban. Agora ele
@@ -176,29 +238,38 @@
         headers: { 'Content-Type': 'application/json' },
         // Espalha TUDO o que o funil quis mandar (instagram, site, faturamento,
         // fbc/fbp…): o endpoint usa esses campos no alerta do grupo e na CAPI.
-        body: JSON.stringify(Object.assign({}, d, { inicio: inicio, frente: opts.frente })),
+        body: JSON.stringify(Object.assign({}, d, { inicio: estado.escolhido.inicio, frente: opts.frente })),
       })
         .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j } }) })
         .then(function (res) {
-          estado.marcando = false
           if (res.status === 409) {
             // Alguém pegou o horário no meio do caminho. Recarrega a lista em vez
-            // de deixar a pessoa batendo num horário que não existe mais.
+            // de deixar a pessoa confirmando um horário que não existe mais.
+            estado.etapa = 'escolha'
+            estado.escolhido = null
             alvo.innerHTML = '<p class="ag-msg ag-erro">Esse horário acabou de ser ocupado. Escolha outro:</p><div class="ag-spin"></div>'
             return fetch('/api/horarios?frente=' + encodeURIComponent(opts.frente))
               .then(function (r) { return r.json() })
               .then(function (j) { estado.slots = j.slots || []; estado.diaAtivo = (estado.slots[0] || {}).dia; render() })
           }
           if (!res.j || !res.j.ok) throw new Error(res.j && res.j.error || 'falha')
+          res.j.email = estado.email || null
           sucesso(res.j)
-          // Devolve o email de volta: o funil que perguntou aqui não o tinha antes.
-          res.j.email = d.email || null
           if (opts.aoMarcar) try { opts.aoMarcar(res.j) } catch (e) {}
         })
         .catch(function () {
-          estado.marcando = false
-          falhou('Não consegui confirmar o horário. Fale com a gente pelo WhatsApp logo abaixo.')
+          estado.etapa = 'confirmando'
+          render()
+          falhouConfirmar()
         })
+    }
+
+    function falhouConfirmar() {
+      var box = document.createElement('p')
+      box.className = 'ag-msg ag-erro'
+      box.textContent = 'Não consegui confirmar o horário. Fale com a gente pelo WhatsApp logo abaixo.'
+      alvo.insertBefore(box, alvo.firstChild)
+      if (opts.aoFalhar) try { opts.aoFalhar() } catch (e) {}
     }
 
     function sucesso(r) {
@@ -209,7 +280,7 @@
           ? 'A confirmação e o link da chamada foram para o seu e-mail.'
           : 'Anote o link da chamada abaixo — ele também vai para o seu WhatsApp.') + '</p>'
       if (r.linkZoom) {
-        html += '<a class="ag-btn" href="' + r.linkZoom + '" target="_blank" rel="noopener">Abrir o link da reunião</a>'
+        html += '<a class="ag-btn" href="' + r.linkZoom + '" target="_blank" rel="noopener" style="text-decoration:none">Abrir o link da reunião</a>'
       }
       html += '</div>'
       alvo.innerHTML = html
