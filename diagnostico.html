@@ -11,7 +11,7 @@
   <!-- Fonte Inter hospedada no proprio dominio (sem dependencia do Google): variavel, subset latino, todos os pesos em um unico arquivo. @font-face fica no <style> abaixo. -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-var.woff2" crossorigin />
   <!-- Ícones agora são SVG inline (sem dependência externa que bloqueia o render).
-       O CSS do Calendly é carregado sob demanda na etapa 7 (initCalendly). -->
+       A agenda (etapa 9) é servida do próprio domínio: /agenda-widget.js. -->
 
   <!-- Meta Pixel -->
   <script>
@@ -670,13 +670,7 @@
              window.open costuma ser bloqueado no navegador interno do Instagram, que
              é de onde vem quase todo o tráfego. Agora os horários já aparecem aqui,
              com nome e e-mail pré-preenchidos. -->
-        <div id="calendlyInline" style="min-height:640px;margin-bottom:8px"></div>
-        <noscript><a class="btn" href="https://calendly.com/acelerago/diagnostico">Escolher o horário do meu diagnóstico</a></noscript>
-        <!-- Rede de segurança: se o widget não carregar (script bloqueado, rede ruim),
-             este botão aparece sozinho via JS e leva ao Calendly em página cheia. -->
-        <button id="calendlyFallback" class="btn" onclick="openCalendly()" style="font-size:1.05rem;display:none">
-          📅 Escolher o horário do meu diagnóstico
-        </button>
+        <div id="agendaInline" style="min-height:340px;margin-bottom:8px"></div>
         <!-- Saída pelo WhatsApp: quem toca aqui INICIA a conversa, o que abre a
              janela de 24h. Dentro dela respondemos em texto livre — sem template
              MARKETING (que a Meta bloqueia para parte dos usuários, erro 130472)
@@ -701,6 +695,7 @@
   </div>
 </div>
 
+<script src="/agenda-widget.js" defer></script>
 <script>
   const data = { nome:'', especialidade:'', telefone:'', email:'', objetivo:'', desafio:'', instagram:'', site:'', faturamento:'', ja_investiu:'' }
   let current = 0
@@ -737,7 +732,6 @@
     if (inp) setTimeout(() => inp.focus(), 300)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (n === 9) {
-      initCalendly()
       montarS9()
     }
   }
@@ -762,29 +756,37 @@
       const h = document.getElementById('s9Titulo')
       if (h) h.textContent = `${primeiro}, falta só escolher o horário`
     }
-    const alvo = document.getElementById('calendlyInline')
-    const fb   = document.getElementById('calendlyFallback')
-    if (!alvo) return
-    let montado = false
-    const tentar = () => {
-      if (montado || !window.Calendly || !alvo.isConnected) return
-      montado = true
-      try {
-        Calendly.initInlineWidget({
-          url: calendlyUrl(),
-          parentElement: alvo,
-          prefill: { name: data.nome || '', email: data.email || '' },
-        })
-      } catch (_) { if (fb) fb.style.display = 'block' }
-    }
-    tentar()
-    const t = setInterval(tentar, 300)
-    setTimeout(() => {
-      clearInterval(t)
-      // Widget não subiu: some com a caixa vazia e oferece o caminho em página cheia.
-      if (!montado && fb) { alvo.style.minHeight = '0'; fb.style.display = 'block' }
-    }, 6000)
+    // Agenda própria (13/08/2026): lê a agenda do Google do Ronaldo em tempo
+    // real, cria a sala do Zoom e manda a confirmação com a cara da AceleraGO.
+    // Antes era o iframe do Calendly, que pedia nome e e-mail DE NOVO — os dois
+    // o funil já tem desde a s5. Ver AGENDA.md no CRM.
+    if (!window.AgendaWidget) return
+    AgendaWidget.montar({
+      alvo:   document.getElementById('agendaInline'),
+      frente: 'acelerago',
+      cor:    '#f97316',
+      tint:   '#fff8f3',
+      // Vai INTEIRO no POST de /api/agendamento: o alerta usa
+      // especialidade/instagram/faturamento e a CAPI usa fbc/fbp/eventId.
+      dados: () => {
+        // Mesmo id no pixel do navegador e na CAPI = sem evento dobrado.
+        eventIdAgenda = eventIdAgenda || ('sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9))
+        return {
+          ...data,
+          eventId:   eventIdAgenda,
+          fbc:       getCookie('_fbc'),
+          fbp:       getCookie('_fbp'),
+          userAgent: navigator.userAgent,
+        }
+      },
+      // Escolher o horário é o sinal de engajamento que o [s9:calendly] media.
+      aoMarcar: () => {
+        trackS9('agenda')
+        if (typeof fbq !== 'undefined') fbq('track', 'CompleteRegistration', {}, { eventID: eventIdAgenda })
+      },
+    })
   }
+  let eventIdAgenda = null
 
   function goBack() {
     const prev = navHistory.pop()
@@ -809,15 +811,8 @@
     card.insertBefore(b, card.firstChild)
   })
 
-  function calendlyUrl() {
-    return 'https://calendly.com/acelerago/diagnostico'
-      + '?name=' + encodeURIComponent(data.nome)
-      + (data.email ? '&email=' + encodeURIComponent(data.email) : '')
-      + '&hide_gdpr_banner=1'
-  }
-
-  // Valida e-mail sem inventar regra: exige algo@algo.tld, que é o que o Calendly
-  // aceita. Regex apertada demais rejeita domínio legítimo e custa lead.
+  // Valida e-mail sem inventar regra: exige algo@algo.tld. Regex apertada
+  // demais rejeita domínio legítimo e custa lead.
   function isValidEmail(v) {
     return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test((v || '').trim())
   }
@@ -846,49 +841,16 @@
     go(6)
   }
 
-  // Pré-carrega CSS + JS do Calendly ao chegar na última etapa, para o popup abrir na hora do toque.
-  function initCalendly() {
-    if (!document.getElementById('calendly-css')) {
-      const css = document.createElement('link')
-      css.id = 'calendly-css'
-      css.rel = 'stylesheet'
-      css.href = 'https://assets.calendly.com/assets/external/widget.css'
-      document.head.appendChild(css)
-    }
-    if (!window.Calendly && !document.getElementById('calendly-js')) {
-      const s = document.createElement('script')
-      s.id = 'calendly-js'
-      s.src = 'https://assets.calendly.com/assets/external/widget.js'
-      document.head.appendChild(s)
-    }
-  }
-
-  // Abre o Calendly em popup (overlay na mesma página — confiável no navegador do Instagram/iOS).
-  // Preserva o rastreamento: o popup dispara o mesmo evento calendly.event_scheduled.
-  // Fallback: se o script ainda não carregou, abre em nova aba.
-  // Telemetria da s9: registra QUAL saída ela escolheu. Antes disto o botão do
-  // Calendly não disparava nada e o do WhatsApp só um custom event de pixel, então
-  // era impossível comparar os dois caminhos ou separar "não clicou" de "clicou e
-  // desistiu dentro do Calendly". sendBeacon para não segurar a navegação.
+  // Telemetria da s9: registra QUAL saída a médica escolheu (agenda própria ou
+  // WhatsApp), para comparar os dois caminhos e separar "não clicou" de "clicou
+  // e desistiu no meio". sendBeacon para não segurar a navegação.
   function trackS9(alvo) {
-    try { if (typeof fbq !== 'undefined') fbq('trackCustom', alvo === 'whatsapp' ? 'ClickWhatsAppFinal' : 'ClickCalendlyFinal') } catch (_) {}
+    try { if (typeof fbq !== 'undefined') fbq('trackCustom', alvo === 'whatsapp' ? 'ClickWhatsAppFinal' : 'ClickAgendaFinal') } catch (_) {}
     try {
       const payload = JSON.stringify({ tipo: 's9-clique', alvo, telefone: data.telefone })
       if (navigator.sendBeacon) navigator.sendBeacon('/api/lead', new Blob([payload], { type: 'application/json' }))
       else fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: payload, keepalive: true }).catch(()=>{})
     } catch (_) {}
-  }
-
-  function openCalendly() {
-    trackS9('calendly')
-    const url = calendlyUrl()
-    if (window.Calendly) {
-      Calendly.initPopupWidget({ url })
-    } else {
-      initCalendly()
-      window.open(url, '_blank', 'noopener')
-    }
-    return false
   }
 
   function sendBeaconLead(tipo) {
@@ -940,43 +902,6 @@
     const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
     return match ? decodeURIComponent(match[1]) : null
   }
-
-  // Conversão Calendly → Meta Pixel + CAPI com mesmo event_id para deduplicação
-  window.addEventListener('message', function(e) {
-    try {
-    // Com a agenda embutida (07/08) não existe mais "clique no Calendly": o
-    // widget aparece sozinho para todo mundo. O sinal equivalente de engajamento
-    // passa a ser ter escolhido dia e hora, que é o que grava [s9:calendly] e
-    // permite comparar este caminho com [s9:whatsapp].
-    if (e.data && e.data.event === 'calendly.date_and_time_selected') {
-      trackS9('calendly')
-    }
-    if (e.data && e.data.event === 'calendly.event_scheduled') {
-      const eventId  = 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9)
-      const eventUri = e.data.payload?.event?.uri
-
-      if (typeof fbq !== 'undefined') fbq('track', 'CompleteRegistration', {}, { eventID: eventId })
-
-      fetch('/api/agendamento', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          eventUri:     eventUri || null,
-          eventId,
-          nome:         data.nome,
-          telefone:     data.telefone,
-          instagram:    data.instagram,
-          site:         data.site,
-          faturamento:  data.faturamento,
-          investimento: data.investimento,
-          fbc:          getCookie('_fbc'),
-          fbp:          getCookie('_fbp'),
-          userAgent:    navigator.userAgent,
-        }),
-      }).catch(() => {})
-    }
-    } catch (_) { /* mensagem externa malformada: ignora sem quebrar a página */ }
-  })
 
   // Evento de OTIMIZAÇÃO — disparado quando a pessoa entrega o WhatsApp (etapa 2).
   // Usa InitiateCheckout porque o objetivo Vendas não aceita "Lead" (exclusivo do

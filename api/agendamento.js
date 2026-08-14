@@ -6,59 +6,69 @@ import { enviarAlertaGrupo, htmlParaWhatsApp } from './_alerta-grupo.js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { eventUri, eventId, nome, telefone, instagram, site, faturamento, investimento, especialidade,
+  const { inicio, eventId, nome, telefone, email, instagram, site, faturamento, investimento, especialidade,
           fbc, fbp, userAgent,
           utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body
   const utmLabel = [utm_source, utm_medium, utm_campaign].filter(Boolean).join(' / ') || null
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress
 
-  // trim(): o token já foi salvo na Vercel com \n no final e quebrou a auth em silêncio (11/07)
-  const CALENDLY_TOKEN     = (process.env.CALENDLY_TOKEN || '').trim()
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
   const TELEGRAM_CHAT_ID   = process.env.TELEGRAM_CHAT_ID
 
+  // ── Marca a reunião de verdade (agenda própria, ex-Calendly) ──────────────
+  // O CRM confere a agenda do Google no instante do pedido, cria a sala do Zoom,
+  // põe o evento na agenda do Ronaldo (aparece no iPhone na hora), grava em
+  // `agendamentos` — que é o que faz o lembrete de 2h existir — e manda o email
+  // de confirmação com a cara da AceleraGO.
+  //
+  // A falha continua aparecendo no alerta, nunca some num catch vazio: sem a
+  // reunião marcada, o alerta diria que alguém agendou quando ninguém agendou.
+  const CRM = process.env.CRM_URL || 'https://crm.acelerago.com.br'
+  const AGENDA_SECRET = process.env.AGENDA_SECRET
+
   let dataHora = null
-  let startTimeIso = null
-  // Sem a data do Calendly o agendamento NÃO é gravado e o lembrete de 2h não
-  // dispara — e isso sumia num catch vazio. Agora a falha aparece no alerta.
-  // (Diagnóstico: 403 "Insufficient scope" em /users/me é normal, o token não
-  // tem users:read e o código não usa esse endpoint.)
-  let falhaCalendly = null
+  let linkZoom = null
+  let emailEnviado = false
+  let falhaAgenda = null
 
-  if (!CALENDLY_TOKEN)  falhaCalendly = 'CALENDLY_TOKEN ausente no ambiente'
-  else if (!eventUri)   falhaCalendly = 'o Calendly não devolveu o eventUri'
+  if (!AGENDA_SECRET) falhaAgenda = 'AGENDA_SECRET ausente no ambiente'
+  else if (!inicio)   falhaAgenda = 'a tela não enviou o horário escolhido'
 
-  if (CALENDLY_TOKEN && eventUri) {
+  if (AGENDA_SECRET && inicio) {
     try {
-      const resp = await fetch(eventUri, {
-        headers: { Authorization: `Bearer ${CALENDLY_TOKEN}` }
+      const resp = await fetch(`${CRM}/api/agenda/marcar`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'x-agenda-secret': AGENDA_SECRET },
+        body: JSON.stringify({
+          inicio, frente: 'acelerago', nome, telefone, email,
+          observacoes: [
+            especialidade ? `Especialidade: ${especialidade}` : null,
+            instagram     ? `Instagram: @${instagram}` : null,
+            site          ? `Site: ${site}` : null,
+            faturamento   ? `Faturamento: ${faturamento}` : null,
+            investimento  ? `Já investiu: ${investimento}` : null,
+            utmLabel      ? `Origem: ${utmLabel}` : null,
+          ].filter(Boolean).join('\n'),
+        }),
       })
       const json = await resp.json()
-      if (!resp.ok) {
-        falhaCalendly = `API do Calendly respondeu HTTP ${resp.status}` +
-          (resp.status === 401 || resp.status === 403 ? ' (token inválido ou revogado)' : '')
-      }
-      const startTime = json.resource?.start_time
-      startTimeIso = startTime || null
-      if (startTime) {
-        dataHora = new Date(startTime).toLocaleString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          weekday:  'long',
-          day:      '2-digit',
-          month:    'long',
-          year:     'numeric',
-          hour:     '2-digit',
-          minute:   '2-digit',
-        })
-      } else if (!falhaCalendly) {
-        falhaCalendly = 'a resposta do Calendly veio sem start_time'
+      // Corrida: alguém pegou o horário entre a tela carregar e o clique. A tela
+      // trata 409 recarregando a lista; sair cedo evita alertar reunião fantasma.
+      if (resp.status === 409) return res.status(409).json({ ok: false, error: 'horario_ocupado' })
+      if (!resp.ok || !json.ok) {
+        falhaAgenda = `CRM respondeu HTTP ${resp.status}: ${json?.error ?? ''}`
+      } else {
+        dataHora     = json.quando
+        linkZoom     = json.linkZoom ?? null
+        emailEnviado = Boolean(json.emailEnviado)
+        if (json.zoomFalhou) console.error('[agendamento] reunião marcada SEM sala do Zoom')
       }
     } catch (e) {
-      falhaCalendly = `erro ao consultar o Calendly: ${e?.message ?? e}`
+      falhaAgenda = `erro ao falar com o CRM: ${e?.message ?? e}`
     }
   }
 
-  if (falhaCalendly) console.error(`[agendamento] SEM data da reunião — ${falhaCalendly}`)
+  if (falhaAgenda) console.error(`[agendamento] reunião NÃO marcada — ${falhaAgenda}`)
 
   // Meta CAPI — evento CompleteRegistration via servidor (garante rastreamento no iOS)
   const META_TOKEN = process.env.META_ACCESS_TOKEN
@@ -133,31 +143,17 @@ export default async function handler(req, res) {
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
   }
 
-  // ── Persiste o agendamento para o lembrete de 2h antes (cron /api/lembretes) ──
+  // ── Kanban acompanha o funil ────────────────────────────────────────────
+  // A linha em `agendamentos` (e com ela o lembrete de 2h) já foi gravada pelo
+  // CRM em /api/agenda/marcar — não repetir aqui, senão vira reunião duplicada.
+  // O que falta é mover o card do prospect, que continua sendo por telefone.
   const SB_URL = process.env.SUPABASE_URL
   const SB_KEY = process.env.SUPABASE_SECRET_KEY
-  if (SB_URL && SB_KEY && telefone && startTimeIso) {
+  if (SB_URL && SB_KEY && telefone && dataHora) {
     const telDigits = telefone.replace(/\D/g, '')
     const telE164   = telDigits.startsWith('55') && telDigits.length >= 12 ? telDigits : `55${telDigits}`
     try {
-      const ins = await fetch(`${SB_URL}/rest/v1/agendamentos`, {
-        method:  'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey:         SB_KEY,
-          Authorization:  `Bearer ${SB_KEY}`,
-          Prefer:         'return=minimal',
-        },
-        body: JSON.stringify({
-          nome:               nome || null,
-          telefone:           telE164,
-          reuniao_at:         startTimeIso,
-          calendly_event_uri: eventUri || null,
-        }),
-      })
-      if (!ins.ok) console.error(`[agendamento] Supabase insert falhou: HTTP ${ins.status} — ${await ins.text()}`)
-
-      // Kanban acompanha o funil: lead agendou → card vai pra "reuniao"
+      // Lead agendou → card vai pra "reuniao"
       // (match pelos últimos 8 dígitos; não regride card já em proposta/fechado).
       //
       // O ilike de 8 dígitos SEGUIDOS nunca casava: o cadastro guarda o telefone
@@ -216,8 +212,12 @@ export default async function handler(req, res) {
     linha('✅ <b>Investimento:</b>', investimento),
     linha('📊 <b>Origem:</b>',      utmLabel),
     linha('🗓 <b>Reunião:</b>',     dataHora),
-    falhaCalendly
-      ? `⚠️ <b>SEM data da reunião</b> — ${falhaCalendly}.\nO agendamento NÃO foi gravado e o lembrete de 2h não vai disparar. Conferir no Calendly.`
+    linha('🎥 <b>Zoom:</b>', linkZoom),
+    dataHora && !emailEnviado && email
+      ? '⚠️ O email de confirmação NÃO saiu — mandar o link no WhatsApp.'
+      : null,
+    falhaAgenda
+      ? `⚠️ <b>REUNIÃO NÃO MARCADA</b> — ${falhaAgenda}.\nNada foi para a agenda e o lembrete de 2h não vai disparar. Falar com a lead AGORA.`
       : null,
     '',
     whatsappLink ? `💬 <a href="${whatsappLink}">Abordar no WhatsApp</a>` : null,
@@ -236,5 +236,9 @@ export default async function handler(req, res) {
   // importa do funil; ficar só no Telegram foi esquecimento da migração de 04/08).
   await enviarAlertaGrupo(htmlParaWhatsApp(msg))
 
-  return res.status(200).json({ ok: true })
+  // A tela precisa da resposta real: se a reunião não foi marcada, ela mostra o
+  // caminho do WhatsApp em vez de um "está confirmado" que seria mentira.
+  if (falhaAgenda) return res.status(502).json({ ok: false, error: falhaAgenda })
+
+  return res.status(200).json({ ok: true, quando: dataHora, linkZoom, emailEnviado })
 }
