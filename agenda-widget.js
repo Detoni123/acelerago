@@ -36,21 +36,37 @@
 
     '.ag-secao-label{font-size:.8rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}',
 
-    '.ag-dias-wrap{position:relative;margin-bottom:18px}',
-    '.ag-dias-wrap::after{content:"";position:absolute;top:0;right:0;bottom:6px;width:34px;background:linear-gradient(to right, rgba(255,255,255,0), #fff 75%);pointer-events:none;transition:opacity .15s}',
-    '.ag-dias-wrap.ag-dias-fim::after{opacity:0}',
-    '.ag-dias{display:flex;gap:8px;overflow-x:auto;padding:2px 30px 4px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
-    '.ag-dias::-webkit-scrollbar{display:none}',
-    '.ag-dia{flex:0 0 auto;min-width:64px;padding:10px 8px;border:1.5px solid #ececea;border-radius:13px;background:#fff;cursor:pointer;text-align:center;line-height:1.2;transition:border-color .15s,background .15s,transform .1s}',
-    '.ag-dia:hover{border-color:var(--ag-cor)}',
-    '.ag-dia:active{transform:scale(.96)}',
-    '.ag-dia small{display:block;font-size:.7rem;color:#9ca3af;text-transform:capitalize;font-weight:600}',
-    '.ag-dia b{display:block;font-size:1.15rem;color:#111;margin-top:3px;font-weight:700}',
-    '.ag-dia.on{border-color:var(--ag-cor);background:var(--ag-tint)}',
-    '.ag-dia.on b, .ag-dia.on small{color:var(--ag-cor)}',
+    /* Duas colunas a partir de 560px: calendário à esquerda, horários à
+       direita, como no Calendly. Abaixo disso empilha. */
+    '.ag-painel{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}',
+    '.ag-col-cal{flex:1 1 280px;min-width:264px}',
+    '.ag-col-hora{flex:1 1 190px;min-width:170px}',
 
-    '.ag-horas{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:9px}',
-    '.ag-hora{padding:13px 6px;border:1.5px solid #ececea;border-radius:11px;background:#fff;font-size:.98rem;font-weight:600;color:#1f2937;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}',
+    '.ag-mes{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}',
+    '.ag-mes b{font-size:1rem;font-weight:700;color:#111;text-transform:capitalize}',
+    '.ag-nav{display:flex;gap:4px}',
+    '.ag-nav button{width:30px;height:30px;border:0;background:transparent;border-radius:8px;cursor:pointer;color:#4b5563;font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .15s}',
+    '.ag-nav button:hover:not(:disabled){background:#f3f4f6}',
+    '.ag-nav button:disabled{opacity:.25;cursor:default}',
+
+    '.ag-semana{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}',
+    '.ag-semana span{text-align:center;font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.03em}',
+    '.ag-grade{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}',
+    '.ag-cel{aspect-ratio:1;display:flex;align-items:center;justify-content:center}',
+    '.ag-dia{width:100%;aspect-ratio:1;max-width:44px;border:0;border-radius:50%;background:transparent;font-size:.95rem;font-weight:600;color:#111;cursor:pointer;transition:background .15s,color .15s,transform .1s;position:relative}',
+    '.ag-dia:hover{background:var(--ag-tint)}',
+    '.ag-dia:active{transform:scale(.92)}',
+    '.ag-dia.on{background:var(--ag-cor);color:#fff}',
+    '.ag-dia.on:hover{background:var(--ag-cor)}',
+    /* Dia sem horário livre não é clicável: some o ponto e apaga o número. */
+    '.ag-dia.off{color:#d1d5db;cursor:default;font-weight:500}',
+    '.ag-dia.off:hover{background:transparent}',
+    '.ag-dia::after{content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--ag-cor)}',
+    '.ag-dia.off::after, .ag-dia.on::after{display:none}',
+
+    '.ag-hora-titulo{font-size:.9rem;font-weight:700;color:#111;margin:0 0 10px;text-transform:capitalize}',
+    '.ag-horas{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-height:290px;overflow-y:auto}',
+    '.ag-hora{padding:12px 6px;border:1.5px solid #ececea;border-radius:10px;background:#fff;font-size:.95rem;font-weight:600;color:#1f2937;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}',
     '.ag-hora:hover{border-color:var(--ag-cor);background:var(--ag-tint)}',
     '.ag-hora:active{transform:scale(.96)}',
 
@@ -89,12 +105,30 @@
     document.head.appendChild(s)
   }
 
-  /** "2026-08-14" → {semana:"qui", dia:"14"} — sem depender de Date parse local. */
-  function rotuloDia(iso) {
-    var p = iso.split('-')
-    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))
-    var semana = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
-    return { semana: semana, dia: p[2] }
+  /** "2026-08" a partir de "2026-08-14". */
+  function mesDe(dia) { return dia.slice(0, 7) }
+
+  /** "agosto de 2026" */
+  function rotuloMes(mes) {
+    var p = mes.split('-')
+    return new Date(Number(p[0]), Number(p[1]) - 1, 1)
+      .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  }
+
+  /** Dia da semana (0=dom) do dia 1 do mês, e quantos dias o mês tem. */
+  function formaDoMes(mes) {
+    var p = mes.split('-'), ano = Number(p[0]), m = Number(p[1])
+    return {
+      primeiroDiaSemana: new Date(ano, m - 1, 1).getDay(),
+      totalDias: new Date(ano, m, 0).getDate(),
+    }
+  }
+
+  /** "quinta-feira, 14 de agosto" — cabeçalho da coluna de horários. */
+  function rotuloDiaLongo(dia) {
+    var p = dia.split('-')
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))
+      .toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })
   }
 
   /** "14:30" a partir do ISO UTC, no fuso de São Paulo. */
@@ -119,7 +153,7 @@
     alvo.innerHTML = '<div class="ag-spin"></div>'
 
     // etapa: 'carregando' | 'escolha' | 'confirmando' | 'enviando' | 'erro'
-    var estado = { slots: [], diaAtivo: null, etapa: 'carregando', email: null, escolhido: null }
+    var estado = { slots: [], diaAtivo: null, mes: null, etapa: 'carregando', email: null, escolhido: null }
 
     function falhou(msg) {
       estado.etapa = 'erro'
@@ -149,8 +183,19 @@
     }
 
     function renderEscolha() {
-      var dias = []
-      estado.slots.forEach(function (s) { if (dias.indexOf(s.dia) < 0) dias.push(s.dia) })
+      // Dias que têm pelo menos um horário livre, e os meses que eles cobrem.
+      var comVaga = {}
+      var meses = []
+      estado.slots.forEach(function (s) {
+        comVaga[s.dia] = true
+        var m = mesDe(s.dia)
+        if (meses.indexOf(m) < 0) meses.push(m)
+      })
+      meses.sort()
+      if (!estado.mes || meses.indexOf(estado.mes) < 0) estado.mes = mesDe(estado.diaAtivo)
+
+      var iMes = meses.indexOf(estado.mes)
+      var forma = formaDoMes(estado.mes)
 
       // Funil que não coletou email pede aqui — é onde o Calendly pedia também,
       // no ponto de maior intenção, e sem tirar a pessoa da página.
@@ -161,38 +206,59 @@
           '<p class="ag-campo-erro" id="agEmailErro">Informe um email válido, ex: nome@empresa.com.br</p></div>'
         : ''
 
-      html += '<p class="ag-secao-label">Escolha o dia</p><div class="ag-dias-wrap"><div class="ag-dias">'
-      dias.forEach(function (d) {
-        var r = rotuloDia(d)
-        html += '<button type="button" class="ag-dia' + (d === estado.diaAtivo ? ' on' : '') +
-                '" data-dia="' + d + '"><small>' + r.semana + '</small><b>' + r.dia + '</b></button>'
-      })
-      html += '</div></div><p class="ag-secao-label">Escolha o horário</p><div class="ag-horas">'
+      html += '<div class="ag-painel"><div class="ag-col-cal">'
+
+      // Cabeçalho do mês. As setas só existem dentro da janela que a agenda
+      // devolveu — não faz sentido navegar para um mês sem horário nenhum.
+      html += '<div class="ag-mes"><b>' + rotuloMes(estado.mes) + '</b><span class="ag-nav">' +
+              '<button type="button" id="agMesAnt"' + (iMes <= 0 ? ' disabled' : '') + ' aria-label="Mês anterior">&#8249;</button>' +
+              '<button type="button" id="agMesProx"' + (iMes >= meses.length - 1 ? ' disabled' : '') + ' aria-label="Próximo mês">&#8250;</button>' +
+              '</span></div>'
+
+      html += '<div class="ag-semana">'
+      ;['dom','seg','ter','qua','qui','sex','sáb'].forEach(function (d) { html += '<span>' + d + '</span>' })
+      html += '</div><div class="ag-grade">'
+
+      // Casas vazias até cair no dia da semana certo.
+      for (var i = 0; i < forma.primeiroDiaSemana; i++) html += '<div class="ag-cel"></div>'
+
+      for (var d = 1; d <= forma.totalDias; d++) {
+        var dia = estado.mes + '-' + (d < 10 ? '0' + d : d)
+        var livre = comVaga[dia]
+        var cls = 'ag-dia' + (livre ? '' : ' off') + (dia === estado.diaAtivo ? ' on' : '')
+        html += '<div class="ag-cel"><button type="button" class="' + cls + '"' +
+                (livre ? ' data-dia="' + dia + '"' : ' disabled') + '>' + d + '</button></div>'
+      }
+      html += '</div></div>'
+
+      // Coluna dos horários do dia escolhido.
+      html += '<div class="ag-col-hora"><p class="ag-hora-titulo">' + rotuloDiaLongo(estado.diaAtivo) + '</p><div class="ag-horas">'
       estado.slots.filter(function (s) { return s.dia === estado.diaAtivo }).forEach(function (s) {
         html += '<button type="button" class="ag-hora" data-inicio="' + s.inicio + '">' + hhmm(s.inicio) + '</button>'
       })
-      html += '</div><p class="ag-rodape">Reunião de ' + estado.duracao + ' minutos, por videochamada. Horário de Brasília.</p>'
+      html += '</div></div></div>'
+
+      html += '<p class="ag-rodape">Reunião de ' + estado.duracao + ' minutos, por videochamada. Horário de Brasília.</p>'
       alvo.innerHTML = html
 
-      alvo.querySelectorAll('.ag-dia').forEach(function (b) {
+      alvo.querySelectorAll('.ag-dia[data-dia]').forEach(function (b) {
         b.onclick = function () { estado.diaAtivo = b.getAttribute('data-dia'); render() }
       })
       alvo.querySelectorAll('.ag-hora').forEach(function (b) {
         b.onclick = function () { escolherHorario(b.getAttribute('data-inicio')) }
       })
 
-      // Some com a sombra quando não há mais o que rolar — ela só faz sentido
-      // como aviso de "tem mais dias pra cá", não como decoração fixa.
-      var trilho = alvo.querySelector('.ag-dias')
-      var faixa = alvo.querySelector('.ag-dias-wrap')
-      if (trilho && faixa) {
-        var atualizarFade = function () {
-          var fim = trilho.scrollLeft + trilho.clientWidth >= trilho.scrollWidth - 4
-          faixa.classList.toggle('ag-dias-fim', fim)
-        }
-        trilho.addEventListener('scroll', atualizarFade)
-        atualizarFade()
+      function irParaMes(m) {
+        estado.mes = m
+        // Ao trocar de mês, cai no primeiro dia livre dele: deixar selecionado
+        // um dia do mês anterior mostraria horários que não estão à vista.
+        var primeiro = estado.slots.filter(function (s) { return mesDe(s.dia) === m })[0]
+        if (primeiro) estado.diaAtivo = primeiro.dia
+        render()
       }
+      var ant = alvo.querySelector('#agMesAnt'), prox = alvo.querySelector('#agMesProx')
+      if (ant && iMes > 0) ant.onclick = function () { irParaMes(meses[iMes - 1]) }
+      if (prox && iMes < meses.length - 1) prox.onclick = function () { irParaMes(meses[iMes + 1]) }
     }
 
     function escolherHorario(inicio) {
@@ -270,7 +336,12 @@
             alvo.innerHTML = '<p class="ag-msg ag-erro">Esse horário acabou de ser ocupado. Escolha outro:</p><div class="ag-spin"></div>'
             return fetch('/api/horarios?frente=' + encodeURIComponent(opts.frente))
               .then(function (r) { return r.json() })
-              .then(function (j) { estado.slots = j.slots || []; estado.diaAtivo = (estado.slots[0] || {}).dia; render() })
+              .then(function (j) {
+                estado.slots = j.slots || []
+                estado.diaAtivo = (estado.slots[0] || {}).dia
+                estado.mes = null   // recalcula a partir do novo dia ativo
+                render()
+              })
           }
           if (!res.j || !res.j.ok) throw new Error(res.j && res.j.error || 'falha')
           res.j.email = estado.email || null
