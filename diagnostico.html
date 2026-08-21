@@ -442,8 +442,33 @@
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        t.crossOrigin="anonymous";
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xd8vv4mdgc");
+
+    // O Clarity conta o erro mas nunca mostra a mensagem. Sem isto, "5% das
+    // sessões com erro de script" não diz o que quebrou. A tag `jserro` fica
+    // filtrável no painel e vem junto na gravação.
+    // Erro de script de outra origem chega como "Script error." sem arquivo nem
+    // linha: é o navegador escondendo, não bug nosso. `crossorigin` no clarity.ms
+    // (abaixo, tem CORS) tira essa máscara; o fbevents.js do Meta NÃO manda
+    // header de CORS, então erro dentro do pixel fica opaco para sempre.
+    (function () {
+      var visto = {}
+      function marcar(txt) {
+        txt = String(txt).slice(0, 200)
+        if (visto[txt]) return           // um erro em loop não estoura o limite de tags
+        visto[txt] = 1
+        try { window.clarity('set', 'jserro', txt) } catch (_) {}
+      }
+      addEventListener('error', function (e) {
+        if (!e.message) return           // erro de carga de img/script: não é exceção
+        marcar(e.message + ' @ ' + (e.filename || 'sem arquivo') + ':' + (e.lineno || 0))
+      })
+      addEventListener('unhandledrejection', function (e) {
+        marcar('promise: ' + ((e.reason && e.reason.message) || e.reason))
+      })
+    })()
   </script>
 </head>
 <body>
