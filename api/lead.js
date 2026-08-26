@@ -83,7 +83,12 @@ export default async function handler(req, res) {
   // Só anota no prospect que já existe (criado no submitForm, antes da s9). Não
   // cria registro, não notifica: é telemetria.
   if (tipo === 's9-clique') {
-    const alvo = req.body.alvo === 'whatsapp' ? 'whatsapp' : 'calendly'
+    // 'chegou' é o denominador: quem viu a tela final. Sem ele, contar cliques
+    // não diz se a tela converte ou se ninguém chega nela.
+    // 'whatsapp-desq' é o botão da tela de desqualificada, que até 25/08 não
+    // era medido. Histórico: cliques na agenda antigos aparecem como 'calendly'.
+    const alvos = ['whatsapp', 'calendly', 'agenda', 'chegou', 'whatsapp-desq']
+    const alvo = alvos.includes(req.body.alvo) ? req.body.alvo : 'calendly'
     // SUPABASE_URL/KEY só são declarados mais abaixo, dentro do bloco de gravação
     // do lead — aqui precisam ser lidos do ambiente de novo.
     const SB_URL = process.env.SUPABASE_URL
