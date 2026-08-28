@@ -287,24 +287,37 @@ export default async function handler(req, res) {
       // sinaliza estrutura por trás). O marcador entra nas observações já no insert,
       // então o cron /api/resgates não duplica; se o envio falhar, fica sem marcador
       // e o cron reenvia em ~3 min como rede de segurança.
+      const sbHeaders = {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+
+      // Dedup por telefone — procura prospect já existente com este número.
+      // Reentrada (28/08/2026, caso Luciana Lorena): lead que volta ao funil
+      // dias depois é uma passagem NOVA. `entrou_em` recomeça o relógio do cron
+      // e da lista do CRM (que antes liam `created_at` e a deixavam invisível),
+      // e os marcadores da passagem anterior viram `[hist:...]`: ficam no
+      // histórico sem travar o resgate de agora. Abaixo de 24h é a mesma sessão
+      // (abandono → completo), e aí os marcadores continuam valendo.
+      let existing = []
+      try {
+        const lookup = await fetch(
+          `${SUPABASE_URL}/rest/v1/prospects?select=id,etapa,observacoes,entrou_em&telefone=eq.${encodeURIComponent(telefone)}`,
+          { headers: sbHeaders },
+        )
+        existing = lookup.ok ? await lookup.json() : []
+      } catch (e) { console.error(`[lead] CRM lookup falhou (${tipo}):`, e) }
+      const antigo = existing[0] ?? null
+      const reentrada = !!antigo && Date.now() - new Date(antigo.entrou_em || 0).getTime() > 24 * 3600 * 1000
+      const marcadoresAntigos = ((antigo?.observacoes || '').match(/\[(auto|s9|hist)[^\]]*\][^\n]*/g) || [])
+        .map(m => reentrada && !m.startsWith('[hist:') ? `[hist:${m.slice(1)}` : m)
+
       let marcadorResgate = null
       let resgateEnviadoAgora = false
       if (tipo === 'desqualificado') {
-        // Se ela refez o formulário e já foi resgatada antes, não envia de novo
-        // (o PATCH de dedup abaixo sobrescreve as observações, então o marcador
-        // antigo precisa ser checado e re-anexado aqui).
-        let marcadorAntigo = null
-        try {
-          const chk = await fetch(
-            `${SUPABASE_URL}/rest/v1/prospects?select=observacoes&telefone=eq.${encodeURIComponent(telefone)}`,
-            { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } },
-          )
-          const rows = chk.ok ? await chk.json() : []
-          marcadorAntigo = (rows[0]?.observacoes || '').match(/\[auto:resgate-desqualificada\][^\n]*/)?.[0] ?? null
-        } catch (_) {}
-
-        if (marcadorAntigo) {
-          marcadorResgate = marcadorAntigo
+        if (marcadoresAntigos.some(m => m.startsWith('[auto:resgate-desqualificada]'))) {
+          // mesma sessão e já resgatada: não envia de novo (marcador segue na lista)
         } else if (await volumeAnormal('prospects', 'created_at')) {
           // Disjuntor anti-abuso: sem envio agora; o cron retoma quando o volume normalizar
           console.error('[lead] volume anormal de prospects — envio imediato suspenso')
@@ -333,31 +346,22 @@ export default async function handler(req, res) {
         utm_content ? `Anúncio: ${utm_content}` : null,
         `Origem: Formulário /diagnostico`,
         marcadorResgate,
+        ...marcadoresAntigos.filter(m => m !== marcadorResgate),
       ].filter(Boolean).join('\n')
 
-      const sbHeaders = {
-        'Content-Type':  'application/json',
-        'apikey':        SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-      }
-
       try {
-        // Dedup por telefone — procura prospect já existente com este número
-        const lookup = await fetch(
-          `${SUPABASE_URL}/rest/v1/prospects?select=id&telefone=eq.${encodeURIComponent(telefone)}`,
-          { headers: sbHeaders },
-        )
-        const existing = lookup.ok ? await lookup.json() : []
-
-        if (existing.length > 0) {
-          // Já existe — atualiza nome/observações (não duplica). Como 'completo'/'desqualificado'
-          // só ocorrem depois do abandono na mesma sessão, isto enriquece o registro parcial.
-          const patch = await fetch(`${SUPABASE_URL}/rest/v1/prospects?id=eq.${existing[0].id}`, {
+        if (antigo) {
+          // Já existe — atualiza nome/observações (não duplica). Na mesma sessão
+          // enriquece o registro parcial do abandono; na reentrada reabre a passagem.
+          const patch = await fetch(`${SUPABASE_URL}/rest/v1/prospects?id=eq.${antigo.id}`, {
             method: 'PATCH',
             headers: { ...sbHeaders, Prefer: 'return=minimal' },
             // fbc/fbp/utm só entram quando chegam (não sobrescrevem valor já salvo com null)
             body: JSON.stringify({
               nome: nome || undefined, observacoes,
+              ...(reentrada && { entrou_em: new Date().toISOString() }),
+              // Perdida que volta sozinha volta para a fila; etapas avançadas ficam.
+              ...(reentrada && antigo.etapa === 'perdido' && { etapa: 'prospeccao' }),
               ...(especialidade && { especialidade }),
               ...(fbc && { fbc }), ...(fbp && { fbp }),
               ...(utm_source   && { utm_source }),

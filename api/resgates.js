@@ -56,9 +56,9 @@ export default async function handler(req, res) {
   let prospects = []
   try {
     const q = `${SB_URL}/rest/v1/prospects`
-      + `?select=id,nome,telefone,observacoes,created_at`
+      + `?select=id,nome,telefone,observacoes,entrou_em`
       + `&observacoes=ilike.${encodeURIComponent('*Formulário /diagnostico*')}`
-      + `&created_at=gte.${encodeURIComponent(windowLo)}`
+      + `&entrou_em=gte.${encodeURIComponent(windowLo)}`
     const r = await fetch(q, { headers: sbHeaders })
     prospects = r.ok ? await r.json() : []
   } catch (e) {
@@ -111,7 +111,7 @@ export default async function handler(req, res) {
     const o = p.observacoes || ''
     if (/\[auto:/.test(o)) continue                       // já resgatada
     if (!p.telefone) continue
-    const idadeMin = (now - new Date(p.created_at).getTime()) / 60000
+    const idadeMin = (now - new Date(p.entrou_em).getTime()) / 60000
     const pnome = pnomeDe(p.nome)
 
     // 1. Completou o formulário e não agendou — espera 3 min
