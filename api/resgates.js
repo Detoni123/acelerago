@@ -103,6 +103,12 @@ export default async function handler(req, res) {
     } catch (_) { return false }
   }
 
+  const horarioComercial = () => {
+    const brt = new Date(now - 3 * 3600 * 1000) // BRT sem DST desde 2019
+    const h = brt.getUTCHours(), d = brt.getUTCDay()
+    return d !== 0 && h >= 8 && h < 20
+  }
+
   const pnomeDe = (nome) => nome ? String(nome).trim().replace(/^(dr|dra|doutor|doutora)\.?\s+/i, '').split(/\s+/)[0] : ''
 
   let qualificadas = 0, aindaNao = 0, desqualificadas = 0, abandonos = 0, falhas = 0
@@ -112,6 +118,11 @@ export default async function handler(req, res) {
     if (/\[auto:/.test(o)) continue                       // já resgatada
     if (!p.telefone) continue
     const idadeMin = (now - new Date(p.entrou_em).getTime()) / 60000
+    // Fora do horário comercial só responde quem preencheu AGORA (está com o
+    // celular na mão). Quem entrou há mais tempo (reentrada, envio que falhou,
+    // cron atrasado) espera 8h às 20h BRT, seg a sáb. Decisão de 28/08/2026:
+    // a Luciana Lorena recebeu o resgate às 23h30 de uma passagem das 21h30.
+    if (idadeMin > 30 && !horarioComercial()) continue
     const pnome = pnomeDe(p.nome)
 
     // 1. Completou o formulário e não agendou — espera 3 min
