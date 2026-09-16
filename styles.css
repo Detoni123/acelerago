@@ -417,7 +417,7 @@ section { padding: 5.5rem 0; }
   min-height: 100dvh;
   display: flex;
   align-items: center;
-  padding: 9rem 0 3rem;
+  padding: 9rem 0 6rem;
   overflow: hidden;
   background: linear-gradient(158deg, var(--ink) 0%, var(--charcoal-2) 58%, var(--ink) 100%);
 }
@@ -526,104 +526,81 @@ section { padding: 5.5rem 0; }
   .hero-tag::before { margin-top: .42rem; flex: 0 0 6px; }
 }
 
-/* Cards de credencial do hero. Vidro + scanlines + brilho
-   pulsante no topo — recorte direto do HeroSection da Dra.
-   Daniella, com o halo trocado para a matiz laranja. */
-.hero-stats {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: .75rem;
-  max-width: 880px;
-  margin: 3.5rem auto 0;
-}
-@media (min-width: 720px) { .hero-stats { grid-template-columns: repeat(4, 1fr); gap: 1rem; } }
-
-.hero-stat {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  padding: 1.1rem .9rem;
-  text-align: center;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.14);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 24px 60px -30px rgba(0,0,0,.8);
-}
-.hero-stat::before { /* scanlines */
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: .05;
-  pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent 0 2px, #fff 2px 3px);
-}
-.hero-stat::after { /* brilho superior pulsante */
-  content: '';
-  position: absolute;
-  top: -34px; left: 50%;
-  width: 96px; height: 96px;
-  transform: translateX(-50%);
-  background: radial-gradient(circle, rgba(244,117,48,.4) 0%, transparent 70%);
-  filter: blur(20px);
-  pointer-events: none;
-  animation: stat-glow 3.6s ease-in-out infinite;
-}
-.hero-stat:nth-child(2)::after { animation-delay: .5s; }
-.hero-stat:nth-child(3)::after { animation-delay: 1s; }
-.hero-stat:nth-child(4)::after { animation-delay: 1.5s; }
-@keyframes stat-glow {
-  0%, 100% { opacity: .72; }
-  50%      { opacity: 1; }
-}
-
-.hero-stat-val {
-  position: relative;
-  display: block;
-  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
-  font-weight: 700;
-  letter-spacing: -.03em;
-  line-height: 1.2;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-.hero-stat-key {
-  position: relative;
-  display: block;
-  margin-top: .55rem;
-  padding-top: .55rem;
-  border-top: 1px solid rgba(255,255,255,.16);
-  font-size: .62rem;
-  font-weight: 700;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.82);
-  line-height: 1.4;
-}
-
-.scroll-cue {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255,255,255,.3);
+/* ── Trust bar ─────────────────────────────────────────────
+   Replica da faixa da Wood: barra unica escura logo abaixo do
+   hero, 4 provas separadas por filete fino. Nao sao cards
+   soltos — e uma barra continua, e isso muda o peso visual.
+   Medidas do original: item 20px/30px, gap 14px, icone 34px
+   com raio 10, valor 1.12rem/600, descricao 0.72rem/300. */
+.trust-bar {
   display: flex;
-  flex-direction: column;
+  background: var(--charcoal-2);
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 0 64px;
+  overflow: hidden;
+}
+@media (max-width: 1240px) { .trust-bar { padding: 0 20px; } .trust-item { padding: 20px 18px; } }
+
+.trust-item {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: .4rem;
-  font-size: .62rem;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  animation: bounce 2.4s infinite;
-  z-index: 2;
+  gap: 14px;
+  padding: 20px 26px;
+  border-right: 1px solid rgba(255,255,255,.08);
+  transition: background var(--transition);
 }
-@keyframes bounce {
-  0%,100% { transform: translateX(-50%) translateY(0); }
-  50%     { transform: translateX(-50%) translateY(7px); }
+.trust-item:last-child { border-right: none; }
+.trust-item:hover { background: rgba(255,255,255,.03); }
+
+.trust-icon {
+  width: 34px; height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  color: var(--accent-warm);
 }
-@media (max-width: 900px) { .scroll-cue { display: none; } }
+.trust-icon svg { display: block; }
+
+.trust-value {
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+.trust-desc {
+  font-size: .72rem;
+  font-weight: 300;
+  color: rgba(255,255,255,.62);
+  letter-spacing: .06em;
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+/* A Wood esconde dois itens no celular para caber tudo numa
+   linha. Aqui os quatro ficam, em 2x2 — o selo do Google e o
+   segmento sao justamente as duas provas que nao podem sumir. */
+@media (max-width: 860px) {
+  .trust-bar { flex-wrap: wrap; padding: 0; }
+  .trust-item {
+    flex: 1 1 50%;
+    min-width: 50%;
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    gap: 11px;
+  }
+  .trust-item:nth-child(2n) { border-right: none; }
+  .trust-item:nth-last-child(-n+2) { border-bottom: none; }
+  .trust-value { font-size: .95rem; }
+  .trust-desc  { font-size: .67rem; letter-spacing: .04em; }
+  .trust-icon  { width: 30px; height: 30px; border-radius: 9px; }
+}
 
 /* ── Problema ─────────────────────────────────────────────── */
 #problema { background: var(--white); }
