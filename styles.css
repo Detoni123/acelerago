@@ -909,6 +909,42 @@ section { padding: 5.5rem 0; }
   opacity: .16;
 }
 
+/* ── Fila de sites ─────────────────────────────────────────
+   A "miniatura" nao e uma imagem montada em editor: e a
+   screenshot crua da pagina, sem cromo de navegador, com o topo
+   arredondado e sangrando para fora do card. Trocar o site
+   depois e trocar o .webp — o encaixe nao depende do arquivo.
+
+   A altura vem da imagem, nao de valor fixo: screenshot de
+   proporcao diferente entra sem quebrar a fila. */
+.mock-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.mock-shot {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  border-radius: 9px 9px 0 0;
+  overflow: hidden;
+  background: var(--charcoal);
+  border: 1px solid rgba(255,255,255,.14);
+  border-bottom: none;
+  box-shadow: 0 -12px 40px -16px rgba(0,0,0,.7);
+}
+.mock-shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 520px) { .mock-row { gap: 6px; } }
+
 /* ── Resultados ───────────────────────────────────────────── */
 #resultados, .resultados-light {
   background: var(--white);
