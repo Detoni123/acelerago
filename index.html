@@ -241,44 +241,62 @@
      HERO
 ════════════════════════════════════════ -->
   <section id="hero" aria-labelledby="hero-title">
+
+    <div class="hero-orbs" aria-hidden="true">
+      <span class="hero-orb hero-orb-1"></span>
+      <span class="hero-orb hero-orb-2"></span>
+    </div>
+    <img src="acelerafundotransp.webp" alt="" class="hero-watermark" aria-hidden="true" />
+
     <div class="container">
       <div class="hero-content">
 
-        <h1 class="hero-tag" aria-label="Especialidade">
-          Marketing Digital para Clínicas de Ginecologia e Obstetrícia
+        <span class="hero-tag">
+          Marketing médico para saúde da mulher
+        </span>
+
+        <h1 class="hero-title" id="hero-title">
+          Marketing especializado para
+          <em>clínicas de saúde da mulher.</em>
         </h1>
 
-        <h2 class="hero-title" id="hero-title">
-          Existem áreas da medicina onde<br>
-          confiança não é apenas importante.<br>
-          <em>Ela é tudo.</em>
-        </h2>
-
         <p class="hero-sub">
-          Quando uma mulher escolhe uma ginecologista, uma obstetra ou deseja realizar o
-          sonho da maternidade através da reprodução humana, ela não está buscando 
-          uma consulta. Ela está buscando segurança. Cuidado. Alguém em quem confiar.
+          Sua paciente encontra você no momento exato em que ela precisa de você.
+          Com constância, dentro das normas do CFM e com a segurança que a sua
+          especialidade exige.
         </p>
 
         <div class="hero-actions">
           <a href="#" class="btn btn-primary btn-lg wa-trigger" onclick="openWAModal(event)">
-            &#128172; Quero acelerar minha clínica
+            Falar com a AceleraGO
           </a>
-          <a href="#ronaldo" class="btn btn-outline-light btn-lg">
-            Conhecer a AceleraGO
+          <a href="#servicos" class="btn btn-outline-light btn-lg">
+            Ver serviços
           </a>
         </div>
 
       </div>
+
+      <div class="hero-stats" aria-label="Credenciais da AceleraGO">
+        <div class="hero-stat">
+          <span class="hero-stat-val">Barueri, SP</span>
+          <span class="hero-stat-key">Atendimento em todo o Brasil</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">Saúde da mulher</span>
+          <span class="hero-stat-key">Único segmento que atendemos</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">Google · Meta · YouTube</span>
+          <span class="hero-stat-key">Canais que operamos</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">Dentro do CFM</span>
+          <span class="hero-stat-key">Toda campanha revisada</span>
+        </div>
+      </div>
     </div>
 
-    <div class="scroll-cue" aria-hidden="true">
-      <svg width="14" height="22" viewBox="0 0 14 22" fill="none">
-        <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" stroke-width="1.5" />
-        <circle cx="7" cy="7" r="1.5" fill="currentColor" />
-      </svg>
-      role para baixo
-    </div>
   </section>
 
 
@@ -441,59 +459,65 @@
   <!-- ════════════════════════════════════════
      COMO TRABALHAMOS
 ════════════════════════════════════════ -->
-  <section id="servicos" class="servicos-container">
+  <section id="servicos" class="servicos-container" aria-labelledby="servicos-title">
     <div class="container">
-        <header class="section-header fade-in">
-            <span class="label">Como trabalhamos</span>
-            <h2 id="servicos-title">Soluções de Crescimento</h2>
-            <p>Cada frente do nosso trabalho foi pensada para o contexto específico das clínicas de elite.</p>
-        </header>
 
-        <div class="servicos-grid">
-            <a href="servico-posicionamento" class="servico-card fade-in" style="text-decoration:none;">
-                <i class="ph ph-compass"></i>
-                <h3>Posicionamento Estratégico</h3>
-                <p>Construímos a autoridade da médica para que ela seja a primeira escolha das pacientes.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
+      <header class="section-header fade-in">
+        <span class="label">O que fazemos</span>
+        <h2 id="servicos-title">Cada serviço pensado<br><em>para gerar resultado.</em></h2>
+        <p>A paciente certa encontra você e escolhe você.</p>
+      </header>
 
-            <a href="servico-google-ads" class="servico-card fade-in delay-1" style="text-decoration:none;">
-                <i class="ph ph-magnifying-glass-plus"></i>
-                <h3>Google Ads Especializado</h3>
-                <p>Captamos pacientes qualificadas buscando por Ginecologia, Obstetrícia e Reprodução Humana.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
+      <div class="servicos-grid">
 
-            <a href="servico-gestao-autoridade" class="servico-card fade-in delay-2" style="text-decoration:none;">
-                <i class="ph ph-article-ny-times"></i>
-                <h3>Gestão de Autoridade</h3>
-                <p>Direcionamento editorial que transforma conhecimento técnico em desejo de consulta.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
+        <a href="servico-google-ads" class="servico-card fade-in">
+          <span class="servico-num">01</span>
+          <i class="ph ph-magnifying-glass-plus" aria-hidden="true"></i>
+          <h3>Tráfego Pago</h3>
+          <p>Você aparece no momento em que a paciente procura por você. Google, YouTube e Meta.</p>
+          <span class="servico-link">Saiba mais <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          <div class="servico-visual"></div>
+        </a>
 
-            <a href="servico-producao-audiovisual" class="servico-card fade-in delay-3" style="text-decoration:none;">
-                <i class="ph ph-video-camera"></i>
-                <h3>Produção Audiovisual</h3>
-                <p>Conteúdo em vídeo de alta qualidade para gerar conexão imediata com o público feminino.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
+        <a href="servico-landing-pages" class="servico-card fade-in delay-1">
+          <span class="servico-num">02</span>
+          <i class="ph ph-browser" aria-hidden="true"></i>
+          <h3>Sites Personalizados</h3>
+          <p>Mostre os seus diferenciais para a sua paciente antes da primeira consulta.</p>
+          <span class="servico-link">Saiba mais <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          <div class="servico-visual"></div>
+        </a>
 
-            <a href="servico-landing-pages" class="servico-card fade-in delay-4" style="text-decoration:none;">
-                <i class="ph ph-browser"></i>
-                <h3>Landing Pages Premium</h3>
-                <p>Páginas de alta conversão projetadas para transmitir segurança e facilitar o agendamento.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
+        <a href="servico-posicionamento" class="servico-card fade-in delay-2">
+          <span class="servico-num">03</span>
+          <i class="ph ph-compass" aria-hidden="true"></i>
+          <h3>SEO + GEO</h3>
+          <p>Você sendo encontrada de forma gratuita no Google e também nas IAs.</p>
+          <span class="servico-link">Saiba mais <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          <div class="servico-visual"></div>
+        </a>
 
-            <a href="servico-crm" class="servico-card fade-in delay-5" style="text-decoration:none;">
-                <i class="ph ph-funnel"></i>
-                <h3>Inteligência em CRM</h3>
-                <p>Automação e organização do fluxo de atendimento para garantir taxa zero de perda de leads.</p>
-                <span style="margin-top:auto; padding-top:1.5rem; font-size:.85rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:.35rem;">Saiba mais <i class="ph ph-arrow-right" style="font-size:1rem;"></i></span>
-            </a>
-        </div>
+        <a href="servico-crm" class="servico-card fade-in delay-3">
+          <span class="servico-num">04</span>
+          <i class="ph ph-robot" aria-hidden="true"></i>
+          <h3>IA + CRM Médico</h3>
+          <p>Atendendo de forma rápida e com qualidade, sem perder as pacientes antigas.</p>
+          <span class="servico-link">Saiba mais <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          <div class="servico-visual"></div>
+        </a>
+
+        <a href="servico-producao-audiovisual" class="servico-card servico-card--wide fade-in delay-4">
+          <span class="servico-num">05</span>
+          <i class="ph ph-video-camera" aria-hidden="true"></i>
+          <h3>Vídeo para Médicos</h3>
+          <p>A paciente conhece você antes de entrar no consultório. Reels, Shorts e YouTube.</p>
+          <span class="servico-link">Saiba mais <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          <div class="servico-visual"></div>
+        </a>
+
+      </div>
     </div>
-</section>
+  </section>
 
 
   <!-- ════════════════════════════════════════
@@ -502,9 +526,9 @@
   <section id="resultados" class="resultados-light">
     <div class="container">
         <header class="section-header fade-in">
-            <span class="label" style="color: var(--orange) !important;">Resultados</span>
-<h2 id="resultados-title" style="color: #0a1118 !important;">Clínicas que decidiram ser encontradas</h2>
-<p style="color: #1a1a1a !important; font-weight: 500;">Resultados reais de clínicas reais. Focados em autoridade e conversão.</p>
+            <span class="label">Resultados</span>
+<h2 id="resultados-title">Clínicas que decidiram ser encontradas</h2>
+<p>Resultados reais de clínicas reais. Focados em autoridade e conversão.</p>
         </header>
 
         <div class="numeros-grid-novo">
@@ -752,8 +776,8 @@
     <div class="container">
       <header class="section-header fade-in">
         <span class="label">Conteúdo estratégico</span>
-        <h2 id="blog-preview-title" style="color: var(--text-dark);">Do nosso blog</h2>
-        <p style="color: var(--text-muted);">Artigos escritos para ginecologistas e especialistas em saúde da mulher que querem crescer com consistência.</p>
+        <h2 id="blog-preview-title">Do nosso blog</h2>
+        <p>Artigos escritos para ginecologistas e especialistas em saúde da mulher que querem crescer com consistência.</p>
       </header>
       <div class="blog-grid" style="margin-top: 3rem;">
         <a href="blog-autoridade-digital-medicas" class="blog-card fade-in">
@@ -796,7 +820,7 @@
   <section id="cta-final" aria-labelledby="cta-title">
     <div class="container">
       <div class="cta-inner fade-in">
-        <span class="label" style="color: var(--teal-light);">O próximo passo</span>
+        <span class="label">O próximo passo</span>
         <h2 id="cta-title">Vamos acelerar sua clínica juntos?</h2>
         <p>
           Acreditamos que clínicas que transformam vidas merecem ser encontradas. Se você chegou até aqui, é porque você
@@ -808,6 +832,66 @@
           </a>
         </div>
         <p class="cta-note">Resposta em até 5 minutos. Sem compromisso, sem pressão.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════
+     LINKS (SEO)
+════════════════════════════════════════ -->
+  <section class="seo-links" aria-label="Mapa de serviços, especialidades e conteúdo">
+    <div class="container">
+      <div class="seo-links-grid">
+
+        <div class="seo-col">
+          <h4>Serviços</h4>
+          <ul>
+            <li><a href="servico-google-ads">Tráfego pago para médicas</a></li>
+            <li><a href="servico-landing-pages">Sites e landing pages</a></li>
+            <li><a href="servico-posicionamento">SEO e posicionamento</a></li>
+            <li><a href="servico-crm">IA e CRM médico</a></li>
+            <li><a href="servico-producao-audiovisual">Vídeo para médicos</a></li>
+            <li><a href="servico-gestao-autoridade">Gestão de autoridade</a></li>
+          </ul>
+        </div>
+
+        <div class="seo-col">
+          <h4>Especialidades</h4>
+          <ul>
+            <li><a href="ginecologista">Ginecologia</a></li>
+            <li><a href="obstetra">Obstetrícia</a></li>
+            <li><a href="reproducao-humana">Reprodução humana</a></li>
+            <li>Endocrinologia hormonal</li>
+            <li>Menopausa e reposição hormonal</li>
+            <li>Medicina vascular feminina</li>
+            <li>Medicina fetal</li>
+          </ul>
+        </div>
+
+        <div class="seo-col">
+          <h4>Plataformas</h4>
+          <ul>
+            <li>Google Ads</li>
+            <li>Meta Ads</li>
+            <li>YouTube Ads</li>
+            <li>Google Meu Negócio</li>
+            <li>Instagram</li>
+            <li>WhatsApp</li>
+          </ul>
+        </div>
+
+        <div class="seo-col">
+          <h4>Conteúdo</h4>
+          <ul>
+            <li><a href="blog-seo-local-ginecologistas">SEO local para ginecologistas</a></li>
+            <li><a href="blog-google-ads-ginecologistas">Google Ads para ginecologistas</a></li>
+            <li><a href="blog-autoridade-digital-medicas">Autoridade digital para médicas</a></li>
+            <li><a href="blog-reputacao-online-ginecologistas">Reputação online no Google</a></li>
+            <li><a href="blog">Todos os artigos</a></li>
+          </ul>
+        </div>
+
       </div>
     </div>
   </section>
@@ -836,18 +920,6 @@
             </a>
 
           </div>
-        </div>
-
-        <div class="footer-col">
-          <h4>Serviços</h4>
-          <ul class="footer-links">
-            <li><a href="servico-posicionamento">Posicionamento estratégico</a></li>
-            <li><a href="servico-google-ads">Google Ads</a></li>
-            <li><a href="servico-gestao-autoridade">Gestão de autoridade</a></li>
-            <li><a href="servico-producao-audiovisual">Produção audiovisual</a></li>
-            <li><a href="servico-landing-pages">Landing pages</a></li>
-            <li><a href="servico-crm">CRM e atendimento</a></li>
-          </ul>
         </div>
 
         <div class="footer-col">
