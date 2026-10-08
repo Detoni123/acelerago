@@ -1,10 +1,6 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "redirects": [
-    { "source": "/gerador-carrossel", "destination": "https://gerador.acelerago.com.br/", "permanent": true },
-    { "source": "/gerador-carrossel.html", "destination": "https://gerador.acelerago.com.br/", "permanent": true }
-  ],
   "crons": [
     { "path": "/api/lembretes", "schedule": "*/15 * * * *" },
     { "path": "/api/resgates", "schedule": "* * * * *" }
