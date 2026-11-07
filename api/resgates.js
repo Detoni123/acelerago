@@ -145,8 +145,9 @@ export default async function handler(req, res) {
       const preview =
         `Olá, ${pnome}. Aqui é o Gabriel, da AceleraGO.\n\n` +
         `Confirmando o recebimento do seu diagnóstico: suas respostas foram registradas e a sua sessão com o estrategista ainda não está agendada.\n\n` +
-        `A sessão é online e dura 30 minutos. Responda por aqui que eu envio os horários disponíveis.`
-      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v3', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
+        `A sessão é online e dura 45 minutos. Responda por aqui que eu envio os horários disponíveis.`
+      // v5 (07/11/2026): igual à v3, só com a duração certa (45 min, agenda do CRM). UTILITY aprovado.
+      if (await sendTemplate(p.telefone, 'abordagem_qualificada_v5', [pnome], preview)) { await marcar(p, 'resgate-qualificada'); await moverParaContato(p); qualificadas++ }
       else falhas++
       continue
     }

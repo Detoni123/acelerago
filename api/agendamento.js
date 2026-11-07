@@ -137,10 +137,18 @@ export default async function handler(req, res) {
       `É o tipo de clareza que economiza meses de tentativa e erro.\n\n` +
       `O convite com o link da chamada chegará no seu e-mail e eu te enviarei por aqui também para facilitar. ` +
       `Posso confirmar a sua presença? Aperte no botão abaixo para confirmar.`
+    // v8 (07/11/2026): transacional (UTILITY) com a duração certa, 45 min. Enquanto a
+    // Meta não aprovar, o envio falha e cai na v6. A v7 (45 min) foi reclassificada
+    // como MARKETING pela Meta e NÃO deve ser usada (erro 130472 engole a mensagem).
+    const previewV8 =
+      `Olá, ${pnome}. Aqui é o Gabriel, da AceleraGO.\n\n` +
+      `Sua sessão de diagnóstico está confirmada para ${quando}. A sessão é online e dura 45 minutos.\n\n` +
+      `O convite com o link da chamada chega no seu e-mail e eu envio por aqui também. Aperte no botão abaixo para confirmar sua presença.`
     const previewV3 =
       `Oi, ${pnome}! Sua reunião de diagnóstico com o Ronaldo, da AceleraGO, está confirmada para ${quando}.\n\n` +
       `O link da chamada chega no seu e-mail. Podemos contar com você?`
-    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v6', [pnome, quando], previewV6)
+    const ok = await sendTemplate(telefone, 'confirmacao_reuniao_v8', [pnome, quando], previewV8)
+      || await sendTemplate(telefone, 'confirmacao_reuniao_v6', [pnome, quando], previewV6)
       || await sendTemplate(telefone, 'confirmacao_reuniao_v3', [pnome, quando], previewV3)
       || await sendTemplate(telefone, 'confirmacao_reuniao_v2', [pnome, quando], previewV3)
     if (!ok) console.error('[agendamento] WhatsApp follow-up falhou (Cloud API)')
