@@ -41,6 +41,11 @@
     .tese { font-size: 20px; font-weight: 700; text-align: center; line-height: 1.35; margin-top: 38px; }
     .links a { display: block; text-decoration: none; color: var(--txt); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-weight: 600; margin-top: 10px; }
     .links a span { display: block; font-weight: 400; font-size: 13px; color: var(--mut); }
+    .form label { display: block; font-size: 14px; font-weight: 600; margin-top: 14px; }
+    .form input, .form select { width: 100%; margin-top: 6px; padding: 13px 14px; font: inherit; font-size: 16px; color: var(--txt); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+    .form input:focus, .form select:focus { outline: 2px solid var(--acc); border-color: transparent; }
+    .form button { width: 100%; border: 0; cursor: pointer; font-family: inherit; }
+    .form .obs { color: var(--mut); font-size: 13px; text-align: center; margin-top: 10px; }
     footer { text-align: center; color: var(--mut); font-size: 12px; margin-top: 36px; }
   </style>
 </head>
@@ -51,7 +56,7 @@
     <p class="nome">Ronaldo Detoni · estrategista de conteúdo e autoridade</p>
     <h1>Competência que não é percebida <em>não existe para o mercado.</em></h1>
     <p class="sub">Eu transformo o que bons profissionais sabem em conteúdo que conquista atenção, autoridade e clientes. Sem você precisar virar influenciador.</p>
-    <a class="cta" href="https://wa.me/5511934619564?text=Oi%2C%20Ronaldo!%20Vim%20do%20Instagram%20e%20quero%20o%20diagn%C3%B3stico%20do%20meu%20perfil." target="_blank" rel="noopener">
+    <a class="cta" href="#diagnostico">
       Quero o diagnóstico gratuito do meu perfil
       <small>Uma conversa de 30 a 45 minutos, direto comigo</small>
     </a>
@@ -94,9 +99,32 @@
 
   <p class="tese">Você não precisa virar influenciador.<br />Precisa ser percebido pelo que já sabe.</p>
 
-  <a class="cta" href="https://wa.me/5511934619564?text=Oi%2C%20Ronaldo!%20Vim%20do%20Instagram%20e%20quero%20o%20diagn%C3%B3stico%20do%20meu%20perfil." target="_blank" rel="noopener">
+  <a class="cta" href="#diagnostico">
     Quero o diagnóstico gratuito do meu perfil
   </a>
+
+  <section id="diagnostico">
+    <h2>Peça o seu diagnóstico</h2>
+    <form class="card form" id="form-diag">
+      <p>Responda 5 perguntas rápidas. Ao enviar, o WhatsApp abre com tudo preenchido e eu já chego na conversa sabendo do seu caso.</p>
+      <label>Seu nome<input name="nome" required autocomplete="name" /></label>
+      <label>Seu Instagram<input name="insta" required placeholder="@seuperfil" autocapitalize="off" /></label>
+      <label>O que você faz<input name="area" required placeholder="Ex.: ginecologista, advogada, dentista" /></label>
+      <label>Sua cidade<input name="cidade" autocomplete="address-level2" /></label>
+      <label>O que mais te trava hoje
+        <select name="trava" required>
+          <option value="">Escolha uma opção</option>
+          <option>Não sei o que postar</option>
+          <option>Não tenho tempo ou jeito para gravar</option>
+          <option>Posto, mas quase ninguém vê</option>
+          <option>Tenho alcance, mas não vira cliente</option>
+          <option>Nunca postei com constância</option>
+        </select>
+      </label>
+      <button type="submit" class="cta">Enviar e falar no WhatsApp<small>Diagnóstico gratuito, 30 a 45 minutos, online</small></button>
+      <p class="obs">Atendo online, no Brasil inteiro.</p>
+    </form>
+  </section>
 
   <section class="links">
     <h2>Outros caminhos</h2>
@@ -107,5 +135,19 @@
 
   <footer>© Ronaldo Detoni · acelerago.com.br</footer>
 </main>
+<script>
+document.getElementById('form-diag').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var f = new FormData(this);
+  var insta = '@' + String(f.get('insta')).trim().replace(/^@+/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/.*$/, '');
+  var msg = 'Oi, Ronaldo! Vim do Instagram e quero o diagnóstico do meu perfil.\n\n' +
+    'Nome: ' + f.get('nome').trim() + '\n' +
+    'Instagram: ' + insta + '\n' +
+    'O que faço: ' + f.get('area').trim() + '\n' +
+    (f.get('cidade').trim() ? 'Cidade: ' + f.get('cidade').trim() + '\n' : '') +
+    'O que mais me trava: ' + f.get('trava');
+  window.location.href = 'https://wa.me/5511934619564?text=' + encodeURIComponent(msg);
+});
+</script>
 </body>
 </html>
