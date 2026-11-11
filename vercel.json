@@ -2,7 +2,25 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "crons": [
-    { "path": "/api/lembretes", "schedule": "*/15 * * * *" },
-    { "path": "/api/resgates", "schedule": "* * * * *" }
+    {
+      "path": "/api/lembretes",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/resgates",
+      "schedule": "* * * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/detoni",
+      "destination": "https://detonimarketingdigital.com.br/bio",
+      "permanent": false
+    },
+    {
+      "source": "/ronaldo",
+      "destination": "https://detonimarketingdigital.com.br/bio",
+      "permanent": false
+    }
   ]
 }
