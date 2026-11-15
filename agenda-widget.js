@@ -18,6 +18,7 @@
  *     cor:       '#f97316',
  *     dados:     () => ({ nome, email, telefone, observacoes }),
  *     aoMarcar:  (resultado) => { ... },  // sucesso: dispara pixel, CAPI etc.
+ *     urlHorarios, urlMarcar,             // opcionais: o portal da cliente usa /api/portal/briefing
  *     aoFalhar:  () => { ... },           // mostra o caminho do WhatsApp
  *   })
  */
@@ -161,7 +162,8 @@
       if (opts.aoFalhar) try { opts.aoFalhar() } catch (e) {}
     }
 
-    fetch('/api/horarios?frente=' + encodeURIComponent(opts.frente))
+    var urlHorarios = opts.urlHorarios || '/api/horarios?frente=' + encodeURIComponent(opts.frente)
+    fetch(urlHorarios)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)) })
       .then(function (j) {
         if (!j.ok || !j.slots || !j.slots.length) {
@@ -319,7 +321,7 @@
       // Mesmo endpoint que o Calendly acionava (api/agendamento.js): ele já faz
       // Telegram, alerta no grupo, Meta CAPI e move o card no Kanban. Agora ele
       // marca a reunião de verdade em vez de só registrar o que o Calendly fez.
-      fetch('/api/agendamento', {
+      fetch(opts.urlMarcar || '/api/agendamento', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // Espalha TUDO o que o funil quis mandar (instagram, site, faturamento,
@@ -334,7 +336,7 @@
             estado.etapa = 'escolha'
             estado.escolhido = null
             alvo.innerHTML = '<p class="ag-msg ag-erro">Esse horário acabou de ser ocupado. Escolha outro:</p><div class="ag-spin"></div>'
-            return fetch('/api/horarios?frente=' + encodeURIComponent(opts.frente))
+            return fetch(urlHorarios)
               .then(function (r) { return r.json() })
               .then(function (j) {
                 estado.slots = j.slots || []
